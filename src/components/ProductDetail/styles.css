@@ -340,40 +340,136 @@
 .pdp__tiers {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-.pdp__tiers-table {
+/* tier cards (gDR5Y) */
+.pdp__tier-set {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  border: var(--size-line) solid var(--c-line);
-  border-radius: var(--radius-card);
+  gap: 8px;
+  align-self: stretch;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pdp__tier-legend {
+  padding: 0 0 2px;
 }
 
 .pdp__tier {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
-  border-bottom: var(--size-line) solid var(--c-line);
+  padding: 14px 16px;
+  border: var(--size-line) solid var(--c-line);
+  border-radius: var(--radius-card);
+  background: var(--c-bg);
   color: var(--c-text);
-  transition: background-color var(--dur-fast) var(--ease-standard);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
 }
 
-.pdp__tier:last-child {
-  border-bottom: 0;
-}
-
-/* tier-row: every second row on surface */
-.pdp__tier:nth-child(even) {
+.pdp__tier--on {
+  /* 2px border without a layout shift: the extra pixel is an inset ring */
+  border-color: var(--c-text);
+  box-shadow: inset 0 0 0 1px var(--c-text);
   background: var(--c-surface);
 }
 
-.pdp__tier-range,
-.pdp__tier-price {
-  font-weight: 400;
+.pdp__tier-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pdp__tier:has(.pdp__tier-input:focus-visible) {
+  outline: 2px solid var(--c-text);
+  outline-offset: 2px;
+}
+
+.pdp__tier-dot {
+  flex: none;
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--c-line);
+  border-radius: var(--radius-pill);
+  background: var(--c-bg);
+  transition: border-color var(--dur-fast) var(--ease-standard), border-width var(--dur-fast) var(--ease-standard);
+}
+
+.pdp__tier--on .pdp__tier-dot {
+  border: 5px solid var(--c-text);
+}
+
+.pdp__tier-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pdp__tier-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.pdp__tier-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pdp__tier-unit {
+  color: var(--c-muted);
+}
+
+.pdp__tier-prices {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.pdp__tier-total {
+  color: var(--c-text);
+}
+
+.pdp__tier-compare {
+  color: var(--c-muted);
+}
+
+.pdp__tier-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .pdp__tier:hover {
+    border-color: var(--c-text);
+  }
 }
 
 .pdp__group {

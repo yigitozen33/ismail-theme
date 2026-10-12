@@ -5635,14 +5635,6 @@
           "groupId": "texts-info"
         },
         {
-          "name": "tierQuantityText",
-          "displayName": "Kademe adedi ({range})",
-          "type": "TEXT",
-          "required": false,
-          "defaultValue": "{range} adet",
-          "groupId": "texts-info"
-        },
-        {
           "name": "tierUnitPriceText",
           "displayName": "Kademe birim fiyatı ({price})",
           "type": "TEXT",
@@ -6241,6 +6233,46 @@
           "required": false,
           "defaultValue": "{current} / {total}",
           "groupId": "texts-gallery"
+        },
+        {
+          "name": "tierCardQtyText",
+          "displayName": "Kademe kartı adet",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "{n} adet",
+          "groupId": "texts-info"
+        },
+        {
+          "name": "tierSavingText",
+          "displayName": "Kademe tasarruf etiketi",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "%{n} tasarruf",
+          "groupId": "texts-info"
+        },
+        {
+          "name": "tierBestText",
+          "displayName": "En avantajlı etiketi",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "En avantajlı",
+          "groupId": "texts-info"
+        },
+        {
+          "name": "tierCustomQtyText",
+          "displayName": "Farklı adet bağlantısı",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Farklı adet seç",
+          "groupId": "texts-info"
+        },
+        {
+          "name": "tierAddText",
+          "displayName": "Kademeli sepete ekle",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "{n} adet sepete ekle · {total}",
+          "groupId": "texts-info"
         }
       ],
       "propGroups": [

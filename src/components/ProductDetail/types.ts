@@ -10,7 +10,6 @@ export interface Props {
   ratingAriaLabel?: string;
   soldOutBadgeText?: string;
   tiersTitle?: string;
-  tierQuantityText?: string;
   tierUnitPriceText?: string;
   groupLabel?: string;
   sizeGuideText?: string;
@@ -89,4 +88,9 @@ export interface Props {
   /** Beden tablosunda satır başlıklarının (bedenlerin) sütun başlığı. */
   sizeColumnLabel?: string;
   galleryCounterText?: string;
+  tierCardQtyText?: string;
+  tierSavingText?: string;
+  tierBestText?: string;
+  tierCustomQtyText?: string;
+  tierAddText?: string;
 }

@@ -20,6 +20,7 @@ import {
   getProductCategoryPath,
   getProductVariantFinalPriceWithCampaignOffers,
   getProductVariantFormattedFinalPriceWithCampaignOffers,
+  getProductVariantFinalPrice,
   getProductVariantFormattedSellPriceWithCampaignOffers,
   getProductVariantIsBackInStockCustomerLoginRequired,
   getProductVariantIsBackInStockEnabled,
@@ -103,8 +104,12 @@ export function ProductDetail(props: Props) {
     noReviewsText = "Henüz yorum yok",
     soldOutBadgeText = "Tükendi",
     tiersTitle = "ÇOK AL, AZ ÖDE",
-    tierQuantityText = "{range} adet",
     tierUnitPriceText = "{price} / adet",
+    tierCardQtyText = "{n} adet",
+    tierSavingText = "%{n} tasarruf",
+    tierBestText = "En avantajlı",
+    tierCustomQtyText = "Farklı adet seç",
+    tierAddText = "{n} adet sepete ekle · {total}",
     groupLabel = "MODEL ·",
     sizeGuideText = "Beden rehberi",
     addToCartText = "Sepete ekle",
@@ -195,6 +200,7 @@ export function ProductDetail(props: Props) {
   const [bisEmail, setBisEmail] = useState("");
   const [bisStatus, setBisStatus] = useState<"idle" | "sending" | "saved" | "error">("idle");
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [customQty, setCustomQty] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const scrollRaf = useRef(0);
@@ -206,6 +212,12 @@ export function ProductDetail(props: Props) {
     setRailFade((f) => (f === fade ? f : fade));
   };
   const optionsRef = useRef<HTMLDivElement>(null);
+  const tierQtyRef = useRef<HTMLDivElement>(null);
+
+  // "Farklı adet seç" swaps itself for the stepper; focus follows to the stepper's first live button.
+  useEffect(() => {
+    if (customQty) tierQtyRef.current?.querySelector<HTMLElement>("button:not(:disabled)")?.focus();
+  }, [customQty]);
 
   const variant = product ? getSelectedProductVariant(product) : null;
   const variantId = variant?.id;
@@ -370,9 +382,9 @@ export function ProductDetail(props: Props) {
   (product.tags ?? []).slice(0, 2).forEach((t) => t?.name && badges.push({ text: t.name, tone: "new" }));
 
   /* ---------- campaign + tiers ---------- */
-  const tiers = getProductVariantTieredDiscountProducts(variant).filter(
-    (t) => !t.salesChannelIds?.length || t.salesChannelIds.includes(IkasStorefrontConfig.salesChannelId ?? ""),
-  );
+  const tiers = getProductVariantTieredDiscountProducts(variant)
+    .filter((t) => !t.salesChannelIds?.length || t.salesChannelIds.includes(IkasStorefrontConfig.salesChannelId ?? ""))
+    .sort((a, b) => a.lineItemQuantityRange.min - b.lineItemQuantityRange.min);
   const campaignTitle = (variant.campaigns ?? product.campaigns ?? [])
     .map((c) => c.campaign)
     .find((c) => c && !c.deleted && !c.tieredDiscount && c.title)?.title;
@@ -383,6 +395,39 @@ export function ProductDetail(props: Props) {
   const offers = product.offers ?? [];
   const selectedOffers = offers.filter((o) => o.isSelected && !isAcceptedProductOffer(o)).length;
   const currency = getProductVariantPrice(variant);
+  const money = (n: number) => formatCurrency(n, currency.currency ?? "", currency.currencySymbol ?? null);
+
+  /* ---------- tier cards (gDR5Y) ---------- */
+  // Prices come resolved per tier: `finalPrice` is per unit, `finalPriceWithQuantity` the total at the
+  // tier minimum. A FIXED_AMOUNT tier discounts only that total, so the gap between the two is kept as
+  // a flat discount when the quantity grows inside the tier.
+  const singlePrice = getProductVariantFinalPrice(variant);
+  const tierOf = (q: number) =>
+    tiers.find((t) => q >= t.lineItemQuantityRange.min && (t.lineItemQuantityRange.max === 0 || q <= t.lineItemQuantityRange.max));
+  const totalFor = (q: number) => {
+    const t = tierOf(q);
+    if (!t) return singlePrice * q;
+    const flat = t.finalPrice * t.lineItemQuantityRange.min - t.finalPriceWithQuantity;
+    return Math.max(0, t.finalPrice * q - flat);
+  };
+  const tierCards = tiers.length
+    ? [
+        ...(tiers[0].lineItemQuantityRange.min > 1 ? [{ n: 1, min: 1, max: tiers[0].lineItemQuantityRange.min - 1 }] : []),
+        ...tiers.map((t) => ({ n: t.lineItemQuantityRange.min, min: t.lineItemQuantityRange.min, max: t.lineItemQuantityRange.max })),
+      ].map((c) => {
+        const total = totalFor(c.n);
+        const compare = singlePrice * c.n;
+        const saving = compare > 0 ? Math.round((1 - total / compare) * 100) : 0;
+        return { ...c, total, compare, saving: saving > 0 ? saving : 0 };
+      })
+    : [];
+  const bestSaving = Math.max(0, ...tierCards.map((c) => c.saving));
+  const bestIndex = bestSaving > 0 ? tierCards.findIndex((c) => c.saving === bestSaving) : -1;
+  const selectedCard = tierCards.findIndex((c) => quantity >= c.min && (c.max === 0 || quantity <= c.max));
+  const clampQty = (n: number) => Math.min(Math.max(n, limits.min), limits.max ?? Number.MAX_SAFE_INTEGER);
+  const quantityTotal = totalFor(quantity);
+  const quantityUnit = quantity > 0 ? quantityTotal / quantity : singlePrice;
+  const tierPriceActive = tiers.length > 0 && money(quantityUnit) !== money(singlePrice);
   const offersSaving = offers.length
     ? getProductVariantSellPriceWithCampaignOffers(variant) - getProductVariantFinalPriceWithCampaignOffers(variant)
     : 0;
@@ -428,6 +473,10 @@ export function ProductDetail(props: Props) {
         : editMode
           ? updateCartText
           : addToCartText;
+  const mainButtonLabel =
+    tiers.length > 0 && !soldOut && !cart.busy && !cart.added && !editMode && tierAddText
+      ? fill(tierAddText, { n: quantity, total: money(quantityTotal) })
+      : buttonLabel;
 
   const onAdd = async () => {
     if (soldOut || cart.busy) return;
@@ -691,8 +740,19 @@ export function ProductDetail(props: Props) {
           )}
 
           <div className="pdp__price">
-            <span className={cx("pdp__price-value", TEXT.priceLg, "tabular")}>{price.price}</span>
-            {price.compare && <s className={cx("pdp__price-compare", TEXT.priceLg, "tabular")}>{price.compare}</s>}
+            {tierPriceActive ? (
+              <>
+                <span className={cx("pdp__price-value", TEXT.priceLg, "tabular")}>
+                  {fill(tierUnitPriceText, { price: money(quantityUnit) })}
+                </span>
+                <s className={cx("pdp__price-compare", TEXT.priceLg, "tabular")}>{price.price}</s>
+              </>
+            ) : (
+              <>
+                <span className={cx("pdp__price-value", TEXT.priceLg, "tabular")}>{price.price}</span>
+                {price.compare && <s className={cx("pdp__price-compare", TEXT.priceLg, "tabular")}>{price.compare}</s>}
+              </>
+            )}
           </div>
 
           {campaignTitle && tiers.length === 0 && (
@@ -702,35 +762,73 @@ export function ProductDetail(props: Props) {
             </div>
           )}
 
-          {tiers.length > 0 && (
+          {tierCards.length > 0 && (
             <div className="pdp__tiers">
-              {tiersTitle && <span className={cx("pdp__block-title", TEXT.label)}>{tiersTitle}</span>}
-              <div className="pdp__tiers-table">
-                {/* tier-row (canvas): the table opens with the single-unit price when the first tier starts above 1 */}
-                {tiers[0].lineItemQuantityRange.min > 1 && (
-                  <div className="pdp__tier">
-                    <span className={cx("pdp__tier-range", TEXT.ui)}>
-                      {fill(tierQuantityText, {
-                        range: tiers[0].lineItemQuantityRange.min === 2 ? "1" : `1–${tiers[0].lineItemQuantityRange.min - 1}`,
-                      })}
-                    </span>
-                    <span className={cx("pdp__tier-price", TEXT.price, "tabular")}>{price.price}</span>
-                  </div>
-                )}
-                {tiers.map((t, i) => {
-                  const { min, max } = t.lineItemQuantityRange;
-                  const range = max === 0 ? `${min}+` : min === max ? `${min}` : `${min}–${max}`;
-                  const single = min === 1 && max === 1;
+              {/* tier cards (gDR5Y): native radios, a card per tier minimum (+ a single-unit card when the first tier starts above 1) */}
+              <fieldset className="pdp__tier-set">
+                {tiersTitle && <legend className={cx("pdp__block-title", "pdp__tier-legend", TEXT.label)}>{tiersTitle}</legend>}
+                {tierCards.map((c, i) => {
+                  const on = i === selectedCard;
                   return (
-                    <div key={i} className="pdp__tier">
-                      <span className={cx("pdp__tier-range", TEXT.ui)}>{fill(tierQuantityText, { range })}</span>
-                      <span className={cx("pdp__tier-price", TEXT.price, "tabular")}>
-                        {single ? t.formattedFinalPrice : fill(tierUnitPriceText, { price: t.formattedFinalPrice })}
+                    <label key={i} className={cx("pdp__tier", on && "pdp__tier--on")}>
+                      <input
+                        type="radio"
+                        className="pdp__tier-input"
+                        name={`pdp-tier-${product.id}`}
+                        value={c.n}
+                        checked={on}
+                        onChange={() => setQuantity(clampQty(c.n))}
+                      />
+                      <span className="pdp__tier-dot" aria-hidden="true" />
+                      <span className="pdp__tier-body">
+                        <span className="pdp__tier-head">
+                          <span className={cx("pdp__tier-qty", TEXT.ui, "tabular")}>{fill(tierCardQtyText, { n: c.n })}</span>
+                          {(c.saving > 0 || i === bestIndex) && (
+                            <span className="pdp__tier-badges">
+                              {c.saving > 0 && tierSavingText && <Badge text={fill(tierSavingText, { n: c.saving })} tone="sale" />}
+                              {i === bestIndex && tierBestText && <Badge text={tierBestText} tone="new" />}
+                            </span>
+                          )}
+                        </span>
+                        <span className={cx("pdp__tier-unit", TEXT.uiSm, "tabular")}>
+                          {fill(tierUnitPriceText, { price: money(c.total / c.n) })}
+                        </span>
                       </span>
-                    </div>
+                      <span className="pdp__tier-prices">
+                        <span className={cx("pdp__tier-total", TEXT.price, "tabular")}>{money(c.total)}</span>
+                        {money(c.compare) !== money(c.total) && (
+                          <s className={cx("pdp__tier-compare", TEXT.priceSm, "tabular")}>{money(c.compare)}</s>
+                        )}
+                      </span>
+                    </label>
                   );
                 })}
-              </div>
+              </fieldset>
+              {customQty ? (
+                <div ref={tierQtyRef} className="pdp__quantity">
+                  <QuantitySelector
+                    value={quantity}
+                    min={limits.min}
+                    max={limits.max}
+                    onChange={setQuantity}
+                    valueAriaLabel={quantityAriaLabel}
+                    decreaseAriaLabel={decreaseAriaLabel}
+                    increaseAriaLabel={increaseAriaLabel}
+                  />
+                </div>
+              ) : (
+                tierCustomQtyText && (
+                  <button
+                    type="button"
+                    className={cx("pdp__tier-custom", TEXT.uiSm)}
+                    aria-expanded="false"
+                    onClick={() => setCustomQty(true)}
+                  >
+                    {tierCustomQtyText}
+                    <Icon name="chevron-down" size={16} />
+                  </button>
+                )
+              )}
             </div>
           )}
 
@@ -793,21 +891,23 @@ export function ProductDetail(props: Props) {
             </div>
           )}
 
-          <div className="pdp__quantity">
-            <QuantitySelector
-              value={quantity}
-              min={limits.min}
-              max={limits.max}
-              onChange={setQuantity}
-              valueAriaLabel={quantityAriaLabel}
-              decreaseAriaLabel={decreaseAriaLabel}
-              increaseAriaLabel={increaseAriaLabel}
-            />
-          </div>
+          {tierCards.length === 0 && (
+            <div className="pdp__quantity">
+              <QuantitySelector
+                value={quantity}
+                min={limits.min}
+                max={limits.max}
+                onChange={setQuantity}
+                valueAriaLabel={quantityAriaLabel}
+                decreaseAriaLabel={decreaseAriaLabel}
+                increaseAriaLabel={increaseAriaLabel}
+              />
+            </div>
+          )}
 
           {/* I-PDP-04 · M-11 via Button */}
           <div className="pdp__actions">
-            <Button label={buttonLabel} state={buttonState} fullWidth className="pdp__cart-btn" onClick={onAdd} />
+            <Button label={mainButtonLabel} state={buttonState} fullWidth className="pdp__cart-btn" onClick={onAdd} />
             <span className="pdp__fav">
               <FavoriteButton active={isFavorite} ariaLabel={favoriteAriaLabel} size="md" onToggle={onFavorite} />
             </span>
