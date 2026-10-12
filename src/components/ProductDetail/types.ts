@@ -88,4 +88,5 @@ export interface Props {
   howToMeasureText?: string;
   /** Beden tablosunda satır başlıklarının (bedenlerin) sütun başlığı. */
   sizeColumnLabel?: string;
+  galleryCounterText?: string;
 }

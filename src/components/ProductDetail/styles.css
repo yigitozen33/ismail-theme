@@ -22,22 +22,110 @@
   gap: 48px;
 }
 
-/* ---------- gallery (I-PDP-02 · M-19) ---------- */
+/* ---------- gallery (I-PDP-02 · M-19) ----------
+   ≥768: 72px thumb rail (as tall as the main media) + one 4:5 main media.
+   mobile: horizontal snap track (see the mobile block). */
 .pdp__gallery-wrap {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
 }
 
-.pdp__gallery {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.pdp__gallery-wrap--rail {
+  grid-template-columns: 72px minmax(0, 1fr);
   gap: 12px;
 }
 
-.pdp__gallery--single {
-  grid-template-columns: minmax(0, 1fr);
+/* single media: no rail, capped main image */
+.pdp__gallery-wrap--single .pdp__stage {
   max-width: 640px;
+}
+
+/* the box stretches to the row (= main media height); the rail scrolls inside it */
+.pdp__rail-box {
+  position: relative;
+  align-self: stretch;
+  min-height: 0;
+}
+
+.pdp__rail {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.pdp__rail::-webkit-scrollbar {
+  display: none;
+}
+
+.pdp__rail--fade {
+  -webkit-mask-image: linear-gradient(to bottom, var(--c-text) calc(100% - 64px), var(--c-transparent));
+  mask-image: linear-gradient(to bottom, var(--c-text) calc(100% - 64px), var(--c-transparent));
+}
+
+.pdp__thumb {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 90px;
+  box-sizing: border-box;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid var(--c-transparent);
+  border-radius: var(--radius-card);
+  background: var(--c-surface);
+  color: var(--c-text);
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease-standard);
+}
+
+.pdp__thumb--on {
+  border-color: var(--c-text);
+}
+
+@media (hover: hover) {
+  .pdp__thumb:not(.pdp__thumb--on):hover {
+    border-color: var(--c-line);
+  }
+}
+
+.pdp__thumb:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -2px;
+}
+
+.pdp__thumb-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pdp__thumb-video {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.pdp__stage {
+  position: relative;
+  min-width: 0;
+}
+
+.pdp__gallery {
+  position: relative;
 }
 
 .pdp__media {
@@ -54,7 +142,15 @@
   background: var(--c-surface);
   color: var(--c-muted);
   cursor: zoom-in;
-  scroll-margin-top: calc(var(--size-header) + 24px);
+}
+
+/* ≥768 only the active media is shown; the fixed 4:5 box keeps the layout still */
+.pdp__media:not(.pdp__media--on) {
+  display: none;
+}
+
+.pdp__gallery--switched .pdp__media--on {
+  animation: _EMX39fgOGw var(--dur-base) var(--ease-standard) both;
 }
 
 .pdp__media--video,
@@ -120,37 +216,6 @@
   pointer-events: none;
 }
 
-/* laptop-only sticky thumb rail */
-.pdp__rail {
-  display: none;
-}
-
-.pdp__rail-thumb {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 70px;
-  padding: 0;
-  overflow: hidden;
-  border: var(--size-line) solid var(--c-transparent);
-  border-radius: var(--radius-card);
-  background: var(--c-surface);
-  color: var(--c-text);
-  cursor: pointer;
-  transition: border-color 0.3s var(--ease-standard);
-}
-
-.pdp__rail-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.pdp__rail-thumb--on {
-  border-color: var(--c-text);
-}
-
 /* pdp-dots: 6px dots, 6px apart, 12px under the track */
 .pdp__dots {
   display: none;
@@ -182,6 +247,11 @@
 
 .pdp__dot--on::after {
   background: var(--c-text);
+}
+
+/* mobile counter above 5 media: the video duration pill, anchored bottom-right of the snapped slide */
+.pdp__counter {
+  display: none;
 }
 
 /* ---------- details (I-PDP-01 · M-13) ---------- */
@@ -623,7 +693,7 @@
   gap: 12px;
 }
 
-/* ---------- laptop 992–1199: single-column gallery + thumb rail, 400 info ---------- */
+/* ---------- laptop 992–1199: 400 info ---------- */
 @media (max-width: bp(rLU3LmiCdo)) {
   .pdp__main {
     gap: 32px;
@@ -633,33 +703,13 @@
     flex-basis: 400px;
   }
 
-  .pdp__gallery-wrap {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .pdp__gallery {
-    flex: 1 1 auto;
-    min-width: 0;
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .pdp__rail {
-    position: sticky;
-    top: calc(var(--size-header) + 24px);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
   .pdp__highlights-list {
     flex-direction: column;
     gap: 14px;
   }
 }
 
-/* ---------- tablet 768–991: horizontal gallery on top, info below ---------- */
+/* ---------- tablet 768–991: rail gallery on top (centred, 560 main), info below ---------- */
 @media (max-width: bp(zTpkWoce2k)) {
   .pdp__main {
     flex-direction: column;
@@ -673,37 +723,13 @@
   }
 
   .pdp__gallery-wrap {
-    display: block;
+    width: 100%;
+    max-width: 644px;
+    margin: 0 auto;
   }
 
-  .pdp__rail {
-    display: none;
-  }
-
-  .pdp__gallery {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    overscroll-behavior-x: contain;
-  }
-
-  .pdp__gallery::-webkit-scrollbar {
-    display: none;
-  }
-
-  .pdp__media {
-    flex: 0 0 min(400px, 60%);
-    scroll-snap-align: start;
-  }
-
-  .pdp__gallery--single .pdp__media {
-    flex-basis: 100%;
-  }
-
-  .pdp__dots {
-    display: flex;
+  .pdp__gallery-wrap--single {
+    max-width: 560px;
   }
 
   .pdp__offers-list {
@@ -736,14 +762,56 @@
     gap: 24px;
   }
 
+  .pdp__gallery-wrap,
+  .pdp__gallery-wrap--single {
+    display: block;
+    max-width: none;
+    margin: 0;
+  }
+
+  .pdp__gallery-wrap--single .pdp__stage {
+    max-width: none;
+  }
+
+  .pdp__rail-box {
+    display: none;
+  }
+
   .pdp__gallery {
+    display: flex;
+    gap: 8px;
     padding: 0 var(--space-page);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
     scroll-padding-inline: var(--space-page);
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .pdp__gallery::-webkit-scrollbar {
+    display: none;
   }
 
   /* pdp-gallery-track: 320×400 cards on a 390 frame */
-  .pdp__media {
-    flex-basis: min(82vw, 400px);
+  .pdp__gallery .pdp__media {
+    display: flex;
+    flex: 0 0 min(82vw, 400px);
+    scroll-snap-align: start;
+    animation: none;
+  }
+
+  .pdp__gallery-wrap--single .pdp__media {
+    flex-basis: 100%;
+  }
+
+  .pdp__dots {
+    display: flex;
+  }
+
+  .pdp__counter {
+    display: block;
+    left: calc(var(--space-page) + min(82vw, 400px) - 16px);
+    transform: translateX(-100%);
   }
 
   .pdp__details {
@@ -814,5 +882,17 @@
 
   .pdp__skel-media {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdp__thumb,
+  .pdp__play-icon,
+  .pdp__dot::after {
+    transition: none;
+  }
+
+  .pdp__gallery--switched .pdp__media--on {
+    animation: none;
   }
 }

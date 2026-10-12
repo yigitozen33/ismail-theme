@@ -59,7 +59,7 @@ import SizeGuide, { getAttributeSizeTable } from "../../sub-components/SizeGuide
 import Skeleton from "../../sub-components/Skeleton";
 import VariantPicker from "../../sub-components/VariantPicker";
 import { cx } from "../../utils/cx";
-import { useMounted } from "../../utils/hooks";
+import { prefersReducedMotion, useMounted } from "../../utils/hooks";
 import {
   adjustBundleProductQuantity,
   canPayWithIkas,
@@ -84,8 +84,9 @@ function formatDuration(sec?: number) {
 }
 
 /**
- * I/Section/ProductDetail — gallery (2 columns desktop · 1 column + thumb rail laptop ·
- * horizontal track + dots tablet/mobile) beside a 452 sticky info column (I-PDP-01 · M-13).
+ * I/Section/ProductDetail — gallery (≥768: vertical thumb rail + one 4:5 main media ·
+ * mobile: horizontal track + dots, or a "1 / N" counter above 5 media) beside a 452 sticky
+ * info column (I-PDP-01 · M-13).
  * Every merchant block (campaign, tiers, product group, options, bundle, offers, stock
  * locations, back-in-stock) renders only when the product carries that data.
  * States: yükleniyor (skeleton), ekleniyor, eklendi, stok yok, sepeti güncelle / sepet
@@ -163,6 +164,7 @@ export function ProductDetail(props: Props) {
     zoomAriaLabel = "Görseli büyüt",
     playVideoAriaLabel = "Videoyu oynat",
     galleryDotAriaLabel = "{n}. görsele git",
+    galleryCounterText = "{current} / {total}",
     sizeGuideLink,
     sizeGuideAttribute,
     sizeGuideFallbackText = "<table><thead><tr><th>Beden</th><th>Göğüs</th><th>Bel</th><th>Boy</th></tr></thead><tbody><tr><td>S</td><td>92–96</td><td>78–82</td><td>68</td></tr><tr><td>M</td><td>97–101</td><td>83–87</td><td>70</td></tr><tr><td>L</td><td>102–106</td><td>88–92</td><td>72</td></tr><tr><td>XL</td><td>107–111</td><td>93–97</td><td>74</td></tr></tbody></table>",
@@ -183,7 +185,9 @@ export function ProductDetail(props: Props) {
   const [quantity, setQuantity] = useState(1);
   const [showOptionErrors, setShowOptionErrors] = useState(false);
   const [preview, setPreview] = useState<number | null>(null);
-  const [active, setActive] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [switched, setSwitched] = useState(false);
+  const [railFade, setRailFade] = useState(false);
   const [playing, setPlaying] = useState<number | null>(null);
   const [durations, setDurations] = useState<Record<number, number>>({});
   const [locations, setLocations] = useState<IkasProductStockLocations[]>([]);
@@ -191,7 +195,16 @@ export function ProductDetail(props: Props) {
   const [bisEmail, setBisEmail] = useState("");
   const [bisStatus, setBisStatus] = useState<"idle" | "sending" | "saved" | "error">("idle");
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
-  const galleryRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLDivElement>(null);
+  const scrollRaf = useRef(0);
+
+  // ≥768 rail: a soft fade at the bottom while more thumbs sit below the fold.
+  const updateRailFade = () => {
+    const rail = railRef.current;
+    const fade = !!rail && rail.scrollTop + rail.clientHeight < rail.scrollHeight - 1;
+    setRailFade((f) => (f === fade ? f : fade));
+  };
   const optionsRef = useRef<HTMLDivElement>(null);
 
   const variant = product ? getSelectedProductVariant(product) : null;
@@ -261,31 +274,43 @@ export function ProductDetail(props: Props) {
     setShowOptionErrors(false);
   }, [variantId]);
 
-  // I-PDP-02 · M-19: the most visible media drives the thumb rail / mobile dots.
+  // I-PDP-02 · M-19: a new media list (variant change) starts again from the first media.
   useEffect(() => {
-    setActive(0);
+    setActiveIndex(0);
     setPlaying(null);
-    const root = galleryRef.current;
-    if (!root || typeof IntersectionObserver === "undefined") return;
-    const ratios = new Map<number, number>();
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => ratios.set(Number((e.target as HTMLElement).dataset.mediaIndex), e.intersectionRatio));
-        let best = 0;
-        let bestRatio = -1;
-        ratios.forEach((r, i) => {
-          if (r > bestRatio + 0.01) {
-            bestRatio = r;
-            best = i;
-          }
-        });
-        setActive(best);
-      },
-      { threshold: [0, 0.25, 0.5, 0.75, 1] },
-    );
-    root.querySelectorAll("[data-media-index]").forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    setSwitched(false);
+    if (trackRef.current) trackRef.current.scrollLeft = 0;
+    if (railRef.current) railRef.current.scrollTop = 0;
+    updateRailFade();
+    const rail = railRef.current;
+    if (!rail || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(updateRailFade);
+    ro.observe(rail);
+    return () => ro.disconnect();
   }, [mediaKey]);
+
+  // Keep the active thumb inside the rail viewport; pause videos that are no longer the active media.
+  useEffect(() => {
+    const rail = railRef.current;
+    const thumb = rail?.querySelector<HTMLElement>(`[data-thumb-index="${activeIndex}"]`);
+    if (rail && thumb && rail.scrollHeight > rail.clientHeight + 1) {
+      const fadeRoom = 32;
+      const top = thumb.offsetTop;
+      const bottom = top + thumb.offsetHeight;
+      let next = rail.scrollTop;
+      if (top < rail.scrollTop) next = top;
+      else if (bottom > rail.scrollTop + rail.clientHeight - fadeRoom) next = bottom - rail.clientHeight + fadeRoom;
+      if (next !== rail.scrollTop) rail.scrollTo({ top: next, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    }
+    trackRef.current?.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
+      if (Number(v.closest<HTMLElement>("[data-media-index]")?.dataset.mediaIndex) === activeIndex) return;
+      v.pause();
+      v.controls = false;
+    });
+    setPlaying((p) => (p === activeIndex ? p : null));
+  }, [activeIndex]);
+
+  useEffect(() => () => cancelAnimationFrame(scrollRaf.current), []);
 
   /* ---------- yükleniyor ---------- */
   if (!product || !variant) {
@@ -430,12 +455,54 @@ export function ProductDetail(props: Props) {
   };
 
   /* ---------- gallery ---------- */
-  const goTo = (i: number) => {
-    const root = galleryRef.current;
-    const el = root?.querySelector<HTMLElement>(`[data-media-index="${i}"]`);
-    if (!root || !el) return;
-    const horizontal = root.scrollWidth > root.clientWidth + 1;
-    el.scrollIntoView({ behavior: "smooth", block: horizontal ? "nearest" : "start", inline: "start" });
+  const multi = media.length > 1;
+  const showCounter = media.length > 5;
+
+  // ≥768: a thumb swaps the main media.
+  const selectMedia = (i: number) => {
+    setSwitched(true);
+    setActiveIndex(i);
+  };
+
+  const onRailKey = (e: KeyboardEvent) => {
+    const step = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    const next = (activeIndex + step + media.length) % media.length;
+    selectMedia(next);
+    railRef.current?.querySelector<HTMLElement>(`[data-thumb-index="${next}"]`)?.focus({ preventScroll: true });
+  };
+
+  // mobile: the slide snapped to the start of the track drives the dots / counter.
+  const onTrackScroll = () => {
+    if (scrollRaf.current) return;
+    scrollRaf.current = requestAnimationFrame(() => {
+      scrollRaf.current = 0;
+      const track = trackRef.current;
+      const slides = track ? Array.from(track.querySelectorAll<HTMLElement>("[data-media-index]")) : [];
+      if (!track || slides.length < 2) return;
+      const base = slides[0].offsetLeft;
+      let best = 0;
+      if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 2) best = slides.length - 1;
+      else {
+        let bestDist = Infinity;
+        slides.forEach((el, i) => {
+          const d = Math.abs(el.offsetLeft - base - track.scrollLeft);
+          if (d < bestDist) {
+            bestDist = d;
+            best = i;
+          }
+        });
+      }
+      setActiveIndex(best);
+    });
+  };
+
+  const goToSlide = (i: number) => {
+    const track = trackRef.current;
+    const slides = track?.querySelectorAll<HTMLElement>("[data-media-index]");
+    if (!track || !slides?.[i]) return;
+    track.scrollTo({ left: slides[i].offsetLeft - slides[0].offsetLeft, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   };
 
   const playVideo = (i: number, e: Event) => {
@@ -449,7 +516,7 @@ export function ProductDetail(props: Props) {
   const renderMedia = (img: IkasImage, i: number) => {
     if (img.isVideo) {
       return (
-        <div key={img.id || i} className="pdp__media pdp__media--video" data-media-index={i}>
+        <div key={img.id || i} className={cx("pdp__media pdp__media--video", i === activeIndex && "pdp__media--on")} data-media-index={i}>
           <video
             className="pdp__img"
             src={getDefaultSrc(img)}
@@ -481,7 +548,7 @@ export function ProductDetail(props: Props) {
       <button
         key={img.id || i}
         type="button"
-        className="pdp__media"
+        className={cx("pdp__media", i === activeIndex && "pdp__media--on")}
         data-media-index={i}
         aria-label={`${zoomAriaLabel} ${i + 1}`}
         onClick={() => setPreview(i)}
@@ -490,7 +557,7 @@ export function ProductDetail(props: Props) {
           className="pdp__img"
           src={getDefaultSrc(img)}
           srcSet={createMediaSrcset(img)}
-          sizes="(max-width: 767px) 82vw, (max-width: 991px) 60vw, (max-width: 1199px) 50vw, 432px"
+          sizes="(max-width: 767px) 82vw, (max-width: 991px) 560px, (max-width: 1199px) 54vw, 800px"
           alt={img.altText || `${product.name} ${i + 1}`}
           loading={i < 2 ? "eager" : "lazy"}
           decoding={i === 0 ? "sync" : "async"}
@@ -524,49 +591,67 @@ export function ProductDetail(props: Props) {
 
       <div className="pdp__main">
         {/* I-PDP-02 · M-19 */}
-        <div className="pdp__gallery-wrap">
-          {media.length > 1 && (
-            <div className="pdp__rail" aria-hidden="true">
-              {media.map((img, i) => (
-                <button
-                  key={img.id || i}
-                  type="button"
-                  tabIndex={-1}
-                  className={cx("pdp__rail-thumb", i === active && "pdp__rail-thumb--on")}
-                  onClick={() => goTo(i)}
-                >
-                  {img.isVideo ? (
-                    <Icon name="play" size={14} />
-                  ) : (
-                    <img src={getThumbnailSrc(img)} alt="" loading="lazy" decoding="async" />
-                  )}
-                </button>
-              ))}
+        <div className={cx("pdp__gallery-wrap", multi ? "pdp__gallery-wrap--rail" : "pdp__gallery-wrap--single")}>
+          {multi && (
+            <div className="pdp__rail-box">
+              <div
+                ref={railRef}
+                className={cx("pdp__rail", railFade && "pdp__rail--fade")}
+                onScroll={updateRailFade}
+                onKeyDown={onRailKey as any}
+              >
+                {media.map((img, i) => (
+                  <button
+                    key={img.id || i}
+                    type="button"
+                    className={cx("pdp__thumb", i === activeIndex && "pdp__thumb--on")}
+                    data-thumb-index={i}
+                    aria-label={fill(galleryDotAriaLabel, { n: i + 1 })}
+                    aria-current={i === activeIndex ? "true" : undefined}
+                    onClick={() => selectMedia(i)}
+                  >
+                    {img.isVideo ? (
+                      <span className="pdp__thumb-video">
+                        <Icon name="play" size={16} />
+                      </span>
+                    ) : (
+                      <img className="pdp__thumb-img" src={getThumbnailSrc(img)} alt="" loading="lazy" decoding="async" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
-          <div ref={galleryRef} className={cx("pdp__gallery", media.length < 2 && "pdp__gallery--single")}>
-            {media.length ? (
-              media.map(renderMedia)
-            ) : (
-              <div className="pdp__media pdp__media--empty" data-media-index={0}>
-                <Icon name="mountain" size={40} />
+          <div className="pdp__stage">
+            <div ref={trackRef} className={cx("pdp__gallery", switched && "pdp__gallery--switched")} onScroll={onTrackScroll}>
+              {media.length ? (
+                media.map(renderMedia)
+              ) : (
+                <div className="pdp__media pdp__media--empty pdp__media--on" data-media-index={0}>
+                  <Icon name="mountain" size={40} />
+                </div>
+              )}
+            </div>
+            {multi && !showCounter && (
+              <div className="pdp__dots">
+                {media.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={cx("pdp__dot", i === activeIndex && "pdp__dot--on")}
+                    aria-label={fill(galleryDotAriaLabel, { n: i + 1 })}
+                    aria-current={i === activeIndex ? "true" : undefined}
+                    onClick={() => goToSlide(i)}
+                  />
+                ))}
               </div>
             )}
+            {showCounter && (
+              <span className={cx("pdp__duration", "pdp__counter", TEXT.label, "tabular")}>
+                {fill(galleryCounterText, { current: activeIndex + 1, total: media.length })}
+              </span>
+            )}
           </div>
-          {media.length > 1 && (
-            <div className="pdp__dots">
-              {media.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={cx("pdp__dot", i === active && "pdp__dot--on")}
-                  aria-label={fill(galleryDotAriaLabel, { n: i + 1 })}
-                  aria-current={i === active ? "true" : undefined}
-                  onClick={() => goTo(i)}
-                />
-              ))}
-            </div>
-          )}
         </div>
 
         {/* I-PDP-01 · M-13 */}

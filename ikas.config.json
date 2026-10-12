@@ -6233,6 +6233,14 @@
           "description": "Beden tablosunda satır başlıklarının (bedenlerin) sütun başlığı.",
           "defaultValue": "Beden",
           "groupId": "texts-size-guide"
+        },
+        {
+          "name": "galleryCounterText",
+          "displayName": "Görsel sayacı ({current} / {total})",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "{current} / {total}",
+          "groupId": "texts-gallery"
         }
       ],
       "propGroups": [
