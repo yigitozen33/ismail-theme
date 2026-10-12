@@ -323,7 +323,7 @@ const FilterGroup = observer(function FilterGroup({
   if (!body) return null;
 
   return (
-    <AccordionItem id={`${idPrefix}-${filter.id}`} title={filter.name} defaultOpen={defaultOpen} headingLevel={3} className="fpanel__group">
+    <AccordionItem id={`${idPrefix}-${filter.id}`} title={filter.name} defaultOpen={defaultOpen} headingLevel={3} icon="chevron-down" className="fpanel__group">
       {body}
     </AccordionItem>
   );
@@ -348,7 +348,7 @@ const CategoryGroup = observer(function CategoryGroup({
   // On a category page a sub-category navigates; elsewhere (search, brand) it filters in place.
   const disableRoute = list.pageType !== "CATEGORY";
   return (
-    <AccordionItem id={`${idPrefix}-categories`} title={title} defaultOpen={defaultOpen} headingLevel={3} className="fpanel__group">
+    <AccordionItem id={`${idPrefix}-categories`} title={title} defaultOpen={defaultOpen} headingLevel={3} icon="chevron-down" className="fpanel__group">
       <ul className="fpanel__cats">
         {categories.map((cat) => (
           <li key={cat.id}>

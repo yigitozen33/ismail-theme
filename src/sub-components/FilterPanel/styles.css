@@ -19,19 +19,9 @@
   padding: 0 0 16px;
 }
 
-/* open group: the plus reads as a minus (filter-group-icon = minus); vertical stroke folds away */
+/* filter-group-icon: chevron-down closed, chevron-up open (M-22) */
 .fpanel__group.acc--open .acc__icon {
-  transform: none;
-}
-
-.fpanel__group .acc__icon path:nth-child(2) {
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: transform var(--dur-base) var(--ease-out-soft);
-}
-
-.fpanel__group.acc--open .acc__icon path:nth-child(2) {
-  transform: scaleY(0);
+  transform: rotate(180deg);
 }
 
 /* filter-box-values: gap 4 */
@@ -107,10 +97,4 @@
 .fpanel__cat:focus-visible {
   outline: 2px solid var(--c-accent);
   outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fpanel__group .acc__icon path:nth-child(2) {
-    transition: none;
-  }
 }

@@ -18,6 +18,8 @@ export interface AccordionItemProps {
   headingLevel?: 2 | 3 | 4 | 5 | 6;
   /** Text style class for the title (default TEXT.ui), e.g. TEXT.label for footer columns. */
   titleClass?: string;
+  /** Head icon: plus (rotates to ×) or chevron-down (flips up when open — filter groups). */
+  icon?: "plus" | "chevron-down";
   className?: string;
 }
 
@@ -32,6 +34,7 @@ export default function AccordionItem({
   id,
   headingLevel = 3,
   titleClass = TEXT.ui,
+  icon = "plus",
   className,
 }: AccordionItemProps) {
   const autoId = useId();
@@ -56,7 +59,7 @@ export default function AccordionItem({
           onClick={toggle}
         >
           <span className={cx("acc__title", titleClass)}>{title}</span>
-          <Icon name="plus" size={16} className="acc__icon" />
+          <Icon name={icon} size={16} className="acc__icon" />
         </button>
       </Heading>
       {/* I-CMP-11 · M-22 */}
