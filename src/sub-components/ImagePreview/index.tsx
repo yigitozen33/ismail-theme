@@ -4,6 +4,7 @@ import { cx } from "../../utils/cx";
 import { useEscape, useScrollLock } from "../../utils/hooks";
 import { TEXT } from "../../utils/tokens";
 import Icon from "../Icon";
+import VideoPlayer, { type VideoPlayerTexts } from "../VideoPlayer";
 
 export interface ImagePreviewTexts {
   closeAriaLabel: string;
@@ -21,6 +22,8 @@ interface Props extends ImagePreviewTexts {
   onIndexChange?: (index: number) => void;
   /** Base alt text (product name); "{alt} 2" per slide. */
   altText?: string;
+  /** Custom video player labels; without them videos keep the native controls. */
+  videoTexts?: VideoPlayerTexts;
 }
 
 /**
@@ -39,6 +42,7 @@ export default function ImagePreview({
   prevAriaLabel,
   nextAriaLabel,
   zoomAriaLabel,
+  videoTexts,
 }: Props) {
   const [current, setCurrent] = useState(index);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
@@ -147,7 +151,9 @@ export default function ImagePreview({
             <div key={img.id || i} className="iprev__slide" aria-hidden={i !== current}>
               {/* I-PREV-01 · M-02 */}
               <div className="iprev__media">
-                {img.isVideo ? (
+                {img.isVideo && videoTexts ? (
+                  <VideoPlayer src={getDefaultSrc(img)} texts={videoTexts} videoClassName="iprev__img" active={i === current} />
+                ) : img.isVideo ? (
                   <video className="iprev__img" src={getDefaultSrc(img)} controls playsInline preload="metadata">
                     <track kind="captions" />
                   </video>

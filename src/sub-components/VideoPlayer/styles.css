@@ -1,0 +1,191 @@
+/* V2 · yüzen hap — fills the host media box (flex parent), no native controls */
+.vplay {
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.vplay--idle {
+  cursor: none;
+}
+
+.vplay__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.vplay--fullscreen {
+  background: var(--c-inverse-bg);
+}
+
+.vplay--fullscreen .vplay__video {
+  object-fit: contain;
+}
+
+/* poster + paused: the centred 64px play disc (pdp-video-play) */
+.vplay__play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: var(--c-transparent);
+  cursor: pointer;
+}
+
+.vplay__play-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-pill);
+  background: var(--c-bg);
+  color: var(--c-text);
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+
+@media (hover: hover) {
+  .vplay__play:hover .vplay__play-icon {
+    transform: scale(1.06);
+  }
+}
+
+.vplay__play:focus-visible .vplay__play-icon {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* poster only: duration pill bottom-left */
+.vplay__duration {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--c-bg);
+  color: var(--c-text);
+  pointer-events: none;
+}
+
+/* video-controls: 36px pill, 16px inset bottom-left */
+.vplay__bar {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 14px;
+  box-sizing: border-box;
+  border-radius: var(--radius-pill);
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+/* video-fullscreen: 36px disc bottom-right */
+.vplay__fs {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--c-bg);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.vplay__bar,
+.vplay__fs {
+  transition: opacity var(--dur-base) var(--ease-standard);
+}
+
+.vplay--idle .vplay__bar,
+.vplay--idle .vplay__fs {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vplay__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: var(--c-transparent);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.vplay__btn:focus-visible,
+.vplay__fs:focus-visible,
+.vplay__seek:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* video-progress: 120px (mobile 72px), the pill's full height is the hit area */
+.vplay__seek {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  width: 120px;
+  height: 100%;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.vplay__track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 1px;
+  background: var(--c-line);
+}
+
+.vplay__fill {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: var(--c-text);
+  transform-origin: left center;
+}
+
+.vplay__time {
+  flex: 0 0 auto;
+  color: var(--c-text);
+  white-space: nowrap;
+}
+
+@media (max-width: bp(KUQjO8W6p9)) {
+  .vplay__seek {
+    width: 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vplay__play-icon,
+  .vplay__bar,
+  .vplay__fs {
+    transition: none;
+  }
+}

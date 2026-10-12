@@ -52,6 +52,7 @@ import FavoriteButton from "../../sub-components/FavoriteButton";
 import FormField from "../../sub-components/FormField";
 import Icon from "../../sub-components/Icon";
 import ImagePreview from "../../sub-components/ImagePreview";
+import VideoPlayer from "../../sub-components/VideoPlayer";
 import OfferCard from "../../sub-components/OfferCard";
 import ProductOptions from "../../sub-components/ProductOptions";
 import QuantitySelector from "../../sub-components/QuantitySelector";
@@ -77,12 +78,6 @@ import { UI_EVENT, emitUi } from "../../utils/ui";
 import { Props } from "./types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function formatDuration(sec?: number) {
-  if (!sec || !Number.isFinite(sec)) return "";
-  const s = Math.round(sec);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
 
 /**
  * I/Section/ProductDetail — gallery (≥768: vertical thumb rail + one 4:5 main media ·
@@ -168,6 +163,11 @@ export function ProductDetail(props: Props) {
     nextAriaLabel = "Sonraki görsel",
     zoomAriaLabel = "Görseli büyüt",
     playVideoAriaLabel = "Videoyu oynat",
+    videoPauseAriaLabel = "Videoyu durdur",
+    videoMuteAriaLabel = "Sesi kapat",
+    videoUnmuteAriaLabel = "Sesi aç",
+    videoFullscreenAriaLabel = "Tam ekran",
+    videoSeekAriaLabel = "Video ilerlemesi",
     galleryDotAriaLabel = "{n}. görsele git",
     galleryCounterText = "{current} / {total}",
     sizeGuideLink,
@@ -193,8 +193,8 @@ export function ProductDetail(props: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [switched, setSwitched] = useState(false);
   const [railFade, setRailFade] = useState(false);
-  const [playing, setPlaying] = useState<number | null>(null);
-  const [durations, setDurations] = useState<Record<number, number>>({});
+  // index of the media whose player has started (its controls take the slide's bottom corners)
+  const [videoOn, setVideoOn] = useState<number | null>(null);
   const [locations, setLocations] = useState<IkasProductStockLocations[]>([]);
   const [, setTick] = useState(0);
   const [bisEmail, setBisEmail] = useState("");
@@ -289,7 +289,7 @@ export function ProductDetail(props: Props) {
   // I-PDP-02 · M-19: a new media list (variant change) starts again from the first media.
   useEffect(() => {
     setActiveIndex(0);
-    setPlaying(null);
+    setVideoOn(null);
     setSwitched(false);
     if (trackRef.current) trackRef.current.scrollLeft = 0;
     if (railRef.current) railRef.current.scrollTop = 0;
@@ -301,7 +301,7 @@ export function ProductDetail(props: Props) {
     return () => ro.disconnect();
   }, [mediaKey]);
 
-  // Keep the active thumb inside the rail viewport; pause videos that are no longer the active media.
+  // Keep the active thumb inside the rail viewport (VideoPlayer pauses itself when inactive).
   useEffect(() => {
     const rail = railRef.current;
     const thumb = rail?.querySelector<HTMLElement>(`[data-thumb-index="${activeIndex}"]`);
@@ -314,12 +314,6 @@ export function ProductDetail(props: Props) {
       else if (bottom > rail.scrollTop + rail.clientHeight - fadeRoom) next = bottom - rail.clientHeight + fadeRoom;
       if (next !== rail.scrollTop) rail.scrollTo({ top: next, behavior: prefersReducedMotion() ? "auto" : "smooth" });
     }
-    trackRef.current?.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
-      if (Number(v.closest<HTMLElement>("[data-media-index]")?.dataset.mediaIndex) === activeIndex) return;
-      v.pause();
-      v.controls = false;
-    });
-    setPlaying((p) => (p === activeIndex ? p : null));
   }, [activeIndex]);
 
   useEffect(() => () => cancelAnimationFrame(scrollRaf.current), []);
@@ -554,42 +548,26 @@ export function ProductDetail(props: Props) {
     track.scrollTo({ left: slides[i].offsetLeft - slides[0].offsetLeft, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   };
 
-  const playVideo = (i: number, e: Event) => {
-    const video = (e.currentTarget as HTMLElement).parentElement?.querySelector("video");
-    if (!video) return;
-    video.controls = true;
-    video.play().catch(() => undefined);
-    setPlaying(i);
+  const videoTexts = {
+    playAriaLabel: playVideoAriaLabel,
+    pauseAriaLabel: videoPauseAriaLabel,
+    muteAriaLabel: videoMuteAriaLabel,
+    unmuteAriaLabel: videoUnmuteAriaLabel,
+    fullscreenAriaLabel: videoFullscreenAriaLabel,
+    seekAriaLabel: videoSeekAriaLabel,
   };
 
   const renderMedia = (img: IkasImage, i: number) => {
     if (img.isVideo) {
       return (
         <div key={img.id || i} className={cx("pdp__media pdp__media--video", i === activeIndex && "pdp__media--on")} data-media-index={i}>
-          <video
-            className="pdp__img"
+          <VideoPlayer
             src={getDefaultSrc(img)}
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            onLoadedMetadata={(e) => {
-              const d = (e.currentTarget as HTMLVideoElement).duration;
-              setDurations((m) => (m[i] === d ? m : { ...m, [i]: d }));
-            }}
-          >
-            <track kind="captions" />
-          </video>
-          {playing !== i && (
-            <button type="button" className="pdp__play" aria-label={playVideoAriaLabel} onClick={(e) => playVideo(i, e as any)}>
-              <span className="pdp__play-icon">
-                <Icon name="play" size={24} />
-              </span>
-            </button>
-          )}
-          {playing !== i && durations[i] ? (
-            <span className={cx("pdp__duration", TEXT.label, "tabular")}>{formatDuration(durations[i])}</span>
-          ) : null}
+            texts={videoTexts}
+            videoClassName="pdp__img"
+            active={i === activeIndex}
+            onStartedChange={(on) => setVideoOn((v) => (on ? i : v === i ? null : v))}
+          />
         </div>
       );
     }
@@ -699,7 +677,7 @@ export function ProductDetail(props: Props) {
                 ))}
               </div>
             )}
-            {showCounter && (
+            {showCounter && videoOn !== activeIndex && (
               <span className={cx("pdp__duration", "pdp__counter", TEXT.label, "tabular")}>
                 {fill(galleryCounterText, { current: activeIndex + 1, total: media.length })}
               </span>
@@ -1086,6 +1064,7 @@ export function ProductDetail(props: Props) {
         prevAriaLabel={prevAriaLabel}
         nextAriaLabel={nextAriaLabel}
         zoomAriaLabel={zoomAriaLabel}
+        videoTexts={videoTexts}
       />
     </section>
   );

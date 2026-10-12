@@ -93,4 +93,9 @@ export interface Props {
   tierBestText?: string;
   tierCustomQtyText?: string;
   tierAddText?: string;
+  videoPauseAriaLabel?: string;
+  videoMuteAriaLabel?: string;
+  videoUnmuteAriaLabel?: string;
+  videoFullscreenAriaLabel?: string;
+  videoSeekAriaLabel?: string;
 }

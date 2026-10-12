@@ -6273,6 +6273,46 @@
           "required": false,
           "defaultValue": "{n} adet sepete ekle · {total}",
           "groupId": "texts-info"
+        },
+        {
+          "name": "videoPauseAriaLabel",
+          "displayName": "Video durdur etiketi",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Videoyu durdur",
+          "groupId": "texts-gallery"
+        },
+        {
+          "name": "videoMuteAriaLabel",
+          "displayName": "Sesi kapat etiketi",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Sesi kapat",
+          "groupId": "texts-gallery"
+        },
+        {
+          "name": "videoUnmuteAriaLabel",
+          "displayName": "Sesi aç etiketi",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Sesi aç",
+          "groupId": "texts-gallery"
+        },
+        {
+          "name": "videoFullscreenAriaLabel",
+          "displayName": "Tam ekran etiketi",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Tam ekran",
+          "groupId": "texts-gallery"
+        },
+        {
+          "name": "videoSeekAriaLabel",
+          "displayName": "Video ilerlemesi etiketi",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Video ilerlemesi",
+          "groupId": "texts-gallery"
         }
       ],
       "propGroups": [
