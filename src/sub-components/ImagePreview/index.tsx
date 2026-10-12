@@ -202,7 +202,11 @@ export default function ImagePreview({
               >
                 {img.isVideo ? (
                   <span className="iprev__thumb-video">
-                    <Icon name="play" size={16} />
+                    {/* first frame as the poster; #t nudges Safari to paint it */}
+                    <video className="iprev__thumb-video-frame" src={`${getDefaultSrc(img)}#t=0.1`} muted playsInline preload="metadata" aria-hidden="true" tabIndex={-1} />
+                    <span className="iprev__thumb-video-play">
+                      <Icon name="play" size={12} />
+                    </span>
                   </span>
                 ) : (
                   <img className="iprev__thumb-img" src={getThumbnailSrc(img)} alt="" loading="lazy" decoding="async" />

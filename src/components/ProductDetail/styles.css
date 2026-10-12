@@ -112,11 +112,34 @@
 }
 
 .pdp__thumb-video {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 100%;
+}
+
+.pdp__thumb-video-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* play glyph in a 24px disc, as on the canvas rail */
+.pdp__thumb-video-play {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: var(--c-bg);
+  color: var(--c-text);
 }
 
 .pdp__stage {
