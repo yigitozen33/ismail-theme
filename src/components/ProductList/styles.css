@@ -124,34 +124,9 @@
   font-weight: 600;
 }
 
-/* desktop sort: "Sırala: Önerilen ▾" */
-.plp__sort {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 6px;
-  color: var(--c-text);
-  cursor: pointer;
-}
-
 .plp__sort-label {
   font-weight: 500;
   white-space: nowrap;
-}
-
-/* Native select stays on top (transparent) for keyboard and a11y. */
-.plp__sort-select {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.plp__sort:focus-within {
-  outline: 2px solid var(--c-accent);
-  outline-offset: 4px;
 }
 
 /* touch-only: sort-button */

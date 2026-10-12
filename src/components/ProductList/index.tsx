@@ -32,6 +32,7 @@ import FilterRail from "../../sub-components/FilterRail";
 import { FilterPills } from "../../sub-components/FilterSelected";
 import Icon from "../../sub-components/Icon";
 import ProductCard from "../../sub-components/ProductCard";
+import SortMenu from "../../sub-components/SortMenu";
 import { cx } from "../../utils/cx";
 import { prefersReducedMotion } from "../../utils/hooks";
 import { BREAKPOINT, TEXT } from "../../utils/tokens";
@@ -411,26 +412,14 @@ export function ProductList(props: Props) {
               </div>
               {hasSort && (
                 <>
-                  {/* desktop: "Sırala: Önerilen ▾" over a native select */}
-                  <label className="plp__sort">
-                    <span className={cx("plp__sort-label", TEXT.ui)} aria-hidden="true">
-                      {sortLabel}
-                      {selectedSort ? `: ${selectedSort.label}` : ""}
-                    </span>
-                    <Icon name="chevron-down" size={14} />
-                    <select
-                      className="plp__sort-select"
-                      aria-label={sortLabel}
-                      value={selectedSort?.value}
-                      onChange={(e) => onSort((e.currentTarget as HTMLSelectElement).value)}
-                    >
-                      {sortOptions.map((o) => (
-                        <option key={o.value} value={o.value}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  {/* desktop: sort + sort-menu (I-PLP-03) */}
+                  <SortMenu
+                    label={sortLabel}
+                    options={sortOptions}
+                    value={selectedSort?.value}
+                    onSelect={onSort}
+                    className="plp__sort"
+                  />
                   {/* touch: sort-button → sort sheet */}
                   <button
                     type="button"

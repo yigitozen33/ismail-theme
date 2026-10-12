@@ -1,0 +1,121 @@
+/* sort: "Sırala: Önerilen ▾" */
+.smenu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.smenu__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--c-transparent);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.smenu__trigger:focus {
+  outline: none;
+}
+
+.smenu__trigger:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 4px;
+}
+
+.smenu__label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* sort-caret: chevron-down → up while open */
+.smenu__caret {
+  flex-shrink: 0;
+  transition: transform var(--dur-base) var(--ease-out-soft);
+}
+
+.smenu--open .smenu__caret {
+  transform: rotate(180deg);
+}
+
+/* sort-menu: 260 wide, 8 padding, 2 gap, 1px line, radius-card; 12 under the trigger, right-aligned.
+   I-PLP-03 · M-06: clip 0 → 100%, opens downward. */
+.smenu__panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 260px;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  background: var(--c-bg);
+  clip-path: inset(0 0 100% 0 round var(--radius-card));
+  visibility: hidden;
+  transition: clip-path var(--dur-base) var(--ease-out-soft), visibility 0s linear var(--dur-base);
+}
+
+.smenu--open .smenu__panel {
+  clip-path: inset(0 0 0 0 round var(--radius-card));
+  visibility: visible;
+  transition: clip-path var(--dur-base) var(--ease-out-soft), visibility 0s;
+}
+
+/* sort-menu-option: 12 10 padding; selected = surface + 600 + check */
+.smenu__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 12px 10px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--c-transparent);
+  color: var(--c-text);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+
+.smenu__option--on {
+  background: var(--c-surface);
+}
+
+.smenu__option--on .smenu__name {
+  font-weight: 600;
+}
+
+.smenu__option:focus {
+  outline: none;
+}
+
+.smenu__option:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -2px;
+}
+
+.smenu__check {
+  flex-shrink: 0;
+}
+
+@media (hover: hover) {
+  .smenu__option:hover {
+    background: var(--c-surface);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smenu__caret,
+  .smenu__panel,
+  .smenu__option {
+    transition: none;
+  }
+}
