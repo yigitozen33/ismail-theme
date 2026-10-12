@@ -6,7 +6,7 @@ Tarih: 2026-10-09 · Plan `LINT OK (108 targets)` · son tam doğrulama 16 CHK, 
 
 | Dosya | İçerik |
 |---|---|
-| `canvas-dump.txt` | 345 `ROOT|…` satırı. Tuval büyük olduğu için `--js manifest --part 1/6 … 6/6` ile alındı; parçalar `parts/` altında. |
+| `canvas-dump.txt` | 400 `ROOT|…` satırı. Tuval büyük olduğu için `--js manifest --part 1/6 … 6/6` ile alındı; parçalar `parts/` altında. 2026-10-12: işlev durumları (53 kare) ve beden rehberi (2 kare) sonradan eklendi; satırları `--js manifest` ile yalnız bu kökler için üretildi. |
 | `port-manifest.json` / `.md` | 26 section · 8 overlay · 27 sub · 21 sayfa · 108 animasyon hedefi; masaüstü-yalnız katmanlar bölüm başına listeli. |
 | `globals-runbook.md` | 3 kırılım · 3 renk şeması (Kâğıt varsayılan · Mürekkep · Şeffaf) · 11 metin stili (4 kırılım) · 1 global değişken · 2 keyframe = 20 çağrı; `src/global.css` bloğu. |
 
