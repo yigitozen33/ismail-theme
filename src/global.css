@@ -55,6 +55,8 @@
   --space-md: 24px;
   --space-section: 120px;
   --size-header: 72px;
+  /* pinned header (yapışkan 72 → 60): sticky bars below it snap to this */
+  --size-header-stuck: 60px;
   --size-line: 1px;
   --opacity-inactive: 0.4;
   --size-logo: 22px;
@@ -80,6 +82,7 @@
     --space-md: 16px;
     --space-section: 64px;
     --size-header: 56px;
+    --size-header-stuck: 52px;
     --size-logo: 20px;
     --size-hero: 600px;
   }

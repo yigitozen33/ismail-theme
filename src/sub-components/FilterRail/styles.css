@@ -17,9 +17,9 @@
 /* sticks under the header; rail and panel share one cell and cross-fade */
 .frail__sticky {
   position: sticky;
-  top: var(--size-header);
+  top: var(--size-header-stuck);
   display: grid;
-  max-height: calc(100vh - var(--size-header));
+  max-height: calc(100vh - var(--size-header-stuck));
 }
 
 .frail__rail,

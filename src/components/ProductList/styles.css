@@ -37,7 +37,7 @@
 /* filter-bar · I-PLP-01 · M-18 — 72 tall, lines top/bottom, sticks under the header */
 .plp__bar {
   position: sticky;
-  top: var(--size-header);
+  top: var(--size-header-stuck);
   z-index: 5;
   display: flex;
   align-items: center;
@@ -157,7 +157,7 @@
 /* list-body */
 .plp__body {
   padding-top: 32px;
-  scroll-margin-top: calc(var(--size-header) + 72px);
+  scroll-margin-top: calc(var(--size-header-stuck) + 72px);
 }
 
 .plp__prev {
@@ -341,7 +341,7 @@
 
   .plp__body {
     padding-top: 16px;
-    scroll-margin-top: calc(var(--size-header) + 56px);
+    scroll-margin-top: calc(var(--size-header-stuck) + 56px);
   }
 
   .plp__grid,
