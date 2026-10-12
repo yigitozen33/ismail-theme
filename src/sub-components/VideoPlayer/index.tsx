@@ -225,7 +225,8 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
         muted={muted}
         loop
         playsInline
-        preload="metadata"
+        // "metadata" left Chrome stuck at readyState 0 (no first frame, no duration); the files are small
+        preload="auto"
         onClick={onVideoClick}
         onLoadedMetadata={(e) => setDuration((e.currentTarget as HTMLVideoElement).duration || 0)}
         onDurationChange={(e) => setDuration((e.currentTarget as HTMLVideoElement).duration || 0)}

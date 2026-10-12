@@ -640,7 +640,7 @@ export function ProductDetail(props: Props) {
                     {img.isVideo ? (
                       <span className="pdp__thumb-video">
                         {/* first frame as the poster; #t nudges Safari to paint it */}
-                        <video className="pdp__thumb-video-frame" src={`${getDefaultSrc(img)}#t=0.1`} muted playsInline preload="metadata" aria-hidden="true" tabIndex={-1} />
+                        <video className="pdp__thumb-video-frame" src={`${getDefaultSrc(img)}#t=0.1`} muted playsInline preload="auto" aria-hidden="true" tabIndex={-1} />
                         <span className="pdp__thumb-video-play">
                           <Icon name="play" size={12} />
                         </span>
