@@ -1,0 +1,95 @@
+/* filter-chip */
+.fpills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fpills__pill {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--c-surface);
+  color: var(--c-text);
+  white-space: nowrap;
+}
+
+.fpills__label {
+  font-weight: 500;
+}
+
+.fpills__x {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--c-transparent);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.fpills__x::before {
+  /* 24px hit area around the 12px glyph */
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+}
+
+.fpills__x:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* filter-active: 16 0 padding, 12 gap, head = title + clear link */
+.fsel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: var(--size-line) solid var(--c-line);
+}
+
+.fsel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fsel__title {
+  font-weight: 500;
+}
+
+.fsel__clear {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--c-transparent);
+  color: var(--c-text);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.fsel__clear:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .fsel__clear:hover {
+    text-decoration: underline;
+  }
+}

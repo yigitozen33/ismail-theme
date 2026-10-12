@@ -1,6 +1,7 @@
 import { useState } from "preact/hooks";
 import {
   IkasApplicableProductFilterValue,
+  clearProductListFilter,
   IkasFilterCategory,
   IkasProductFilter,
   IkasProductList,
@@ -47,8 +48,8 @@ export function filterValueLabel(filter: IkasProductFilter, name: string, texts:
 interface Props {
   productList: IkasProductList;
   texts: FilterPanelTexts;
-  /** sidebar: category group first, open per desktop settings · drawer: category last, mobile settings. */
-  variant: "sidebar" | "drawer";
+  /** panel: desktop inline filter panel · sheet: mobile/tablet bottom sheet (styling only). */
+  variant: "panel" | "sheet";
   idPrefix: string;
   /** Called after any filter change (e.g. scroll the grid into view). */
   onChange?: () => void;
@@ -70,6 +71,74 @@ export function currencyFormatter(list: IkasProductList, filter: IkasProductFilt
   }
   if (filter.type === "DISCOUNT_RATIO") return (n) => `%${n}`;
   return (n) => String(n);
+}
+
+export type FilterChip = { key: string; label: string; remove: () => void };
+
+/** Active filter pills — one per selected value / range / sub-category (search & brand lists). */
+export function getActiveFilterChips(
+  list: IkasProductList,
+  texts: Pick<FilterPanelTexts, "inStockText" | "outOfStockText">,
+): FilterChip[] {
+  const chips: FilterChip[] = [];
+  if (list.pageType !== "CATEGORY") {
+    for (const cat of getProductListFilterCategories(list)) {
+      if (cat.isSelected) chips.push({ key: `cat-${cat.id}`, label: cat.name, remove: () => onFilterCategoryClick(list, cat, true) });
+    }
+  }
+  for (const f of list.filters ?? []) {
+    const fmt = currencyFormatter(list, f);
+    if (f.displayType === "NUMBER_RANGE") {
+      if (f.numberRange)
+        chips.push({
+          key: `rng-${f.id}`,
+          label: `${f.name}: ${formatRange(fmt, f.numberRange.from, f.numberRange.to)}`,
+          remove: () => clearProductListFilter(list, f),
+        });
+    } else if (f.displayType === "NUMBER_RANGE_LIST") {
+      for (const opt of f.numberRangeListOptions ?? []) {
+        if (opt.isSelected)
+          chips.push({
+            key: `opt-${f.id}-${opt.key}`,
+            label: `${f.name}: ${formatRange(fmt, opt.from, opt.to)}`,
+            remove: () => handleNumberRangeOptionClick(list, f, opt),
+          });
+      }
+    } else {
+      for (const v of getFilterDisplayedValues(f)) {
+        if (v.isSelected)
+          chips.push({
+            key: `val-${f.id}-${v.id || v.name}`,
+            // canvas pills show the bare value ("Turuncu", "M"); the stock filter's raw keys get labels
+            label: filterValueLabel(f, v.name, texts),
+            remove: () => handleFilterValueClick(list, f, v),
+          });
+      }
+    }
+  }
+  return chips;
+}
+
+/** Colour codes of the selected swatch values (rail hint dots). */
+export function getSelectedSwatchColors(list: IkasProductList): string[] {
+  const out: string[] = [];
+  for (const f of list.filters ?? []) {
+    if (f.displayType !== "SWATCH") continue;
+    for (const v of getFilterDisplayedValues(f)) if (v.isSelected && v.colorCode) out.push(v.colorCode);
+  }
+  return out;
+}
+
+/** True when the list has at least one filter group worth drawing. */
+export function hasVisibleFilters(list: IkasProductList) {
+  if (getProductListFilterCategories(list).length) return true;
+  return (list.filters ?? []).some((f) =>
+    f.displayType === "NUMBER_RANGE"
+      ? !!f.numberRangeLimit && f.numberRangeLimit.to != null && f.numberRangeLimit.from !== f.numberRangeLimit.to
+      : f.displayType === "NUMBER_RANGE_LIST"
+        ? !!f.numberRangeListOptions?.length
+        : f.displayType !== "DATE_RANGE" && getFilterDisplayedValues(f).length > 0,
+  );
 }
 
 /** filter-swatch-values — VariantSwatch row + mono label of the hovered / selected value. */
@@ -161,7 +230,7 @@ const FilterGroup = observer(function FilterGroup({
   list,
   filter,
   texts,
-  variant,
+  defaultOpen,
   idPrefix,
   fmt,
   onChange,
@@ -169,15 +238,13 @@ const FilterGroup = observer(function FilterGroup({
   list: IkasProductList;
   filter: IkasProductFilter;
   texts: FilterPanelTexts;
-  variant: Props["variant"];
+  defaultOpen: boolean;
   idPrefix: string;
   fmt: Fmt;
   onChange?: () => void;
 }) {
   const values = getFilterDisplayedValues(filter);
   const rangeOptions = filter.numberRangeListOptions ?? [];
-  const settings = filter.settings;
-  const defaultOpen = settings ? !(variant === "sidebar" ? settings.showCollapsedOnDesktop : settings.showCollapsedOnMobile) : true;
 
   let body = null;
   switch (filter.displayType) {
@@ -304,44 +371,65 @@ const CategoryGroup = observer(function CategoryGroup({
   );
 });
 
+/** Mirrors FilterGroup's switch: does this filter draw a group at all? */
+function groupVisible(f: IkasProductFilter) {
+  switch (f.displayType) {
+    case "SWATCH":
+    case "BOX":
+    case "LIST":
+      return getFilterDisplayedValues(f).length > 0;
+    case "NUMBER_RANGE_LIST":
+      return !!f.numberRangeListOptions?.length;
+    case "NUMBER_RANGE": {
+      const l = f.numberRangeLimit;
+      return !!l && l.to != null && l.from !== l.to;
+    }
+    default:
+      return false;
+  }
+}
+
+/** How many accordion groups start open (K2-E: the first two). */
+const OPEN_GROUPS = 2;
+
 /**
- * Filter groups shared by the ProductList sidebar and FilterDrawer. Every ikas display type is
- * drawn separately: SWATCH → VariantSwatch, BOX → VariantChip, NUMBER_RANGE → PriceRange,
- * NUMBER_RANGE_LIST → range chips, LIST → name/count rows (category-list style), plus the sub-category list.
+ * Filter groups shared by the desktop inline panel (FilterRail) and the mobile bottom sheet
+ * (FilterDrawer). Every ikas display type is drawn separately: SWATCH → VariantSwatch,
+ * BOX → VariantChip, NUMBER_RANGE → PriceRange, NUMBER_RANGE_LIST → range chips,
+ * LIST → name/count rows (category-list style); the sub-category list comes last.
+ * The first two groups start open, the rest collapsed.
  */
 const FilterPanel = observer(function FilterPanel({ productList, texts, variant, idPrefix, onChange, className }: Props) {
   const categories = getProductListFilterCategories(productList);
-  const filters = (productList.filters ?? []).slice().sort((a, b) => a.order - b.order);
-  const categoryGroup =
-    categories.length > 0 ? (
-      <CategoryGroup
-        key="categories"
-        list={productList}
-        categories={categories}
-        title={texts.categoryFilterTitle}
-        defaultOpen={variant === "sidebar"}
-        idPrefix={idPrefix}
-        onChange={onChange}
-      />
-    ) : null;
+  const filters = (productList.filters ?? []).filter(groupVisible).sort((a, b) => a.order - b.order);
 
   return (
     <div className={cx("fpanel", `fpanel--${variant}`, className)}>
-      {variant === "sidebar" && categoryGroup}
       {filters.map((filter, i) => (
-        <div key={filter.id} className="fpanel__item" style={{ "--i": i + (variant === "sidebar" && categoryGroup ? 1 : 0) } as any}>
+        <div key={filter.id} className="fpanel__item" style={{ "--i": i } as any}>
           <FilterGroup
             list={productList}
             filter={filter}
             texts={texts}
-            variant={variant}
+            defaultOpen={i < OPEN_GROUPS}
             idPrefix={idPrefix}
             fmt={currencyFormatter(productList, filter)}
             onChange={onChange}
           />
         </div>
       ))}
-      {variant === "drawer" && categoryGroup}
+      {categories.length > 0 && (
+        <div className="fpanel__item" style={{ "--i": filters.length } as any}>
+          <CategoryGroup
+            list={productList}
+            categories={categories}
+            title={texts.categoryFilterTitle}
+            defaultOpen={filters.length < OPEN_GROUPS}
+            idPrefix={idPrefix}
+            onChange={onChange}
+          />
+        </div>
+      )}
     </div>
   );
 });

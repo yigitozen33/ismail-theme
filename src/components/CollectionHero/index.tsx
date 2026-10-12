@@ -11,7 +11,7 @@ const stripTags = (html?: string | null) =>
     .trim();
 
 /**
- * I/Section/CollectionHero — collection cover: image + scrim, collection name and description
+ * I/Section/CollectionHero — K2-E collection cover (360 desktop / 280 mobile): image + scrim, name and one-line description
  * bottom-left in the Şeffaf scheme. Title = category.name (CATEGORY prop, bound to the page's
  * category in the editor); `title` is only the fallback when no category is resolved.
  * Image = the category's own image, else the `image` prop (fallback cover). Description = the category description

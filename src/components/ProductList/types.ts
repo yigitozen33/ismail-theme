@@ -1,10 +1,11 @@
 // This file is auto-generated — do not edit manually.
-import type { IkasProductList, IkasNavigationLink } from "@ikas/bp-storefront";
+import type { IkasProductList, IkasNavigationLink, IkasImage } from "@ikas/bp-storefront";
 import type { ProductListPageMode } from "../../global-types";
 
 export interface Props {
   productList?: IkasProductList;
   pageMode?: ProductListPageMode;
+  /** Masaüstü sütun sayısı (filtre paneli kapalıyken; açıkken bir eksik) */
   columns?: number;
   breadcrumbHomeText?: string;
   breadcrumbAriaLabel?: string;
@@ -49,4 +50,15 @@ export interface Props {
   favoritesSortDefaultText?: string;
   favoritesSortPriceAscText?: string;
   favoritesSortPriceDescText?: string;
+  filterRailText?: string;
+  selectedFiltersTitle?: string;
+  liveUpdateText?: string;
+  sortTitle?: string;
+  showEditorial?: boolean;
+  editorialImage?: IkasImage | null;
+  editorialTitle?: string;
+  editorialText?: string;
+  editorialLinkText?: string;
+  editorialLink?: IkasNavigationLink | null;
+  editorialPosition?: number;
 }

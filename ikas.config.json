@@ -1705,8 +1705,9 @@
           "displayName": "Sütun sayısı (masaüstü)",
           "type": "NUMBER",
           "required": false,
-          "defaultValue": 3,
-          "groupId": "settings"
+          "defaultValue": 4,
+          "groupId": "settings",
+          "description": "Masaüstü sütun sayısı (filtre paneli kapalıyken; açıkken bir eksik)"
         },
         {
           "name": "breadcrumbHomeText",
@@ -1793,7 +1794,7 @@
           "displayName": "Tüm filtreleri temizle",
           "type": "TEXT",
           "required": false,
-          "defaultValue": "Tümünü temizle",
+          "defaultValue": "Filtreleri temizle",
           "groupId": "texts"
         },
         {
@@ -2055,6 +2056,92 @@
           "required": false,
           "defaultValue": "Fiyat: Yüksekten düşüğe",
           "groupId": "texts"
+        },
+        {
+          "name": "filterRailText",
+          "displayName": "Filtre şeridi etiketi",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "FİLTRE",
+          "groupId": "texts"
+        },
+        {
+          "name": "selectedFiltersTitle",
+          "displayName": "Seçili filtreler başlığı",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Seçili filtreler",
+          "groupId": "texts"
+        },
+        {
+          "name": "liveUpdateText",
+          "displayName": "Anında güncelleme notu",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Sonuçlar anında güncellenir",
+          "groupId": "texts"
+        },
+        {
+          "name": "sortTitle",
+          "displayName": "Sıralama paneli başlığı",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Sırala",
+          "groupId": "texts"
+        },
+        {
+          "name": "showEditorial",
+          "displayName": "Editoryal kutuyu göster",
+          "type": "BOOLEAN",
+          "required": false,
+          "defaultValue": true,
+          "groupId": "editorial"
+        },
+        {
+          "name": "editorialImage",
+          "displayName": "Görsel",
+          "type": "IMAGE",
+          "required": false,
+          "groupId": "editorial"
+        },
+        {
+          "name": "editorialTitle",
+          "displayName": "Başlık",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Katmanlamanın kuralı",
+          "groupId": "editorial"
+        },
+        {
+          "name": "editorialText",
+          "displayName": "Metin",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Üç katman, tek kural: terlemeden ısın, rüzgârda üşüme.",
+          "groupId": "editorial"
+        },
+        {
+          "name": "editorialLinkText",
+          "displayName": "Bağlantı metni",
+          "type": "TEXT",
+          "required": false,
+          "defaultValue": "Rehberi oku",
+          "groupId": "editorial"
+        },
+        {
+          "name": "editorialLink",
+          "displayName": "Bağlantı",
+          "type": "LINK",
+          "required": false,
+          "groupId": "editorial"
+        },
+        {
+          "name": "editorialPosition",
+          "displayName": "Kaç üründen sonra",
+          "type": "NUMBER",
+          "required": false,
+          "defaultValue": 4,
+          "groupId": "editorial"
         }
       ],
       "propGroups": [
@@ -2077,6 +2164,10 @@
         {
           "id": "colors",
           "name": "Renkler"
+        },
+        {
+          "id": "editorial",
+          "name": "Editoryal kutu"
         }
       ]
     },

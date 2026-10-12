@@ -1,0 +1,69 @@
+/* editorial-tile: stretches to the row height of the cards next to it (440 floor, the mobile height) */
+.edtile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 440px;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--c-inverse-bg);
+  isolation: isolate;
+}
+
+.edtile__img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* editorial-scrim: transparent at 30% → scrim at the bottom */
+.edtile__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, var(--c-transparent) 30%, var(--c-scrim) 100%);
+  pointer-events: none;
+}
+
+/* editorial-text: 32 padding, 12 gap */
+.edtile__text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 32px;
+  background: var(--c-transparent);
+  color: var(--c-text);
+}
+
+.edtile__title,
+.edtile__line {
+  margin: 0;
+  color: var(--c-text);
+}
+
+.edtile__title {
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+.edtile__link {
+  display: flex;
+  padding-top: 8px;
+}
+
+/* mobile: full width, 440 tall, 20 padding / 10 gap */
+@media (max-width: bp(KUQjO8W6p9)) {
+  .edtile__text {
+    gap: 10px;
+    padding: 20px;
+  }
+
+  .edtile__link {
+    padding-top: 6px;
+  }
+}

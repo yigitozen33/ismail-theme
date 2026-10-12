@@ -1,38 +1,35 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import {
   IkasProduct,
-  IkasProductList,
   IkasProductListSortType,
   Router,
-  clearProductListFilter,
   clearProductListFilters,
   customerStore,
   getCategoryPath,
   getFavoriteProducts,
-  getFilterDisplayedValues,
   getIkasCategoryHref,
-  getProductListFilterCategories,
   getProductListNextPage,
   getProductListPrevPage,
   getProductListSortOptions,
   getProductVariantFinalPrice,
   getSelectedProductVariant,
-  handleFilterValueClick,
-  handleNumberRangeOptionClick,
   hasCustomer,
   hasProductListAppliedFilters,
   hasProductListNextPage,
   hasProductListPrevPage,
   isProductListSearch,
-  onFilterCategoryClick,
   setSortType,
   waitForCustomerStoreInit,
   withRoutePrefix,
 } from "@ikas/bp-storefront";
+import BottomSheet from "../../sub-components/BottomSheet";
 import Breadcrumbs, { type BreadcrumbItem } from "../../sub-components/Breadcrumbs";
 import Button from "../../sub-components/Button";
+import EditorialTile from "../../sub-components/EditorialTile";
 import FilterDrawer from "../../sub-components/FilterDrawer";
-import FilterPanel, { currencyFormatter, filterValueLabel, formatRange, type FilterPanelTexts } from "../../sub-components/FilterPanel";
+import { getActiveFilterChips, hasVisibleFilters, type FilterPanelTexts } from "../../sub-components/FilterPanel";
+import FilterRail from "../../sub-components/FilterRail";
+import { FilterPills } from "../../sub-components/FilterSelected";
 import Icon from "../../sub-components/Icon";
 import ProductCard from "../../sub-components/ProductCard";
 import { cx } from "../../utils/cx";
@@ -42,7 +39,6 @@ import { UI_EVENT, onUi } from "../../utils/ui";
 import { Props } from "./types";
 
 type Mode = "category" | "search" | "favorites";
-type Chip = { key: string; label: string; remove: () => void };
 type FavSort = "default" | "price-asc" | "price-desc";
 type SortOption = { value: string; label: string; isSelected: boolean };
 
@@ -51,68 +47,36 @@ const finalPrice = (p: IkasProduct) => {
   return v ? (getProductVariantFinalPrice(v) as unknown as number) : 0;
 };
 
-/** Active filter chips (desktop/tablet filter bar) — one per selected value / range / sub-category. */
-function activeChips(list: IkasProductList, texts: Pick<FilterPanelTexts, "inStockText" | "outOfStockText">): Chip[] {
-  const chips: Chip[] = [];
-  if (list.pageType !== "CATEGORY") {
-    for (const cat of getProductListFilterCategories(list)) {
-      if (cat.isSelected) chips.push({ key: `cat-${cat.id}`, label: cat.name, remove: () => onFilterCategoryClick(list, cat, true) });
-    }
+/** Desktop filter panel open/closed survives page changes and reloads of the same list. */
+const panelKey = () => `ism:plp-filter-open:${window.location.pathname}`;
+const readPanelOpen = () => {
+  try {
+    return window.sessionStorage.getItem(panelKey()) === "1";
+  } catch {
+    return false;
   }
-  for (const f of list.filters ?? []) {
-    const fmt = currencyFormatter(list, f);
-    if (f.displayType === "NUMBER_RANGE") {
-      if (f.numberRange)
-        chips.push({
-          key: `rng-${f.id}`,
-          label: `${f.name}: ${formatRange(fmt, f.numberRange.from, f.numberRange.to)}`,
-          remove: () => clearProductListFilter(list, f),
-        });
-    } else if (f.displayType === "NUMBER_RANGE_LIST") {
-      for (const opt of f.numberRangeListOptions ?? []) {
-        if (opt.isSelected)
-          chips.push({
-            key: `opt-${f.id}-${opt.key}`,
-            label: `${f.name}: ${formatRange(fmt, opt.from, opt.to)}`,
-            remove: () => handleNumberRangeOptionClick(list, f, opt),
-          });
-      }
-    } else {
-      for (const v of getFilterDisplayedValues(f)) {
-        if (v.isSelected)
-          chips.push({
-            key: `val-${f.id}-${v.id || v.name}`,
-            label: f.displayType === "SWATCH" ? v.name : `${f.name}: ${filterValueLabel(f, v.name, texts)}`,
-            remove: () => handleFilterValueClick(list, f, v),
-          });
-      }
-    }
+};
+const writePanelOpen = (open: boolean) => {
+  try {
+    window.sessionStorage.setItem(panelKey(), open ? "1" : "0");
+  } catch {
+    /* storage blocked — state still works for this view */
   }
-  return chips;
-}
-
-function hasVisibleFilters(list: IkasProductList) {
-  if (getProductListFilterCategories(list).length) return true;
-  return (list.filters ?? []).some((f) =>
-    f.displayType === "NUMBER_RANGE"
-      ? !!f.numberRangeLimit && f.numberRangeLimit.to != null && f.numberRangeLimit.from !== f.numberRangeLimit.to
-      : f.displayType === "NUMBER_RANGE_LIST"
-        ? !!f.numberRangeListOptions?.length
-        : f.displayType !== "DATE_RANGE" && getFilterDisplayedValues(f).length > 0,
-  );
-}
+};
 
 /**
- * I/Section/ProductList — PLP for category, collection, search and favourites pages.
- * Header (breadcrumbs, title, count) · sticky filter bar (I-PLP-01) with active chips and sort ·
- * 280 filter sidebar (240 laptop; tablet/mobile → FilterDrawer) · ProductCard grid (I-PLP-02) ·
- * "load more" with progress (I-PLP-03) · empty / loading / favourites-login states.
+ * I/Section/ProductList — PLP for category, collection, search and favourites pages (K2-E).
+ * Desktop (≥992): 64px sticky FilterRail that expands inline to a 300px panel (grid 4 → 3 cols) ·
+ * breadcrumbs · sticky toolbar (I-PLP-01: count, active pills, sort dropdown).
+ * Tablet/mobile: toolbar "Filtrele (n)" + "Sırala" opening bottom sheets (M-A filter, sort radio
+ * sheet), pills row under it; 3 / 2 columns. ProductCard grid (I-PLP-02) with an optional
+ * editorial tile · "load more" with progress (I-PLP-03) · empty / loading / favourites-login states.
  */
 export function ProductList(props: Props) {
   const {
     productList,
     pageMode = "category",
-    columns = 3,
+    columns = 4,
     showTitle = true,
     inStockText = "Stokta var",
     outOfStockText = "Stokta yok",
@@ -127,7 +91,8 @@ export function ProductList(props: Props) {
     hideFiltersText = "Filtreyi gizle",
     showFiltersText = "Filtreyi göster",
     sortLabel = "Sırala",
-    clearFiltersText = "Tümünü temizle",
+    sortTitle = "Sırala",
+    clearFiltersText = "Filtreleri temizle",
     removeFilterAriaLabel = "Filtreyi kaldır",
     categoryFilterTitle = "Kategori",
     priceMinAriaLabel = "En düşük fiyat",
@@ -148,12 +113,22 @@ export function ProductList(props: Props) {
     favoriteAriaLabel = "Favorilere ekle",
     soldOutText = "Tükendi",
     filterTitle = "Filtrele",
+    filterRailText = "FİLTRE",
+    selectedFiltersTitle = "Seçili filtreler",
+    liveUpdateText = "Sonuçlar anında güncellenir",
     closeAriaLabel = "Kapat",
     drawerClearText = "Temizle",
     applyFiltersText = "{count} ürünü göster",
     favoritesSortDefaultText = "Önerilen",
     favoritesSortPriceAscText = "Fiyat: Düşükten yükseğe",
     favoritesSortPriceDescText = "Fiyat: Yüksekten düşüğe",
+    showEditorial = true,
+    editorialImage,
+    editorialTitle = "Katmanlamanın kuralı",
+    editorialText = "Üç katman, tek kural: terlemeden ısın, rüzgârda üşüme.",
+    editorialLinkText = "Rehberi oku",
+    editorialLink,
+    editorialPosition = 4,
     emptyButtonLink,
     backgroundColor,
   } = props;
@@ -162,11 +137,12 @@ export function ProductList(props: Props) {
   const mode: Mode =
     pageMode === "favorites" ? "favorites" : pageMode === "search" || (list && isProductListSearch(list)) ? "search" : "category";
 
-  const sectionRef = useRef<HTMLElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelAnim, setPanelAnim] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
   const [stuck, setStuck] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [favSort, setFavSort] = useState<FavSort>("default");
@@ -193,10 +169,30 @@ export function ProductList(props: Props) {
     };
   }, [mode, customerId]);
 
-  // Any element can open the drawer (e.g. a header shortcut).
-  useEffect(() => onUi(UI_EVENT.openFilter, () => setDrawerOpen(true)), []);
+  // Restore the desktop panel state without animating it in.
+  useEffect(() => {
+    if (readPanelOpen()) setPanelOpen(true);
+  }, []);
 
-  // I-PLP-01 · M-18: the bar sticks under the header; `is-stuck` swaps in the opaque bar style.
+  const togglePanel = (open: boolean) => {
+    setPanelAnim(true);
+    setPanelOpen(open);
+    writePanelOpen(open);
+  };
+
+  const isTouchLayout = () => window.matchMedia(`(max-width: ${BREAKPOINT.tablet}px)`).matches;
+
+  // Any element can open the filters (e.g. a header shortcut): sheet on touch, inline panel on desktop.
+  useEffect(
+    () =>
+      onUi(UI_EVENT.openFilter, () => {
+        if (isTouchLayout()) setDrawerOpen(true);
+        else togglePanel(true);
+      }),
+    [],
+  );
+
+  // I-PLP-01 · M-18: the toolbar sticks under the header; `is-stuck` swaps in the stuck style.
   useEffect(() => {
     const bar = barRef.current;
     if (!bar) return;
@@ -218,17 +214,10 @@ export function ProductList(props: Props) {
     };
   }, [mode]);
 
-  const isTouchLayout = () => window.matchMedia(`(max-width: ${BREAKPOINT.tablet}px)`).matches;
-
   const scrollToGrid = () => {
     const el = bodyRef.current;
     if (!el || el.getBoundingClientRect().top >= 0) return;
     el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
-  };
-
-  const onFilterButton = () => {
-    if (isTouchLayout()) setDrawerOpen(true);
-    else setSidebarOpen((v) => !v);
   };
 
   const onLoadMore = async () => {
@@ -257,7 +246,7 @@ export function ProductList(props: Props) {
   const refreshing = !isFav && !!list?.isLoading;
   const showFilters = !isFav && !!list && hasVisibleFilters(list);
   const applied = !isFav && !!list && hasProductListAppliedFilters(list);
-  const chips = !isFav && list ? activeChips(list, { inStockText, outOfStockText }) : [];
+  const chips = !isFav && list ? getActiveFilterChips(list, { inStockText, outOfStockText }) : [];
   // Favourites get no ikas list (no filters, no sort) — the canvas bar's sort is done client-side.
   const sortOptions: SortOption[] = isFav
     ? ([
@@ -275,7 +264,10 @@ export function ProductList(props: Props) {
     if (isFav) setFavSort(value as FavSort);
     else if (list) setSortType(list, value as IkasProductListSortType);
   };
-  const cols = Math.min(Math.max(Math.round(columns || 3), 2), 4);
+  const hasSort = sortOptions.length > 1;
+  const cols = Math.min(Math.max(Math.round(columns || 4), 2), 4);
+  const railOpen = showFilters && panelOpen;
+  const gridCols = railOpen ? Math.max(cols - 1, 2) : cols;
 
   const title =
     mode === "favorites"
@@ -322,162 +314,200 @@ export function ProductList(props: Props) {
   const shown = items.length;
   const progress = total > 0 ? Math.min(1, shown / total) : 0;
 
+  // editorial-tile: category lists only, after `editorialPosition` products, image required.
+  const edPos = Math.max(0, Math.round(editorialPosition ?? 4));
+  const showEd = mode === "category" && showEditorial !== false && !!editorialImage && items.length >= edPos;
+  const editorial =
+    showEd && editorialImage ? (
+      <EditorialTile
+        key="editorial"
+        className="plp__editorial"
+        image={editorialImage}
+        title={editorialTitle}
+        text={editorialText}
+        linkText={editorialLinkText}
+        href={editorialLink?.href}
+      />
+    ) : null;
+
+  const cards = items.map((product, i) => (
+    <ProductCard
+      key={product.id}
+      product={product}
+      addToCartAriaLabel={addToCartAriaLabel}
+      favoriteAriaLabel={favoriteAriaLabel}
+      soldOutText={soldOutText}
+      priority={i < gridCols}
+      sizes="(max-width: 767px) 50vw, (max-width: 991px) 33vw, 25vw"
+      onFavoriteRemove={isFav ? () => setFav((f) => ({ ...f, items: f.items.filter((p) => p.id !== product.id) })) : undefined}
+    />
+  ));
+  if (editorial) cards.splice(edPos, 0, editorial);
+
+  const showBar = isFav || (!!list && (showFilters || hasSort));
+
   return (
     <section
-      ref={sectionRef}
-      className={cx("plp", showFilters && sidebarOpen && "plp--sidebar")}
-      style={{ ...(backgroundColor ? { backgroundColor } : {}), "--plp-cols": cols } as any}
+      className={cx("plp", showFilters && "plp--rail", railOpen && "plp--open")}
+      style={{ ...(backgroundColor ? { backgroundColor } : {}), "--plp-cols": cols, "--plp-cols-open": Math.max(cols - 1, 2) } as any}
     >
-      {/* list-header */}
-      <header className="plp__header">
-        <Breadcrumbs items={crumbs} ariaLabel={breadcrumbAriaLabel} />
-        <div className="plp__title-row">
-          {/* Off when a cover (CollectionHero, its own h1) above already shows the title. */}
-          {showTitle && <h1 className={cx("plp__title", TEXT.h2)}>{title}</h1>}
-          {!initialLoading && <span className={cx("plp__count", TEXT.label, "tabular")}>{countLabel}</span>}
-        </div>
-      </header>
-
-      {/* filter-bar · I-PLP-01 · M-18 */}
-      {(isFav || (list && (showFilters || sortOptions.length > 1))) && (
-        <div ref={barRef} className={cx("plp__bar", stuck && "is-stuck")}>
-          <div className="plp__bar-left">
-            {showFilters && (
-              <button
-                type="button"
-                className="plp__fbtn"
-                aria-controls="plp-sidebar"
-                aria-expanded={sidebarOpen}
-                onClick={onFilterButton}
-              >
-                <Icon name="sliders" size={16} />
-                <span className={cx("plp__fbtn-desktop", TEXT.ui)}>{sidebarOpen ? hideFiltersText : showFiltersText}</span>
-                <span className={cx("plp__fbtn-touch", TEXT.ui)}>{filterButtonText}</span>
-              </button>
-            )}
-            {chips.map((chip) => (
-              <span key={chip.key} className="plp__chip">
-                <span className={cx("plp__chip-label", TEXT.uiSm)}>{chip.label}</span>
-                <button
-                  type="button"
-                  className="plp__chip-x"
-                  aria-label={`${removeFilterAriaLabel}: ${chip.label}`}
-                  onClick={() => {
-                    chip.remove();
-                    scrollToGrid();
-                  }}
-                >
-                  <Icon name="x" size={12} />
-                </button>
-              </span>
-            ))}
-            {applied && (
-              <button type="button" className={cx("plp__clear", TEXT.uiSm)} onClick={() => list && clearProductListFilters(list)}>
-                {clearFiltersText}
-              </button>
-            )}
-          </div>
-          {sortOptions.length > 1 && (
-            <label className="plp__sort">
-              <span className={cx("plp__sort-label", TEXT.ui)} aria-hidden="true">
-                <span className="plp__sort-desktop">
-                  {sortLabel}
-                  {selectedSort ? `: ${selectedSort.label}` : ""}
-                </span>
-                <span className="plp__sort-touch">{sortLabel}</span>
-              </span>
-              <Icon name="chevron-down" size={14} />
-              <select
-                className="plp__sort-select"
-                aria-label={sortLabel}
-                value={selectedSort?.value}
-                onChange={(e) => onSort((e.currentTarget as HTMLSelectElement).value)}
-              >
-                {sortOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-        </div>
-      )}
-
-      {/* list-body */}
-      <div ref={bodyRef} className="plp__body">
+      <div className="plp__shell">
+        {/* filter-rail ↔ filter-panel-inline (desktop) */}
         {showFilters && list && (
-          <aside id="plp-sidebar" className="plp__sidebar" aria-label={filterTitle}>
-            <FilterPanel productList={list} texts={panelTexts} variant="sidebar" idPrefix="plp-side" onChange={scrollToGrid} />
-          </aside>
+          <FilterRail
+            productList={list}
+            open={panelOpen}
+            onToggle={togglePanel}
+            animate={panelAnim}
+            idPrefix="plp-rail"
+            panelTexts={panelTexts}
+            onChange={scrollToGrid}
+            texts={{
+              railText: filterRailText,
+              title: filterTitle,
+              openAriaLabel: showFiltersText,
+              collapseAriaLabel: hideFiltersText,
+              selectedTitle: selectedFiltersTitle,
+              clearText: clearFiltersText,
+              removeAriaLabel: removeFilterAriaLabel,
+              liveUpdateText,
+            }}
+          />
         )}
 
-        <div className="plp__main">
-          {!isFav && list && hasProductListPrevPage(list) && items.length > 0 && (
-            <div className="plp__prev">
-              <Button
-                label={list.isLoading ? loadingMoreText : loadPreviousText}
-                variant="outline"
-                size="sm"
-                state={list.isLoading ? "loading" : "idle"}
-                onClick={() => getProductListPrevPage(list)}
-              />
-            </div>
-          )}
+        <div className="plp__content">
+          {/* list-meta-row */}
+          <header className={cx("plp__header", !showTitle && "plp__header--crumbs")}>
+            <Breadcrumbs items={crumbs} ariaLabel={breadcrumbAriaLabel} className="plp__crumbs" />
+            {/* Off when a cover (CollectionHero, its own h1) above already shows the title. */}
+            {showTitle && <h1 className={cx("plp__title", TEXT.h2)}>{title}</h1>}
+          </header>
 
-          {initialLoading ? (
-            /* no skeleton on the canvas: the grid area stays empty until the first page arrives */
-            <div className="plp__grid is-refreshing" aria-busy="true" aria-label={loadingMoreText} />
-          ) : empty ? (
-            /* list-empty */
-            <div className="plp__empty">
-              <h2 className={cx("plp__empty-title", TEXT.h3)}>{empty.title}</h2>
-              {empty.text && <p className={cx("plp__empty-text", TEXT.body)}>{empty.text}</p>}
-              {empty.button && (empty.href || empty.onClick) && (
-                <Button label={empty.button} href={empty.href} onClick={empty.onClick ? () => empty?.onClick?.() : undefined} />
+          {/* filter-bar · I-PLP-01 · M-18 */}
+          {showBar && (
+            <div ref={barRef} className={cx("plp__bar", stuck && "is-stuck")}>
+              <div className="plp__bar-left">
+                {!initialLoading && <span className={cx("plp__count", TEXT.label, "tabular")}>{countLabel}</span>}
+                {chips.length > 0 && (
+                  <>
+                    <span className="plp__divider" aria-hidden="true" />
+                    <FilterPills chips={chips} removeAriaLabel={removeFilterAriaLabel} onChange={scrollToGrid} className="plp__bar-pills" />
+                  </>
+                )}
+                {/* touch: filter-button → M-A sheet */}
+                {showFilters && (
+                  <button
+                    type="button"
+                    className={cx("plp__fbtn", chips.length > 0 && "plp__fbtn--count")}
+                    aria-haspopup="dialog"
+                    aria-expanded={drawerOpen}
+                    onClick={() => setDrawerOpen(true)}
+                  >
+                    <Icon name="sliders" size={16} />
+                    <span className={cx("plp__fbtn-label", TEXT.ui)}>{filterButtonText}</span>
+                    {chips.length > 0 && <span className={cx("plp__badge", TEXT.badge, "tabular")}>{chips.length}</span>}
+                  </button>
+                )}
+              </div>
+              {hasSort && (
+                <>
+                  {/* desktop: "Sırala: Önerilen ▾" over a native select */}
+                  <label className="plp__sort">
+                    <span className={cx("plp__sort-label", TEXT.ui)} aria-hidden="true">
+                      {sortLabel}
+                      {selectedSort ? `: ${selectedSort.label}` : ""}
+                    </span>
+                    <Icon name="chevron-down" size={14} />
+                    <select
+                      className="plp__sort-select"
+                      aria-label={sortLabel}
+                      value={selectedSort?.value}
+                      onChange={(e) => onSort((e.currentTarget as HTMLSelectElement).value)}
+                    >
+                      {sortOptions.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {/* touch: sort-button → sort sheet */}
+                  <button
+                    type="button"
+                    className="plp__sortbtn"
+                    aria-haspopup="dialog"
+                    aria-expanded={sortOpen}
+                    onClick={() => setSortOpen(true)}
+                  >
+                    <span className={cx("plp__sort-label", TEXT.ui)}>{sortLabel}</span>
+                    <Icon name="chevron-down" size={14} />
+                  </button>
+                </>
               )}
             </div>
-          ) : (
-            /* list-grid · I-PLP-02 · M-01: grid dims to 0.4 while a filter refetch runs */
-            <div className={cx("plp__grid", refreshing && "is-refreshing")} aria-busy={refreshing || undefined}>
-              {items.map((product, i) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  addToCartAriaLabel={addToCartAriaLabel}
-                  favoriteAriaLabel={favoriteAriaLabel}
-                  soldOutText={soldOutText}
-                  priority={i < cols}
-                  sizes="(max-width: 767px) 50vw, (max-width: 991px) 33vw, 25vw"
-                  onFavoriteRemove={
-                    isFav ? () => setFav((f) => ({ ...f, items: f.items.filter((p) => p.id !== product.id) })) : undefined
-                  }
-                />
-              ))}
-            </div>
           )}
 
-          {/* list-pagination */}
-          {!isFav && list && !initialLoading && shown > 0 && total > 0 && (
-            <div className="plp__pagination">
-              <span className={cx("plp__progress", TEXT.label, "tabular")}>{`${shown} / ${total}`}</span>
-              <span className="plp__progress-bar" aria-hidden="true">
-                <span className="plp__progress-fill" style={{ transform: `scaleX(${progress})` }} />
-              </span>
-              {hasProductListNextPage(list) && (
-                /* load-more-button · I-PLP-03 · M-11 via Button */
+          {/* touch: filter-active-chips — scroll with the content, under the sticky toolbar */}
+          {chips.length > 0 && (
+            <FilterPills chips={chips} removeAriaLabel={removeFilterAriaLabel} onChange={scrollToGrid} className="plp__pills" />
+          )}
+
+          {/* list-body */}
+          <div ref={bodyRef} className="plp__body">
+            {!isFav && list && hasProductListPrevPage(list) && items.length > 0 && (
+              <div className="plp__prev">
                 <Button
-                  label={loadingMore ? loadingMoreText : loadMoreText}
+                  label={list.isLoading ? loadingMoreText : loadPreviousText}
                   variant="outline"
-                  state={loadingMore ? "loading" : "idle"}
-                  onClick={onLoadMore}
+                  size="sm"
+                  state={list.isLoading ? "loading" : "idle"}
+                  onClick={() => getProductListPrevPage(list)}
                 />
-              )}
-            </div>
-          )}
+              </div>
+            )}
+
+            {initialLoading ? (
+              /* no skeleton on the canvas: the grid area stays empty until the first page arrives */
+              <div className="plp__grid is-refreshing" aria-busy="true" aria-label={loadingMoreText} />
+            ) : empty ? (
+              /* list-empty */
+              <div className="plp__empty">
+                <h2 className={cx("plp__empty-title", TEXT.h3)}>{empty.title}</h2>
+                {empty.text && <p className={cx("plp__empty-text", TEXT.body)}>{empty.text}</p>}
+                {empty.button && (empty.href || empty.onClick) && (
+                  <Button label={empty.button} href={empty.href} onClick={empty.onClick ? () => empty?.onClick?.() : undefined} />
+                )}
+              </div>
+            ) : (
+              /* list-grid · I-PLP-02 · M-01: grid dims to 0.4 while a filter refetch runs */
+              <div className={cx("plp__grid", refreshing && "is-refreshing")} aria-busy={refreshing || undefined}>
+                {cards}
+              </div>
+            )}
+
+            {/* list-pagination */}
+            {!isFav && list && !initialLoading && shown > 0 && total > 0 && (
+              <div className="plp__pagination">
+                <span className={cx("plp__progress", TEXT.label, "tabular")}>{`${shown} / ${total}`}</span>
+                <span className="plp__progress-bar" aria-hidden="true">
+                  <span className="plp__progress-fill" style={{ transform: `scaleX(${progress})` }} />
+                </span>
+                {hasProductListNextPage(list) && (
+                  /* load-more-button · I-PLP-03 · M-11 via Button */
+                  <Button
+                    label={loadingMore ? loadingMoreText : loadMoreText}
+                    variant="outline"
+                    state={loadingMore ? "loading" : "idle"}
+                    onClick={onLoadMore}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* M-A filter sheet (tablet/mobile) */}
       {showFilters && list && (
         <FilterDrawer
           productList={list}
@@ -491,8 +521,48 @@ export function ProductList(props: Props) {
             clearText: drawerClearText,
             applyText: applyFiltersText,
             loadingText: loadingMoreText,
+            selectedTitle: selectedFiltersTitle,
+            liveUpdateText,
+            removeAriaLabel: removeFilterAriaLabel,
           }}
         />
+      )}
+
+      {/* sort sheet (tablet/mobile) — selection applies at once and closes */}
+      {hasSort && (
+        <BottomSheet
+          open={sortOpen}
+          onClose={() => setSortOpen(false)}
+          closeAbove={BREAKPOINT.tablet}
+          titleId="plp-sort-title"
+          title={sortTitle}
+          closeAriaLabel={closeAriaLabel}
+          className="plp-sort"
+        >
+          <div className="plp-sort__list" role="radiogroup" aria-labelledby="plp-sort-title">
+            {sortOptions.map((o) => {
+              const on = o.value === selectedSort?.value;
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  className={cx("plp-sort__row", on && "plp-sort__row--on")}
+                  onClick={() => {
+                    onSort(o.value);
+                    setSortOpen(false);
+                  }}
+                >
+                  <span className={cx("plp-sort__label", TEXT.ui)}>{o.label}</span>
+                  <span className="plp-sort__radio" aria-hidden="true">
+                    {on && <Icon name="check" size={12} />}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </BottomSheet>
       )}
     </section>
   );

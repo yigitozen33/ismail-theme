@@ -1,0 +1,236 @@
+/* filter-rail 64 ↔ filter-panel-inline 300 — pushes the content, no scrim */
+.frail {
+  flex-shrink: 0;
+  width: 64px;
+  border-right: var(--size-line) solid var(--c-line);
+  overflow: clip;
+}
+
+.frail--anim {
+  transition: width 0.3s var(--ease-standard);
+}
+
+.frail--open {
+  width: 300px;
+}
+
+/* sticks under the header; rail and panel share one cell and cross-fade */
+.frail__sticky {
+  position: sticky;
+  top: var(--size-header);
+  display: grid;
+  max-height: calc(100vh - var(--size-header));
+}
+
+.frail__rail,
+.frail__panel {
+  grid-area: 1 / 1;
+}
+
+/* filter-rail: 24 0 padding, 20 gap, centred */
+.frail__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 64px;
+  margin: 0;
+  padding: 24px 0;
+  border: 0;
+  background: var(--c-transparent);
+  color: var(--c-text);
+  cursor: pointer;
+  transition: opacity 0.2s var(--ease-standard), visibility 0s;
+}
+
+.frail--open .frail__rail {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s var(--ease-standard), visibility 0s linear 0.15s;
+}
+
+.frail__rail:focus-visible {
+  outline: none;
+}
+
+.frail__rail:focus-visible .frail__btn {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* rail-toggle 48×44: 40 round button, 18 badge top-right */
+.frail__toggle {
+  position: relative;
+  display: block;
+  width: 48px;
+  height: 44px;
+}
+
+.frail__btn {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
+  border: var(--size-line) solid var(--c-text);
+  border-radius: var(--radius-pill);
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+
+.frail__badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: var(--radius-pill);
+  background: var(--c-accent);
+  color: var(--c-accent-text);
+  font-weight: 600;
+}
+
+/* rail-label: rotated 90°, reads top to bottom */
+.frail__label {
+  color: var(--c-muted);
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+}
+
+/* rail-active-hint: overlapping 12px dots with a 2px page-colour ring */
+.frail__dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+}
+
+.frail__dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  box-sizing: content-box;
+  border: 2px solid var(--c-bg);
+  border-radius: var(--radius-pill);
+}
+
+.frail__dot + .frail__dot {
+  margin-top: -4px;
+}
+
+/* filter-panel-inline: 24 16 padding, scrolls inside the sticky cell */
+.frail__panel {
+  width: 300px;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 24px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s var(--ease-standard), visibility 0s linear 0.15s;
+}
+
+.frail--open .frail__panel {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s var(--ease-standard) 0.1s, visibility 0s;
+}
+
+/* filter-panel-header */
+.frail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+}
+
+.frail__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: 500;
+}
+
+.frail__count {
+  color: var(--c-muted);
+  font-weight: 500;
+}
+
+/* collapse-button: 40 round, 1px text stroke, ‹ */
+.frail__collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: var(--size-line) solid var(--c-text);
+  border-radius: var(--radius-pill);
+  background: var(--c-transparent);
+  color: var(--c-text);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+
+.frail__collapse:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* filter-active: top + bottom line in the panel */
+.frail__selected {
+  border-top: var(--size-line) solid var(--c-line);
+}
+
+/* no "Seçili filtreler" block → the first group carries the top line */
+.frail__groups--top {
+  border-top: var(--size-line) solid var(--c-line);
+}
+
+/* filter-live-note */
+.frail__note {
+  margin: 0;
+  padding-top: 16px;
+  color: var(--c-muted);
+}
+
+@media (hover: hover) {
+  .frail__rail:hover .frail__btn,
+  .frail__collapse:hover {
+    background: var(--c-surface);
+  }
+}
+
+/* tablet/mobile use the toolbar + bottom sheet */
+@media (max-width: bp(zTpkWoce2k)) {
+  .frail {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frail--anim,
+  .frail__rail,
+  .frail--open .frail__rail,
+  .frail__panel,
+  .frail--open .frail__panel,
+  .frail__btn,
+  .frail__collapse {
+    transition: none;
+  }
+}

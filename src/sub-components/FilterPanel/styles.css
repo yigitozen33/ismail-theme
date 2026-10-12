@@ -34,19 +34,19 @@
   transform: scaleY(0);
 }
 
+/* filter-box-values: gap 4 */
 .fpanel__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
-.fpanel--drawer .fpanel__chips,
 .fpanel__chips--range {
   gap: 8px;
 }
 
-/* the drawer keeps the 280 PriceRange width */
-.fpanel--drawer .prange {
+/* the sheet keeps the 280 PriceRange width */
+.fpanel--sheet .prange {
   max-width: 280px;
 }
 
