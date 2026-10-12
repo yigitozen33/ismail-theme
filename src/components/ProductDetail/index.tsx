@@ -414,6 +414,8 @@ export function ProductDetail(props: Props) {
     }
     if (result === "ok") {
       setShowOptionErrors(false);
+      // options reset after a successful add; the quantity goes back to the cart minimum with them
+      setQuantity(limits.min);
       emitUi(UI_EVENT.openCart);
     }
   };
