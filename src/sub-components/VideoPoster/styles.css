@@ -1,0 +1,18 @@
+.vposter {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-standard);
+}
+
+.vposter--ready {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vposter {
+    transition: none;
+  }
+}

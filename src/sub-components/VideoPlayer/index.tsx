@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { observer } from "@ikas/component-utils";
 import { cx } from "../../utils/cx";
+import { prefersReducedMotion } from "../../utils/hooks";
 import { TEXT } from "../../utils/tokens";
 import Icon from "../Icon";
 
@@ -22,6 +23,8 @@ interface Props {
   active?: boolean;
   /** Fires once the first play starts (true) — hosts hide overlays that share the corners. */
   onStartedChange?: (started: boolean) => void;
+  /** Muted autoplay while active and at least half on screen (off with reduced motion or after a user pause). */
+  autoPlay?: boolean;
 }
 
 const IDLE_MS = 2000;
@@ -35,10 +38,11 @@ function formatTime(sec: number, round = false) {
 /**
  * V2 · yüzen hap — product video player without native controls.
  * Poster: centred 64px play + duration pill. After the first play: a floating pill at the
- * bottom-left (toggle · 120px progress · time · mute) and a 36px fullscreen disc at the
- * bottom-right; both fade after 2s without pointer movement while playing.
+ * bottom-left (toggle · 120px progress · time) and a 36px fullscreen disc at the bottom-right;
+ * both fade after 2s without pointer movement while playing. The 36px sound disc (top-right)
+ * is always there, so sound can be switched before playing and while the controls are hidden.
  */
-const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, active = true, onStartedChange }: Props) {
+const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, active = true, onStartedChange, autoPlay = false }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
@@ -46,6 +50,7 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
   const dragRaf = useRef(0);
   const dragRatio = useRef<number | null>(null);
   const revealOnly = useRef(false);
+  const userPaused = useRef(false);
   const [started, setStarted] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -82,8 +87,31 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
   }, []);
 
   useEffect(() => {
-    if (!active) videoRef.current?.pause();
+    if (!active) {
+      videoRef.current?.pause();
+      userPaused.current = false;
+    }
   }, [active]);
+
+  // Muted autoplay: plays while the active media is at least half visible, pauses when it leaves.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!autoPlay || !active || !root || typeof IntersectionObserver === "undefined" || prefersReducedMotion()) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (entry.isIntersecting) {
+          if (video.paused && !userPaused.current) video.play().catch(() => undefined);
+        } else if (!video.paused) {
+          video.pause();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(root);
+    return () => io.disconnect();
+  }, [autoPlay, active]);
 
   useEffect(() => {
     onStartedChange?.(started);
@@ -103,12 +131,14 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
   }, []);
 
   const play = () => {
+    userPaused.current = false;
     videoRef.current?.play().catch(() => undefined);
   };
 
   const toggle = () => {
     const video = videoRef.current;
     if (!video) return;
+    userPaused.current = !video.paused;
     if (video.paused) play();
     else video.pause();
   };
@@ -256,6 +286,17 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
         </button>
       )}
 
+      {/* sound: one 36px disc top-right, present before the first play and never faded out */}
+      <button
+        type="button"
+        className="vplay__sound"
+        aria-label={muted ? texts.unmuteAriaLabel : texts.muteAriaLabel}
+        aria-pressed={!muted}
+        onClick={toggleMute}
+      >
+        <Icon name={muted ? "volume-x" : "volume-2"} size={16} />
+      </button>
+
       {!started && duration > 0 && <span className={cx("vplay__duration", TEXT.label, "tabular")}>{formatTime(duration, true)}</span>}
 
       {started && (
@@ -292,14 +333,6 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
             <span className={cx("vplay__time", TEXT.uiSm, "tabular")} aria-hidden="true">
               {timeText}
             </span>
-            <button
-              type="button"
-              className="vplay__btn"
-              aria-label={muted ? texts.unmuteAriaLabel : texts.muteAriaLabel}
-              onClick={toggleMute}
-            >
-              <Icon name={muted ? "volume-x" : "volume-2"} size={16} />
-            </button>
           </div>
           <button
             type="button"

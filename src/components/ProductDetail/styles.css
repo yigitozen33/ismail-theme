@@ -147,12 +147,17 @@
   min-width: 0;
 }
 
+/* ≥768 the track is one media wide and clipped: thumbs (or focus) scroll it to a media, so
+   every media keeps a real box (scrolled into view instead of display:none) */
 .pdp__gallery {
   position: relative;
+  display: flex;
+  overflow: hidden;
 }
 
 .pdp__media {
   position: relative;
+  flex: 0 0 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -165,11 +170,6 @@
   background: var(--c-surface);
   color: var(--c-muted);
   cursor: zoom-in;
-}
-
-/* ≥768 only the active media is shown; the fixed 4:5 box keeps the layout still */
-.pdp__media:not(.pdp__media--on) {
-  display: none;
 }
 
 .pdp__gallery--switched .pdp__media--on {

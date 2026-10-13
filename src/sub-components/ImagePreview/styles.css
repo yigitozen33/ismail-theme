@@ -286,3 +286,8 @@
     transition: none;
   }
 }
+
+/* the video sound disc sits under the top bar (count + close) */
+.iprev .vplay__sound {
+  top: 72px;
+}

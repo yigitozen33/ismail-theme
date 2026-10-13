@@ -53,6 +53,7 @@ import FormField from "../../sub-components/FormField";
 import Icon from "../../sub-components/Icon";
 import ImagePreview from "../../sub-components/ImagePreview";
 import VideoPlayer from "../../sub-components/VideoPlayer";
+import VideoPoster from "../../sub-components/VideoPoster";
 import OfferCard from "../../sub-components/OfferCard";
 import ProductOptions from "../../sub-components/ProductOptions";
 import QuantitySelector from "../../sub-components/QuantitySelector";
@@ -501,10 +502,13 @@ export function ProductDetail(props: Props) {
   const multi = media.length > 1;
   const showCounter = media.length > 5;
 
-  // ≥768: a thumb swaps the main media.
+  // ≥768: a thumb swaps the main media (the one-media-wide track jumps to it, the media fades in).
   const selectMedia = (i: number) => {
     setSwitched(true);
     setActiveIndex(i);
+    const track = trackRef.current;
+    const slides = track?.querySelectorAll<HTMLElement>("[data-media-index]");
+    if (track && slides?.[i]) track.scrollLeft = slides[i].offsetLeft - slides[0].offsetLeft;
   };
 
   const onRailKey = (e: KeyboardEvent) => {
@@ -566,6 +570,7 @@ export function ProductDetail(props: Props) {
             texts={videoTexts}
             videoClassName="pdp__img"
             active={i === activeIndex}
+            autoPlay
             onStartedChange={(on) => setVideoOn((v) => (on ? i : v === i ? null : v))}
           />
         </div>
@@ -639,8 +644,7 @@ export function ProductDetail(props: Props) {
                   >
                     {img.isVideo ? (
                       <span className="pdp__thumb-video">
-                        {/* first frame as the poster; #t nudges Safari to paint it */}
-                        <video className="pdp__thumb-video-frame" src={`${getDefaultSrc(img)}#t=0.1`} muted playsInline preload="auto" aria-hidden="true" tabIndex={-1} />
+                        <VideoPoster src={getDefaultSrc(img)} className="pdp__thumb-video-frame" />
                         <span className="pdp__thumb-video-play">
                           <Icon name="play" size={12} />
                         </span>
