@@ -1,22 +1,18 @@
 import { useState } from "preact/hooks";
 import {
   IkasProduct,
-  Router,
-  addIkasProductToFavorites,
   createMediaSrcset,
-  customerStore,
   getDefaultSrc,
   getProductHref,
   getProductVariantFormattedFinalPrice,
   getProductVariantMainImage,
   getSelectedProductVariant,
-  hasCustomer,
   isFavoriteIkasProduct,
-  removeIkasProductFromFavorites,
 } from "@ikas/bp-storefront";
 import FavoriteButton from "../../sub-components/FavoriteButton";
 import Icon from "../../sub-components/Icon";
 import { cx } from "../../utils/cx";
+import { toggleFavorite } from "../../utils/favorites";
 import { TEXT } from "../../utils/tokens";
 import { UI_EVENT, emitUi } from "../../utils/ui";
 import { Props } from "./types";
@@ -44,14 +40,7 @@ export function BestsellerTab({
   const [active, setActive] = useState(0);
   const current = items[Math.min(active, Math.max(items.length - 1, 0))] ?? null;
 
-  const onFavorite = async (product: IkasProduct) => {
-    if (!hasCustomer(customerStore)) {
-      Router.navigateToPage("LOGIN");
-      return;
-    }
-    if (isFavoriteIkasProduct(product)) await removeIkasProductFromFavorites(product);
-    else await addIkasProductToFavorites(product);
-  };
+  const onFavorite = (product: IkasProduct) => toggleFavorite(product);
 
   return (
     <div className="btab" data-btab-label={label}>

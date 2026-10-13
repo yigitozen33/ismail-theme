@@ -2,9 +2,7 @@ import { useState } from "preact/hooks";
 import {
   IkasProduct,
   addSelectedtedVariantToCart,
-  addIkasProductToFavorites,
   createMediaSrcset,
-  customerStore,
   getDefaultSrc,
   getDisplayedProductVariantTypes,
   getProductHref,
@@ -12,18 +10,16 @@ import {
   getProductVariantFormattedFinalPrice,
   getProductVariantFormattedSellPrice,
   getSelectedProductVariant,
-  hasCustomer,
   hasProductVariantDiscount,
   hasProductVariantStock,
   hasProductVariant,
   isAddToCartEnabled,
   isColorVariantValue,
   isFavoriteIkasProduct,
-  removeIkasProductFromFavorites,
-  Router,
 } from "@ikas/bp-storefront";
 import { observer } from "@ikas/component-utils";
 import { cx } from "../../utils/cx";
+import { toggleFavorite } from "../../utils/favorites";
 import { TEXT } from "../../utils/tokens";
 import { UI_EVENT, emitUi } from "../../utils/ui";
 import Badge from "../Badge";
@@ -85,16 +81,7 @@ const ProductCard = observer(function ProductCard({
   const swatches = colorType?.displayedVariantValues ?? [];
 
   const onFavorite = async () => {
-    if (!hasCustomer(customerStore)) {
-      Router.navigateToPage("LOGIN");
-      return;
-    }
-    if (isFavorite) {
-      await removeIkasProductFromFavorites(product);
-      onFavoriteRemove?.();
-    } else {
-      await addIkasProductToFavorites(product);
-    }
+    if ((await toggleFavorite(product)) === "removed") onFavoriteRemove?.();
   };
 
   const onCart = async (e: MouseEvent) => {

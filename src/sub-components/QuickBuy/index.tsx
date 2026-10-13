@@ -3,20 +3,17 @@ import {
   IkasProduct,
   PayWithIkas,
   Router,
-  addIkasProductToFavorites,
   createMediaSrcset,
-  customerStore,
   getDefaultSrc,
   getDisplayedProductVariantTypes,
   getProductHref,
   getSelectedProductVariant,
-  hasCustomer,
   isFavoriteIkasProduct,
   isIkasVariantTypeColorSelection,
-  removeIkasProductFromFavorites,
 } from "@ikas/bp-storefront";
 import { observer } from "@ikas/component-utils";
 import { cx } from "../../utils/cx";
+import { toggleFavorite } from "../../utils/favorites";
 import { prefersReducedMotion, useEscape, useScrollLock } from "../../utils/hooks";
 import {
   canPayWithIkas,
@@ -186,14 +183,7 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
     }
   };
 
-  const onFavorite = async () => {
-    if (!hasCustomer(customerStore)) {
-      Router.navigateToPage("LOGIN");
-      return;
-    }
-    if (isFavorite) await removeIkasProductFromFavorites(product);
-    else await addIkasProductToFavorites(product);
-  };
+  const onFavorite = () => toggleFavorite(product);
 
   const step = (d: number) => media.length > 1 && setImageIndex((i) => (i + d + media.length) % media.length);
 

@@ -5,7 +5,7 @@ import Icon from "../Icon";
 interface Props {
   active: boolean;
   ariaLabel: string;
-  onToggle: () => void | Promise<void>;
+  onToggle: () => unknown;
   size?: "sm" | "md";
   className?: string;
 }

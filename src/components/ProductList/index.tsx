@@ -149,25 +149,27 @@ export function ProductList(props: Props) {
   const [favSort, setFavSort] = useState<FavSort>("default");
   const [fav, setFav] = useState<{ status: "loading" | "guest" | "ready"; items: IkasProduct[] }>({ status: "loading", items: [] });
 
-  // Favourites: a fetched snapshot (no store field); re-fetched when the customer changes.
+  // Favourites: a fetched snapshot (no store field), fetched once per customer. The customer id
+  // turns up while the store initialises, so the run it triggers must not start a second fetch.
   const customerId = customerStore.customer?.id ?? null;
+  const favFor = useRef<string | null | undefined>(undefined);
+  const favReq = useRef(0);
   useEffect(() => {
     if (mode !== "favorites") return;
-    let cancelled = false;
     (async () => {
       await waitForCustomerStoreInit(customerStore);
-      if (cancelled) return;
-      if (!hasCustomer(customerStore)) {
+      const id = hasCustomer(customerStore) ? customerStore.customer?.id ?? null : null;
+      if (favFor.current === id) return;
+      favFor.current = id;
+      const req = ++favReq.current;
+      if (!id) {
         setFav({ status: "guest", items: [] });
         return;
       }
       setFav((f) => ({ ...f, status: "loading" }));
       const items = await getFavoriteProducts(customerStore).catch(() => [] as IkasProduct[]);
-      if (!cancelled) setFav({ status: "ready", items: items ?? [] });
+      if (req === favReq.current) setFav({ status: "ready", items: items ?? [] });
     })();
-    return () => {
-      cancelled = true;
-    };
   }, [mode, customerId]);
 
   // Restore the desktop panel state without animating it in.

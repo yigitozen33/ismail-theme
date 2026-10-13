@@ -7,7 +7,6 @@ import {
   PayWithIkas,
   Router,
   acceptProductOffer,
-  addIkasProductToFavorites,
   createMediaSrcset,
   customerStore,
   formatCurrency,
@@ -35,7 +34,6 @@ import {
   isCustomerReviewEnabled,
   isFavoriteIkasProduct,
   rejectProductOffer,
-  removeIkasProductFromFavorites,
   saveProductVariantBackInStockReminder,
   withRoutePrefix,
   getAttributeDetailValues,
@@ -62,6 +60,7 @@ import SizeGuide, { getAttributeSizeTable } from "../../sub-components/SizeGuide
 import Skeleton from "../../sub-components/Skeleton";
 import VariantPicker from "../../sub-components/VariantPicker";
 import { cx } from "../../utils/cx";
+import { toggleFavorite } from "../../utils/favorites";
 import { prefersReducedMotion, useMounted } from "../../utils/hooks";
 import {
   adjustBundleProductQuantity,
@@ -489,14 +488,7 @@ export function ProductDetail(props: Props) {
     }
   };
 
-  const onFavorite = async () => {
-    if (!loggedIn) {
-      Router.navigateToPage("LOGIN");
-      return;
-    }
-    if (isFavorite) await removeIkasProductFromFavorites(product);
-    else await addIkasProductToFavorites(product);
-  };
+  const onFavorite = () => toggleFavorite(product);
 
   /* ---------- gallery ---------- */
   const multi = media.length > 1;
