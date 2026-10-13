@@ -54,9 +54,10 @@ export default function Button({
         {state !== "loading" && state !== "added" && icon}
         <span className={cx("btn__label", TEXT.ui)}>{label}</span>
       </span>
+      {/* the rolled-in copy draws its label from CSS (data-label) so the button's text reads once */}
       <span className="btn__face btn__face--bottom" aria-hidden="true">
         {icon}
-        <span className={cx("btn__label", TEXT.ui)}>{label}</span>
+        <span className={cx("btn__label", TEXT.ui)} data-label={label} />
       </span>
     </>
   );

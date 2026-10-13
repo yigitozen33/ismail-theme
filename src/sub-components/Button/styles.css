@@ -48,6 +48,15 @@
   text-overflow: ellipsis;
 }
 
+/* generated text ellipsises on sub-pixel overflow where the real top label does not */
+.btn__face--bottom .btn__label {
+  text-overflow: clip;
+}
+
+.btn__face--bottom .btn__label::before {
+  content: attr(data-label);
+}
+
 .btn--sm {
   height: 40px;
 }

@@ -39,8 +39,10 @@
   gap: 12px;
 }
 
-/* single media: no rail, capped main image */
+/* single media: no rail, capped main image centred in the gallery column */
 .pdp__gallery-wrap--single .pdp__stage {
+  justify-self: center;
+  width: 100%;
   max-width: 640px;
 }
 
