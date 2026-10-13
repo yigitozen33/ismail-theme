@@ -1,13 +1,17 @@
 .counter {
+  /* one whole-pixel row height for digits and separators — a fractional 1.2em
+     makes every reel offset (d × row) land on a different sub-pixel, so digits
+     snap up/down unevenly against each other and the separators */
+  --counter-row: round(1.2em, 1px);
   display: inline-flex;
   align-items: center;
   font-weight: 500; /* I/Sub/Counter: digits and separators 500 */
-  line-height: 1.2;
+  line-height: var(--counter-row);
 }
 
 .counter__mask {
   display: inline-block;
-  height: 1.2em;
+  height: var(--counter-row);
   overflow: hidden;
 }
 
@@ -19,12 +23,15 @@
 
 .counter__digit {
   display: block;
-  height: 1.2em;
-  line-height: 1.2em;
+  height: var(--counter-row);
+  line-height: var(--counter-row);
 }
 
 .counter__sep {
   display: inline-block;
+  height: var(--counter-row);
+  line-height: var(--counter-row);
+  white-space: pre; /* a lone space ("18G 08:33:07") would otherwise collapse to zero width */
 }
 
 @media (prefers-reduced-motion: reduce) {
