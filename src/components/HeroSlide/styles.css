@@ -108,7 +108,10 @@
 .hslide__title-mask {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.06em;
+  /* room for descenders and Turkish cedillas (ç, ş) below the tight display line box;
+     the negative margin keeps the title's layout height unchanged */
+  padding-bottom: 0.25em;
+  margin-bottom: -0.19em;
 }
 
 /* I-HERO-02 · M-03: words rise one by one (y 50 → 0, opacity), stagger 0.06s after 0.2s */
