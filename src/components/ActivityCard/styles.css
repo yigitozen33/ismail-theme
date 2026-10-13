@@ -123,14 +123,14 @@
 
 }
 
-/* Mobile: scroll-snap strip, the centred card is open (240), the others 88. */
+/* Mobile: snapping strip, the centred card is open (240), the others 88 (widths from ActivityGrid's row). */
 @media (max-width: bp(KUQjO8W6p9)) {
   .acard {
     --o: var(--acard-open-default, 0);
     --acard-title-closed: 0.75;
-    flex: 0 0 calc(88px + 152px * var(--o));
+    flex: 0 0 calc(var(--act-card, 88px) + (var(--act-card-open, 240px) - var(--act-card, 88px)) * var(--o));
     height: 400px;
-    scroll-snap-align: center;
+    scroll-snap-align: none;
   }
 
   .acard[data-open] {

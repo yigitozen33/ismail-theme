@@ -5,6 +5,15 @@ export function prefersReducedMotion() {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 }
 
+/** True when `target` took focus from the keyboard (a tap or click also focuses, but never `:focus-visible`). */
+export function isKeyboardFocus(target: EventTarget | null) {
+  try {
+    return !!(target as Element | null)?.matches?.(":focus-visible");
+  } catch {
+    return false;
+  }
+}
+
 /**
  * io-hook: SSR renders the end state; after hydration the element gets `is-pending`
  * (start state) until it scrolls into view or receives focus, then `is-inview`. Returns the class to apply.
