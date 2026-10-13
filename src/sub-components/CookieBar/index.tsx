@@ -54,8 +54,8 @@ export default function CookieBar({ content, acceptText, closeAriaLabel }: Props
 
   return (
     <>
-      {/* scrim (page scheme): fades in with the bar; a click dismisses for the session like the close button */}
-      <div className={cx("ckbar-scrim", shown && "is-open")} aria-hidden="true" onClick={() => hide("session", "dismissed")} />
+      {/* scrim (page scheme): fades in with the bar; it never takes clicks, so the page stays usable */}
+      <div className={cx("ckbar-scrim", shown && "is-open")} aria-hidden="true" />
       <aside className={cx("ckbar", forceScheme("ink"), shown && "is-open")}>
         <div className={cx("ckbar__text", TEXT.uiSm)} dangerouslySetInnerHTML={{ __html: content ?? "" }} />
         <div className="ckbar__actions">

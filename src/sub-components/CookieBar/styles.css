@@ -8,9 +8,9 @@
   transition: opacity var(--dur-base) var(--ease-standard);
 }
 
+/* the scrim only dims: the page stays usable while the bar is open */
 .ckbar-scrim.is-open {
   opacity: 1;
-  pointer-events: auto;
 }
 
 .ckbar {
