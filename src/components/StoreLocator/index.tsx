@@ -25,6 +25,7 @@ export function StoreLocator(props: Props) {
     directionsText = "Yol tarifi al",
     openNowText = "Şu an açık",
     closedText = "Şu an kapalı",
+    selectStoreAriaLabel = "Mağazayı göster",
     stores,
     backgroundColor,
   } = props;
@@ -124,6 +125,7 @@ export function StoreLocator(props: Props) {
             data-scope="store-locator"
             data-open-text={openNowText}
             data-closed-text={closedText}
+            data-select-label={selectStoreAriaLabel}
           >
             <IkasComponentRenderer id="store-locator-rows" components={list} parentProps={props} />
           </div>

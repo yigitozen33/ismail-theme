@@ -53,6 +53,7 @@ export function StoreItem({
   const rootRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState(false);
   const [status, setStatus] = useState<StoreSelectDetail["status"]>(null);
+  const [selectLabel, setSelectLabel] = useState("");
   const mapHref = mapLink?.href;
 
   const detail = (user: boolean, st = status): StoreSelectDetail | null =>
@@ -72,6 +73,7 @@ export function StoreItem({
           ? { kind: "open", text: scope.dataset.openText || "" }
           : { kind: "closed", text: scope.dataset.closedText || "" };
     setStatus(st);
+    setSelectLabel(scope.dataset.selectLabel || "");
     const off = onScoped<StoreSelectDetail>(scope, SCOPED_EVENT.storeSelect, (d) => setSelected(!!d && d.el === el));
     // The first store is the initial selection; a selected store re-announces itself when its props change.
     // Deferred so the section's listener (attached in its own effect) is in place.
@@ -127,7 +129,13 @@ export function StoreItem({
       </article>
 
       {/* StoreLocator row — I-LOC-01 · M-28 */}
-      <button type="button" className="sitem__row" aria-pressed={selected} onClick={select}>
+      <button
+        type="button"
+        className="sitem__row"
+        aria-pressed={selected}
+        aria-label={selectLabel ? [selectLabel, [name, district].filter(Boolean).join(" · ")].filter(Boolean).join(": ") : undefined}
+        onClick={select}
+      >
         <span className="sitem__row-text">
           <span className="sitem__row-name">
             {name && <span className={cx("sitem__row-title", TEXT.h4)}>{name}</span>}
