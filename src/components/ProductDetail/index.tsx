@@ -213,6 +213,9 @@ export function ProductDetail(props: Props) {
   };
   const optionsRef = useRef<HTMLDivElement>(null);
   const tierQtyRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const buybarRef = useRef<HTMLDivElement>(null);
+  const [buybarOn, setBuybarOn] = useState(false);
 
   // "Farklı adet seç" swaps itself for the stepper; focus follows to the stepper's first live button.
   useEffect(() => {
@@ -317,6 +320,28 @@ export function ProductDetail(props: Props) {
   }, [activeIndex]);
 
   useEffect(() => () => cancelAnimationFrame(scrollRaf.current), []);
+
+  // ≤991 buy bar: fixed to the viewport, up only while the main CTA is off screen (or under the bar).
+  // Its height goes to --pdp-buybar-h on <html>; the footer adds it as bottom padding so its last row clears the bar.
+  useEffect(() => {
+    const actions = actionsRef.current;
+    const bar = buybarRef.current;
+    if (!actions || !bar || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setBuybarOn(!entry.isIntersecting), {
+      rootMargin: `0px 0px -${bar.offsetHeight}px 0px`,
+    });
+    io.observe(actions);
+    const root = document.documentElement;
+    const pad = () => root.style.setProperty("--pdp-buybar-h", `${bar.offsetHeight}px`);
+    pad();
+    const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(pad);
+    ro?.observe(bar);
+    return () => {
+      io.disconnect();
+      ro?.disconnect();
+      root.style.removeProperty("--pdp-buybar-h");
+    };
+  }, [product?.id]);
 
   /* ---------- yükleniyor ---------- */
   if (!product || !variant) {
@@ -884,7 +909,7 @@ export function ProductDetail(props: Props) {
           )}
 
           {/* I-PDP-04 · M-11 via Button */}
-          <div className="pdp__actions">
+          <div className="pdp__actions" ref={actionsRef}>
             <Button label={mainButtonLabel} state={buttonState} fullWidth className="pdp__cart-btn" onClick={onAdd} />
             <span className="pdp__fav">
               <FavoriteButton active={isFavorite} ariaLabel={favoriteAriaLabel} size="md" onToggle={onFavorite} />
@@ -1029,8 +1054,8 @@ export function ProductDetail(props: Props) {
         </div>
       </div>
 
-      {/* mobile sticky buy bar — same button state as the main CTA */}
-      <div className="pdp__buybar">
+      {/* ≤991 fixed buy bar — same button state as the main CTA */}
+      <div ref={buybarRef} className={cx("pdp__buybar", buybarOn && "pdp__buybar--on")}>
         <div className="pdp__buybar-info">
           <span className={cx("pdp__buybar-title", TEXT.uiSm)}>{product.name}</span>
           <span className={cx("pdp__buybar-price", TEXT.price, "tabular")}>{price.price}</span>

@@ -832,6 +832,60 @@
     flex: none;
     height: 480px;
   }
+
+  /* fixed to the viewport (a sticky bar parks at the section's end); hidden while the main CTA is on screen */
+  .pdp__buybar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px var(--space-page) calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: var(--size-line) solid var(--c-line);
+    background: var(--c-bg);
+    visibility: hidden;
+    transform: translateY(100%);
+    transition:
+      transform var(--dur-fast) var(--ease-standard),
+      visibility 0s linear var(--dur-fast);
+  }
+
+  .pdp__buybar--on {
+    visibility: visible;
+    transform: none;
+    transition:
+      transform var(--dur-fast) var(--ease-standard),
+      visibility 0s;
+  }
+
+  .pdp__buybar-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 45%;
+  }
+
+  .pdp__buybar-title {
+    overflow: hidden;
+    color: var(--c-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pdp__buybar-price {
+    color: var(--c-text);
+    font-weight: 500;
+  }
+
+  .pdp__buybar-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }
 
 /* ---------- mobile ---------- */
@@ -924,44 +978,6 @@
     gap: 14px;
   }
 
-  .pdp__buybar {
-    position: sticky;
-    bottom: 0;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px var(--space-page);
-    border-top: var(--size-line) solid var(--c-line);
-    background: var(--c-bg);
-  }
-
-  .pdp__buybar-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex: 0 1 auto;
-    min-width: 0;
-    max-width: 45%;
-  }
-
-  .pdp__buybar-title {
-    overflow: hidden;
-    color: var(--c-muted);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .pdp__buybar-price {
-    color: var(--c-text);
-    font-weight: 500;
-  }
-
-  .pdp__buybar-btn {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
   .pdp__skel-gallery {
     height: 400px;
     margin: 0 var(--space-page);
@@ -980,5 +996,10 @@
 
   .pdp__gallery--switched .pdp__media--on {
     animation: none;
+  }
+
+  .pdp__buybar,
+  .pdp__buybar--on {
+    transition: none;
   }
 }
