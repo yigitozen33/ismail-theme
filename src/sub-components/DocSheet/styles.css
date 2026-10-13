@@ -1,0 +1,129 @@
+.doc {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.doc__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--c-scrim);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-standard);
+}
+
+.doc__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(720px, 100%);
+  max-height: 80vh;
+  padding-top: var(--space-md);
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  transform: translateY(100%);
+  transition: transform 0.5s var(--ease-out-soft);
+}
+
+.doc.is-open .doc__scrim {
+  opacity: 1;
+}
+
+.doc.is-open .doc__panel {
+  transform: none;
+}
+
+.doc__grabber {
+  display: none;
+}
+
+.doc__head {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px 0 var(--space-panel);
+}
+
+.doc__title {
+  margin: 0;
+  padding-top: 8px;
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+.doc__close {
+  flex: none;
+}
+
+.doc__body {
+  min-height: 0;
+  padding: 0 var(--space-panel) calc(var(--space-panel) + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--c-muted);
+}
+
+.doc__body:focus-visible {
+  outline: 2px solid var(--c-text);
+  outline-offset: -2px;
+}
+
+.doc__body > :first-child {
+  margin-top: 0;
+}
+
+.doc__body > :last-child {
+  margin-bottom: 0;
+}
+
+.doc__body h3,
+.doc__body h4,
+.doc__body strong,
+.doc__body b,
+.doc__body a {
+  color: var(--c-text);
+}
+
+.doc__body h3,
+.doc__body h4 {
+  margin: var(--space-md) 0 8px;
+  font-size: inherit;
+  font-weight: 600;
+}
+
+@media (max-width: bp(KUQjO8W6p9)) {
+  .doc__panel {
+    width: 100%;
+    padding-top: 12px;
+  }
+
+  .doc__grabber {
+    display: block;
+    flex: none;
+    width: 36px;
+    height: 4px;
+    margin: 0 auto;
+    border-radius: var(--radius-pill);
+    background: var(--c-line);
+  }
+
+  .doc__head {
+    padding-right: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doc__scrim,
+  .doc__panel {
+    transition: none;
+  }
+}

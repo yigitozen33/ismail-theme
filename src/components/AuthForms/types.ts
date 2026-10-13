@@ -63,4 +63,10 @@ export interface Props {
   lastNamePlaceholder?: string;
   passwordPlaceholder?: string;
   codePlaceholder?: string;
+  /** Onay metnine tıklanınca açılan sözleşme penceresinin başlığı. */
+  agreementTitle?: string;
+  /** Üyelik sözleşmesi bağlantısı boşsa onay metni bu metni pencerede açar. Kendi sözleşmenle değiştir. */
+  agreementContent?: string;
+  /** Sözleşme penceresindeki kapat düğmesinin ekran okuyucu etiketi. */
+  closeAriaLabel?: string;
 }

@@ -47,6 +47,7 @@ import {
 import ArrowLink from "../../sub-components/ArrowLink";
 import Button from "../../sub-components/Button";
 import Checkbox from "../../sub-components/Checkbox";
+import DocSheet from "../../sub-components/DocSheet";
 import FormField from "../../sub-components/FormField";
 import SocialLoginButton from "../../sub-components/SocialLoginButton";
 import { cx } from "../../utils/cx";
@@ -59,6 +60,9 @@ type Tone = "success" | "danger";
 
 const fieldError = (f?: { hasError: boolean; message?: string } | null) => (f?.hasError ? f.message || undefined : undefined);
 const hasFieldErrors = (...fields: Array<{ hasError: boolean } | undefined | null>) => fields.some((f) => !!f?.hasError);
+
+/** Same as the agreementContent config default — sections placed before the prop existed get no value. */
+const DEFAULT_AGREEMENT = "<p>Bu metin, mağazamıza üye olurken kabul ettiğin koşulları ve kişisel verilerinin nasıl işlendiğini özetler.</p><h3>1. Taraflar ve konu</h3><p>Sözleşme, mağaza ile üyelik formunu dolduran kullanıcı arasında kurulur. Üyelik ücretsizdir; sipariş verme, sipariş takibi, adres ve favori kaydetme gibi hizmetlerden yararlanmanı sağlar.</p><h3>2. Üyenin yükümlülükleri</h3><p>Üyelik sırasında verdiğin bilgilerin doğru ve güncel olmasından, şifrenin gizliliğinden ve hesabınla yapılan işlemlerden sen sorumlusun. Hesabını başkasına kullandırmamalı, hizmetleri yasalara aykırı biçimde kullanmamalısın.</p><h3>3. Mağazanın hakları</h3><p>Mağaza, hizmetleri ve bu sözleşmenin koşullarını önceden duyurmak kaydıyla güncelleyebilir; koşullara aykırı kullanımda üyeliği askıya alabilir ya da sonlandırabilir.</p><h3>4. Kişisel verilerin korunması (KVKK aydınlatma)</h3><p>Ad, soyad, e-posta, telefon, adres ve sipariş bilgilerin; üyeliğin kurulması, siparişlerinin teslimi, yasal yükümlülüklerin yerine getirilmesi ve müşteri hizmetleri amaçlarıyla 6698 sayılı Kişisel Verilerin Korunması Kanunu'na uygun olarak işlenir. Verilerin yalnızca bu amaçlar için ve gerektiği ölçüde kargo, ödeme ve altyapı hizmet sağlayıcılarıyla paylaşılır. Kanun'un 11. maddesi uyarınca verilerine erişme, düzeltilmesini ya da silinmesini isteme haklarını mağazanın iletişim kanallarından kullanabilirsin.</p><h3>5. Ticari ileti</h3><p>Kampanya ve duyuru iletileri yalnızca ayrıca onay verirsen gönderilir; bu onayı istediğin zaman geri alabilirsin.</p><h3>6. Yürürlük</h3><p>Üyelik formundaki onay kutusunu işaretleyip kaydolduğunda bu sözleşme yürürlüğe girer ve üyeliğin sona erene kadar geçerli kalır.</p>";
 
 /** "05321234518" → "0532 *** ** 18" for the SMS code note. */
 function maskPhone(value: string) {
@@ -130,6 +134,9 @@ export function AuthForms({
   lastNamePlaceholder = "Aksoy",
   passwordPlaceholder = "••••••••",
   codePlaceholder = "• • • • • •",
+  agreementTitle = "Üyelik sözleşmesi ve KVKK aydınlatma metni",
+  agreementContent = DEFAULT_AGREEMENT,
+  closeAriaLabel = "Kapat",
   agreementLink,
   marketingLink,
   backgroundColor,
@@ -138,6 +145,7 @@ export function AuthForms({
   const [mode, setMode] = useState<"email" | "sms">("email");
   const [registeredPending, setRegisteredPending] = useState(false);
   const [recoverDone, setRecoverDone] = useState(false);
+  const [agreementOpen, setAgreementOpen] = useState(false);
   const [socialBusy, setSocialBusy] = useState<"google" | "facebook" | null>(null);
   const [resending, setResending] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -294,6 +302,8 @@ export function AuthForms({
       label
     );
 
+  const hasAgreementContent = !!agreementContent?.replace(/<[^>]*>/g, "").trim();
+
   const consents = (marketing: Flag | undefined, agreement: Flag | undefined, onMarketing: (v: boolean) => void, onAgreement: (v: boolean) => void) => (
     /* register-consents — two separate consents */
     <div className="auth__consents">
@@ -309,7 +319,15 @@ export function AuthForms({
       <Checkbox
         checked={!!agreement?.value}
         onChange={onAgreement}
-        label={linkLabel(agreementConsentText, agreementLink)}
+        label={
+          !agreementLink?.href && hasAgreementContent ? (
+            <button type="button" className="auth__doc-link" aria-haspopup="dialog" onClick={() => setAgreementOpen(true)}>
+              {agreementConsentText}
+            </button>
+          ) : (
+            linkLabel(agreementConsentText, agreementLink)
+          )
+        }
         error={fieldError(agreement)}
         name="agreement"
         required
@@ -590,6 +608,15 @@ export function AuthForms({
           {switchRow && <div className="auth__switch">{switchRow}</div>}
         </div>
       </div>
+      {hasAgreementContent && (
+        <DocSheet
+          open={agreementOpen}
+          onClose={() => setAgreementOpen(false)}
+          title={agreementTitle}
+          html={agreementContent}
+          closeAriaLabel={closeAriaLabel}
+        />
+      )}
     </section>
   );
 }

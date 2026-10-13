@@ -1259,6 +1259,33 @@
           "required": false,
           "defaultValue": "• • • • • •",
           "groupId": "texts"
+        },
+        {
+          "name": "agreementTitle",
+          "displayName": "Üyelik sözleşmesi başlığı",
+          "type": "TEXT",
+          "required": false,
+          "description": "Onay metnine tıklanınca açılan sözleşme penceresinin başlığı.",
+          "defaultValue": "Üyelik sözleşmesi ve KVKK aydınlatma metni",
+          "groupId": "texts"
+        },
+        {
+          "name": "agreementContent",
+          "displayName": "Üyelik sözleşmesi metni",
+          "type": "RICH_TEXT",
+          "required": false,
+          "description": "Üyelik sözleşmesi bağlantısı boşsa onay metni bu metni pencerede açar. Kendi sözleşmenle değiştir.",
+          "defaultValue": "<p>Bu metin, mağazamıza üye olurken kabul ettiğin koşulları ve kişisel verilerinin nasıl işlendiğini özetler.</p><h3>1. Taraflar ve konu</h3><p>Sözleşme, mağaza ile üyelik formunu dolduran kullanıcı arasında kurulur. Üyelik ücretsizdir; sipariş verme, sipariş takibi, adres ve favori kaydetme gibi hizmetlerden yararlanmanı sağlar.</p><h3>2. Üyenin yükümlülükleri</h3><p>Üyelik sırasında verdiğin bilgilerin doğru ve güncel olmasından, şifrenin gizliliğinden ve hesabınla yapılan işlemlerden sen sorumlusun. Hesabını başkasına kullandırmamalı, hizmetleri yasalara aykırı biçimde kullanmamalısın.</p><h3>3. Mağazanın hakları</h3><p>Mağaza, hizmetleri ve bu sözleşmenin koşullarını önceden duyurmak kaydıyla güncelleyebilir; koşullara aykırı kullanımda üyeliği askıya alabilir ya da sonlandırabilir.</p><h3>4. Kişisel verilerin korunması (KVKK aydınlatma)</h3><p>Ad, soyad, e-posta, telefon, adres ve sipariş bilgilerin; üyeliğin kurulması, siparişlerinin teslimi, yasal yükümlülüklerin yerine getirilmesi ve müşteri hizmetleri amaçlarıyla 6698 sayılı Kişisel Verilerin Korunması Kanunu'na uygun olarak işlenir. Verilerin yalnızca bu amaçlar için ve gerektiği ölçüde kargo, ödeme ve altyapı hizmet sağlayıcılarıyla paylaşılır. Kanun'un 11. maddesi uyarınca verilerine erişme, düzeltilmesini ya da silinmesini isteme haklarını mağazanın iletişim kanallarından kullanabilirsin.</p><h3>5. Ticari ileti</h3><p>Kampanya ve duyuru iletileri yalnızca ayrıca onay verirsen gönderilir; bu onayı istediğin zaman geri alabilirsin.</p><h3>6. Yürürlük</h3><p>Üyelik formundaki onay kutusunu işaretleyip kaydolduğunda bu sözleşme yürürlüğe girer ve üyeliğin sona erene kadar geçerli kalır.</p>",
+          "groupId": "texts"
+        },
+        {
+          "name": "closeAriaLabel",
+          "displayName": "Pencereyi kapat (erişilebilirlik)",
+          "type": "TEXT",
+          "required": false,
+          "description": "Sözleşme penceresindeki kapat düğmesinin ekran okuyucu etiketi.",
+          "defaultValue": "Kapat",
+          "groupId": "texts"
         }
       ],
       "propGroups": [

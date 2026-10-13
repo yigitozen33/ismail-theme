@@ -254,3 +254,16 @@
     transition: none;
   }
 }
+
+/* agreement text without a link → opens the agreement sheet */
+.auth__doc-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
