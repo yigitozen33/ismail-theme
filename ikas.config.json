@@ -599,7 +599,8 @@
           "defaultValue": {
             "linkType": "EXTERNAL",
             "label": "Yol tarifi al",
-            "externalLink": "https://www.google.com/maps",
+            "externalLink": "https://www.google.com/maps/search/?api=1&query=Moda+Cad.+Kad%C4%B1k%C3%B6y+%C4%B0stanbul",
+            "href": "https://www.google.com/maps/search/?api=1&query=Moda+Cad.+Kad%C4%B1k%C3%B6y+%C4%B0stanbul",
             "subLinks": []
           },
           "groupId": "links"
@@ -3824,7 +3825,7 @@
           "defaultValue": {
             "linkType": "PAGE",
             "label": "Tüm yazılar",
-            "pageType": "BLOG",
+            "pageType": "BLOG_INDEX",
             "subLinks": []
           },
           "groupId": "links"
