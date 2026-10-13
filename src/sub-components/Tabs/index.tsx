@@ -1,4 +1,4 @@
-import { useRef } from "preact/hooks";
+import { useLayoutEffect, useRef, useState } from "preact/hooks";
 import { cx } from "../../utils/cx";
 import { TEXT } from "../../utils/tokens";
 
@@ -24,12 +24,38 @@ export interface TabsProps {
 
 /**
  * I/Sub/Tabs — horizontal (underline row, gap 28) and dikey (stacked, gap 4).
- * I-CMP-09 · M-28: label muted → text on hover/active, active has a 2px text underline.
+ * I-CMP-09 · M-28: label muted → text on hover/active.
+ * I-CMP-10 · I-M-07: on horizontal tabs the 2px underline is one `tab-indicator` layer that slides
+ * and resizes to the active tab (measured after render; the active item's own border is the
+ * SSR fallback until the first measurement).
  */
 export default function Tabs({ items, value, onChange, orientation = "horizontal", ariaLabel, idPrefix, className }: TabsProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const isLinks = items.some((i) => i.href);
   const vertical = orientation === "vertical";
+  const [indicator, setIndicator] = useState<{ x: number; w: number } | null>(null);
+
+  // Measure the active tab for the sliding indicator (re-measured on resize and font load).
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (vertical || !list) return;
+    const measure = () => {
+      const el = value != null ? list.querySelector<HTMLElement>(`[data-tab="${CSS.escape(String(value))}"]`) : null;
+      if (!el) {
+        setIndicator(null);
+        return;
+      }
+      setIndicator((prev) =>
+        prev && prev.x === el.offsetLeft && prev.w === el.offsetWidth ? prev : { x: el.offsetLeft, w: el.offsetWidth },
+      );
+    };
+    measure();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    ro?.observe(list);
+    const fonts = (document as any).fonts;
+    fonts?.ready?.then(measure);
+    return () => ro?.disconnect();
+  }, [value, items, vertical]);
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (isLinks) return;
@@ -54,7 +80,7 @@ export default function Tabs({ items, value, onChange, orientation = "horizontal
   return (
     <div
       ref={listRef}
-      className={cx("tabs", vertical && "tabs--vertical", className)}
+      className={cx("tabs", vertical && "tabs--vertical", indicator && "tabs--measured", className)}
       role={isLinks ? undefined : "tablist"}
       aria-label={ariaLabel}
       aria-orientation={isLinks ? undefined : orientation}
@@ -96,6 +122,13 @@ export default function Tabs({ items, value, onChange, orientation = "horizontal
           </button>
         );
       })}
+      {!vertical && indicator && (
+        <span
+          className="tabs__indicator"
+          aria-hidden="true"
+          style={{ "--tab-x": `${indicator.x}px`, "--tab-w": `${indicator.w}px` } as any}
+        />
+      )}
     </div>
   );
 }

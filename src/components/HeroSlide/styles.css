@@ -157,10 +157,11 @@
   animation: none;
 }
 
-/* hero-meta (desktop only): sits above the slider's counter, which HeroSlider draws at bottom 64 */
+/* hero-meta (desktop only): sits above the slider's counter block (digits 1.2em + 10 gap + 2px
+   progress line), which HeroSlider draws at bottom 64 */
 .hslide__meta {
   flex-shrink: 0;
-  margin: 0 0 calc(1.2em + 10px);
+  margin: 0 0 calc(1.2em + 10px + 2px + 10px);
   color: var(--c-muted);
   text-align: right;
   white-space: nowrap;

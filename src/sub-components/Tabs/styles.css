@@ -1,4 +1,5 @@
 .tabs {
+  position: relative;
   display: flex;
   align-items: stretch;
   gap: 28px;
@@ -45,8 +46,28 @@
 }
 
 .tabs__item--active {
-  border-bottom-color: var(--c-text);
   color: var(--c-text);
+}
+
+/* Underline on the item itself: vertical tabs always; horizontal tabs only until the sliding
+   indicator has been measured (SSR / before hydration). */
+.tabs--vertical .tabs__item--active,
+.tabs:not(.tabs--measured) .tabs__item--active {
+  border-bottom-color: var(--c-text);
+}
+
+/* I-CMP-10 · I-M-07 tab-indicator: one 2px line slides and resizes to the active tab,
+   0.4s ease-out-soft; it scrolls with the row (absolute inside the scroll container). */
+.tabs__indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: var(--tab-w, 0px);
+  height: 2px;
+  background: var(--c-text);
+  transform: translate3d(var(--tab-x, 0px), 0, 0);
+  transition: transform 0.4s var(--ease-out-soft), width 0.4s var(--ease-out-soft);
+  pointer-events: none;
 }
 
 .tabs__item--disabled {
@@ -66,7 +87,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tabs__item {
+  .tabs__item,
+  .tabs__indicator {
     transition: none;
   }
 }

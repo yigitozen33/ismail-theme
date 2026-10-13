@@ -5,8 +5,8 @@
  "pages": "Ana sayfa",
  "ikas": "hero-slider-section (uyarlanır)",
  "props": "`slides` COMPONENT_LIST (HeroSlide: image IMAGE, mobileImage IMAGE, title TEXT, text TEXT, buttonText TEXT, buttonLink LINK, metaText TEXT) · `autoplaySeconds`, `overlayOpacity` NUMBER · `heightMode` ENUM · `backgroundColor` COLOR",
- "desktop": "1440 × $size-hero (760), header altına uzanır. Tam kaplama görsel + %35 düz karartma (`color-scrim`). Metin bloğu sol altta, kenardan $space-page, alttan 64: text-display başlık (en fazla 2 satır, 880 genişlik), text-body açıklama (520), 24 aralıkla açık Button. Sağ altta mono meta satırı (koordinat · rakım) ve slayt sayacı `01 / 03`.",
- "mobile": "390 × 600; görsel `mobileImage` (4:5). Metin sol altta, başlık text-display mobil (48), buton tam genişlik değil. Meta satırı gizli; sayaç başlığın üstüne çıkar.",
+ "desktop": "1440 × $size-hero (760), header altına uzanır. Tam kaplama görsel + %35 düz karartma (`color-scrim`). Metin bloğu sol altta, kenardan $space-page, alttan 64: text-display başlık (en fazla 2 satır, 880 genişlik), text-body açıklama (520), 24 aralıkla açık Button. Sağ altta `hero-meta` (120 genişlik, sağa hizalı): mono koordinat satırı (`metaText`, \"41°N 29°E\"), altında slayt sayacı `01 / 03` ve 120×2 autoplay ilerleme çizgisi (`color-line` ray, `color-accent` dolgu). 2026-10-12: altimetre cetveli denendi ve kullanıcı kararıyla kaldırıldı; yalnız ilerleme çizgili sayaç kaldı.",
+ "mobile": "390 × 600; görsel `mobileImage` (4:5). Metin sol altta, başlık text-display mobil (48), buton tam genişlik değil. Koordinat satırı gizli; sayaç (sayı + ilerleme çizgisi) başlığın üstüne çıkar.",
  "tree": [
   "hero-slider",
   "├─ hero-slides                       {slides:COMPONENT_LIST}",
@@ -18,14 +18,17 @@
   "│   ├─ hero-title-mask (clip) → hero-title   {title:TEXT} text-display, koyu mod metin",
   "│   ├─ hero-description              {text:TEXT} text-body",
   "│   └─ hero-button (clip)            {buttonText:TEXT} {buttonLink:LINK}; açık Button",
-  "└─ hero-meta                         sağ alt",
-  "    ├─ hero-meta-text                {metaText:TEXT} text-label mono",
-  "    └─ hero-counter                  {code:slideCounter} text-label mono; Counter"
+  "└─ hero-meta                         sağ alt, 120 genişlik; mobilde yalnız hero-counter (başlığın üstünde)",
+  "    ├─ hero-meta-text                {metaText:TEXT} text-label mono muted",
+  "    └─ hero-counter",
+  "        ├─ counter-digits            {code:slideCounter} text-label mono; digit-mask → digit-reel + digit-sep; Counter",
+  "        └─ progress-track → progress-bar   {code:autoplayProgress} 120×2, $color-line ray + $color-accent dolgu"
  ],
  "checks": [
   "başlık kendi clip maskesinde, satır başına bir metin node'u",
   "hero-bg kabından %15 yüksek",
-  "metin kontrastı karartma üstünde ≥ 4.5"
+  "metin kontrastı karartma üstünde ≥ 4.5",
+  "counter-digits hane başına digit-mask (clip) + digit-reel"
  ],
  "anims": [
   {
@@ -79,6 +82,13 @@
    "trigger": "scroll-scrub",
    "what": "Görsel içerikten yavaş kayar",
    "to": "{ bg.y: 15% }"
+  },
+  {
+   "layer": "progress-bar",
+   "recipe": "M-08",
+   "trigger": "auto-loop",
+   "what": "Autoplay ilerleme çizgisi dolar, geçişte sıfırlanır, hover'da durur",
+   "timing": "{ duration: autoplaySeconds, ease: ease-inout, reset: 0.6 }"
   }
  ],
  "desktopOnly": [

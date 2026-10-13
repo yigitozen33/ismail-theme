@@ -216,14 +216,20 @@ hero-slider
 │       ├─ hero-slide-mask (clip)
 │       │   └─ hero-bg            {image:IMAGE} + {mobileImage:IMAGE}  ← M-02, M-27
 │       └─ hero-scrim             color-scrim
-├─ hero-text                      ortalı
+├─ hero-text                      sol alt
 │   ├─ hero-title-mask (clip)
-│   │   └─ hero-title             {title:TEXT} text-display color-inverse-text  ← M-03
-│   └─ hero-description           {text:TEXT} text-body  ← M-01
-└─ hero-cta                       Button (açık varyant) {buttonText:TEXT} {buttonLink:LINK}  ← M-01, M-11
+│   │   └─ hero-title             {title:TEXT} text-display koyu mod metin  ← M-03
+│   ├─ hero-description           {text:TEXT} text-body  ← M-01
+│   └─ hero-button                Button (açık varyant) {buttonText:TEXT} {buttonLink:LINK}  ← M-11
+└─ hero-meta                      sağ alt, 120 genişlik (yalnız masaüstü; mobilde yalnız hero-counter, başlığın üstünde)
+    ├─ hero-meta-text             {metaText:TEXT} text-label muted ("41°N 29°E")
+    └─ hero-counter
+        ├─ counter-digits         {code:slideCounter} digit-mask → digit-reel + digit-sep (Counter)  ← I-M-01
+        └─ progress-track → progress-bar   {code:autoplayProgress} 120×2  ← M-08 (2026-10-12)
 ```
-Durumlar: tek slayt (referans) · çok slayt (slayt göstergesi görünür: `{code:slide-counter}`).
-Mobil: yükseklik ≈ 560. Başlık 2 satıra kırılır. CTA ortada kalır, alt kenardan 32 yukarıda. `mobileImage` varsa o kullanılır.
+Durumlar: tek slayt (referans) · çok slayt (sayaç + ilerleme çizgisi görünür: `{code:slideCounter}`, `{code:autoplayProgress}`).
+2026-10-12: altimetre cetveli (tambur + sabit okuma) denendi, kullanıcı kararıyla kaldırıldı; sağ altta yalnız koordinat, sayaç ve autoplay ilerleme çizgisi kaldı.
+Mobil: yükseklik 600. Koordinat gizli; sayaç + ilerleme çizgisi başlığın üstünde. Başlık 2 satıra kırılır. `mobileImage` varsa o kullanılır.
 
 | Prop | Tip | Varsayılan | Grup |
 |---|---|---|---|
@@ -233,9 +239,9 @@ Mobil: yükseklik ≈ 560. Başlık 2 satıra kırılır. CTA ortada kalır, alt
 | `overlayOpacity` | NUMBER | 20 | Görünüm |
 | `backgroundColor` | COLOR | `#111111` | Görünüm |
 
-Çocuk component'ler: `HeroSlide` (image IMAGE, mobileImage IMAGE, title TEXT, text TEXT, buttonText TEXT, buttonLink LINK).
-Sub: `Button`.
-Motion: M-01, M-02, M-03, M-07, M-11, M-27.
+Çocuk component'ler: `HeroSlide` (image IMAGE, mobileImage IMAGE, title TEXT, text TEXT, buttonText TEXT, buttonLink LINK, metaText TEXT).
+Sub: `Button`, `Counter` (slayt sayacı).
+Motion: M-01, M-02, M-03, M-07, M-08, M-11, M-27, I-M-01.
 
 ### ProductGrid
 Referans: başlık (`text-h2`) + ortalı açıklama (`text-body` muted). 4 sütun × 2 satır `ProductCard` ızgarası, aralık 24, satır aralığı 32. Altta ortalı siyah hap "tümünü gör" butonu. ikas şablonu: `product-slider-section` (kart düzeni) / (özel; ızgara).

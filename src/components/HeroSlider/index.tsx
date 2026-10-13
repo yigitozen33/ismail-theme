@@ -13,7 +13,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * The section owns the slide state: it writes `data-state` onto each child `.hslide`
  * (children are opaque to the parent), runs autoplay, the parallax scrub and the slide counter.
  * I-HERO-01/02/03/05/07 are drawn by HeroSlide's CSS from that state; I-HERO-04 via Button;
- * I-HERO-06 here via Counter.
+ * I-HERO-06 (digits roll) and I-HERO-08 (M-08 autoplay progress line) here via Counter + CSS.
  */
 export function HeroSlider({ slides, ...props }: Props) {
   const {
@@ -35,9 +35,12 @@ export function HeroSlider({ slides, ...props }: Props) {
   const [ready, setReady] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [tabHidden, setTabHidden] = useState(false);
+  const [cycle, setCycle] = useState(0);
   const touchX = useRef<number | null>(null);
 
   const current = count > 0 ? Math.min(active, count - 1) : 0;
+  const secs = Number(autoplaySeconds) || 0;
+  const paused = hovered || tabHidden;
   const go = (index: number) => {
     if (count < 2) return;
     setActive((prev) => {
@@ -73,12 +76,13 @@ export function HeroSlider({ slides, ...props }: Props) {
   }, [current, count]);
 
   // Autoplay — paused on hover, while the tab is hidden, and for a single slide.
+  // Every (re)start bumps `cycle` so the progress line restarts in sync with the timer.
   useEffect(() => {
-    const secs = Number(autoplaySeconds) || 0;
-    if (count < 2 || secs <= 0 || hovered || tabHidden) return;
+    if (count < 2 || secs <= 0 || paused) return;
+    setCycle((c) => c + 1);
     const t = setTimeout(() => go(current + 1), secs * 1000);
     return () => clearTimeout(t);
-  }, [current, count, autoplaySeconds, hovered, tabHidden]);
+  }, [current, count, secs, paused]);
 
   useEffect(() => {
     const onVis = () => setTabHidden(document.hidden);
@@ -144,7 +148,7 @@ export function HeroSlider({ slides, ...props }: Props) {
   return (
     <section
       ref={rootRef}
-      className={cx("hero", `hero--${heightMode || "theme"}`, ready && "is-ready")}
+      className={cx("hero", `hero--${heightMode || "theme"}`, ready && "is-ready", paused && "is-paused")}
       style={style as any}
       aria-label={ariaLabel || undefined}
       aria-roledescription="carousel"
@@ -159,12 +163,23 @@ export function HeroSlider({ slides, ...props }: Props) {
       </div>
 
       {count > 1 && (
-        /* I-HERO-06 · I-M-01 via Counter: digits roll right-to-left on slide change */
+        /* hero-counter: I-HERO-06 · I-M-01 digits roll right-to-left; I-HERO-08 · M-08 autoplay progress line */
         <div className={cx("hero__counter", forceScheme("clear"))}>
-          <Counter value={pad(current + 1)} textClass={TEXT.label} />
-          <span className={cx("hero__counter-total", TEXT.label, "tabular")} aria-hidden="true">
-            {` / ${pad(count)}`}
+          <span className="hero__counter-digits">
+            <Counter value={pad(current + 1)} textClass={TEXT.label} />
+            <span className={cx("hero__counter-total", TEXT.label, "tabular")} aria-hidden="true">
+              {` / ${pad(count)}`}
+            </span>
           </span>
+          {secs > 0 && (
+            <span className="hero__progress" aria-hidden="true">
+              <span
+                key={`${current}-${cycle}`}
+                className="hero__progress-bar"
+                style={{ "--hero-autoplay": `${secs}s` } as any}
+              />
+            </span>
+          )}
         </div>
       )}
     </section>

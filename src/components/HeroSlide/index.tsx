@@ -18,7 +18,7 @@ export function HeroSlide({
   title = "Rotanı kendin çiz.",
   text = "Rüzgârı arkana, karı önüne al. Kış 26 saha serisi; sırtta, kampta ve şehirde aynı ciddiyetle çalışan katmanlardan oluşur.",
   buttonText = "Koleksiyonu keşfet",
-  metaText = "41°N 29°E · 2.140 M",
+  metaText = "41°N 29°E",
   buttonLink,
 }: Props) {
   const desktop = image ?? mobileImage ?? null;

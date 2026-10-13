@@ -196,10 +196,10 @@
         },
         {
           "name": "metaText",
-          "displayName": "Konum satırı",
+          "displayName": "Koordinat",
           "type": "TEXT",
           "required": false,
-          "defaultValue": "41°N 29°E · 2.140 M",
+          "defaultValue": "41°N 29°E",
           "groupId": "texts"
         },
         {

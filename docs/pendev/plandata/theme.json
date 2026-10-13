@@ -348,6 +348,18 @@
     "mobile": "kapalı (mozaik sabit)",
     "rm": "anında yükseklik değişimi",
     "stateHint": "sütun: kısa/uzun → üst karo uzadı, alt daraldı → alt karo uzadı, üst daraldı"
+   },
+   "I-M-07": {
+    "name": "Kayan sekme çizgisi",
+    "what": "Sekme değişince 2px alt çizgi eski sekmeden yenisine kayar ve yeni sekmenin genişliğine uzar; etiket rengi aynı anda muted → metin.",
+    "struct": "`tabs` satırı içinde `tab-item` ×N (alt çizgisiz) + satırın altına yapışık tek `tab-indicator` (2px, $color-text); konum ve genişlik aktif sekmeden ölçülür, kaydırılan satırla birlikte hareket eder",
+    "frm": "{ indicator.x: eski sekme, indicator.width: eski genişlik }",
+    "to": "{ indicator.x: yeni sekme, indicator.width: yeni genişlik }",
+    "timing": "{ duration: 0.4, ease: ease-out-soft }",
+    "impl": "css-transition",
+    "mobile": "aynı (yatay kaydırmalı satırda çizgi satırla kayar)",
+    "rm": "anında konum",
+    "stateHint": "çizgi: Giyim altında → Giyim ile Ekipman arasında uzamış → Ekipman altında"
    }
   }
  },
@@ -514,14 +526,14 @@
   },
   {
    "name": "Tabs",
-   "structure": "`tabs`: yatay (sekme altı 1px çizgi; aktif = 2px color-text alt çizgi) ve dikey (Account); `tab-item` text-ui",
+   "structure": "`tabs`: yatay (sekme altı 1px çizgi; aktif = 2px color-text alt çizgi) ve dikey (Account); `tab-item` text-ui · `tab-indicator`: satırın altına yapışık tek 2px çizgi, aktif sekmenin x ve genişliğinde (2026-10-12)",
    "states": "aktif · hover · dikey",
    "anims": [
     {
      "layer": "tab-item",
-     "recipe": "M-28",
-     "trigger": "hover",
-     "what": "Sekme rengi muted → metin"
+     "recipe": "I-M-07",
+     "trigger": "click",
+     "what": "Alt çizgi (tab-indicator) aktif sekmeye kayar, etiket rengi muted → metin"
     }
    ]
   },

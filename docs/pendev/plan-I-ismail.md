@@ -199,6 +199,7 @@ pen.dev hareket göstermez. Aşağıdaki yapılar çizilmezse aktarımda katmanl
 | **I-M-04** | Perde girişi | Kartlar soldan sağa sırayla alttan açılan perdeyle girer; perde yükselirken dört köşe de radius-card yuvarlak kalır, kesik kenar yok. `{ clipPath: inset(100% 0 0 0 round 6px), image.scale: 1.1 } → { clipPath: inset(0 0 0 0 round 6px), image.scale: 1 }`, `{ duration: 0.7, ease: ease-out-soft, stagger: 0.08, threshold: 0.4, once: true }` | `activity-row` içinde her kart kendi `activity-card` (clip, radius-card) frame'inde; görsel, karartma ve metin kartın içinde, perde kartın kendisine uygulanır | animejs + io-hook | aynı (yalnız ekranda görünen kartlar) | anında görünür |
 | **I-M-05** | Genişleyen kart | Üzerine gelinen kart genişler, diğerleri daralır; açılan kartta açıklama ve 'Keşfet →' belirir. Giriş bitince ilk kart kendiliğinden açılır; imleç bölümden çıkınca son açılan kart açık kalır. `{ card.flexGrow: 1, text.opacity: 0 } → { card.flexGrow: 2.6, text.opacity: 1 }`, `{ duration: 0.5, ease: ease-out-soft, text.delay: 0.15, autoOpen.delay: 0.2 }` | `activity-row` yatay flex; her `activity-card` flex-grow ile boyutlanır; `activity-text` ve `activity-link` yalnız açık kartta görünür (kapalıda opacity 0) | css-transition | scroll-snap şerit; ortaya oturan kart açık (240), diğerleri 88 | anında genişlik değişimi |
 | **I-M-06** | Dikey akordeon | İmlecin geldiği koleksiyon karosu sütun içinde uzar, aynı sütundaki komşu karo daralır; sütun yüksekliği sabit, alt kenarlar hizalı kalır. Uzayan karoda açıklama ve buton belirir, daralan karoda yalnız başlık kalır. İmleç bölümden çıkınca kısa/uzun düzen geri gelir. `{ tile.flexGrow: 1, sibling.flexGrow: 1, text.opacity: 0 } → { tile.flexGrow: 2.6, sibling.flexGrow: 1, text.opacity: 1 }`, `{ duration: 0.6, ease: ease-out-soft, text.delay: 0.15 }` | `mosaic-column` dikey flex; her `collection-tile` flex-grow ile boyutlanır (kısa 326 / uzun 510 → uzayan 600 / daralan 236); `tile-text` ve `tile-actions` yalnız uzayan karoda görünür | css-transition | kapalı (mozaik sabit) | anında yükseklik değişimi |
+| **I-M-07** | Kayan sekme çizgisi | Sekme değişince 2px alt çizgi eski sekmeden yenisine kayar ve yeni sekmenin genişliğine uzar; etiket rengi aynı anda muted → metin. `{ indicator.x: eski sekme, indicator.width: eski genişlik } → { indicator.x: yeni sekme, indicator.width: yeni genişlik }`, `{ duration: 0.4, ease: ease-out-soft }` | `tabs` satırı içinde `tab-item` ×N (alt çizgisiz) + satırın altına yapışık tek `tab-indicator` (2px, $color-text); konum ve genişlik aktif sekmeden ölçülür, kaydırılan satırla birlikte hareket eder | css-transition | aynı (yatay kaydırmalı satırda çizgi satırla kayar) | anında konum |
 
 ## 6. Yapım sırası
 
@@ -228,7 +229,7 @@ Her bileşen `reusable` kök frame; durumlar yanında ayrı frame. Önce bunlar,
 | `FavoriteButton` | `fav-button`: 28'lik `color-bg` daire; içinde `fav-icon-outline` (14, color-text) + `fav-icon-filled` (14, color-accent) üst üste | boş · dolu · hover |
 | `Counter` | `counter`: her hane bir `digit-mask` (clip, sabit genişlik) → `digit-reel`; ayraçlar ayrı metin; font-mono tabular; boyut kullanım yerinden gelir (text-label / text-display / text-badge) | durgun · yuvarlanırken |
 | `Breadcrumbs` | `breadcrumbs`: text-label mono muted, ayraç `/`, son öğe color-text | — |
-| `Tabs` | `tabs`: yatay (sekme altı 1px çizgi; aktif = 2px color-text alt çizgi) ve dikey (Account); `tab-item` text-ui | aktif · hover · dikey |
+| `Tabs` | `tabs`: yatay (sekme altı 1px çizgi; aktif = 2px color-text alt çizgi) ve dikey (Account); `tab-item` text-ui · `tab-indicator`: satırın altına yapışık tek 2px çizgi, aktif sekmenin x ve genişliğinde (2026-10-12) | aktif · hover · dikey |
 | `VariantChip` | `variant-chip`: 40 yükseklik, min 48 genişlik, radius-card, 1px color-line; seçili = color-inverse-bg dolgu | varsayılan · seçili · hover · stok yok (üstü çizili, opacity-inactive) |
 | `FormField` | `form-field`: `field-label` (text-label mono) · `field-input` 48 yükseklik, radius-card, 1px color-line, text-ui · `field-message` (text-label; hata = color-danger) | boş · dolu · odak (2px color-accent halka) · hata (+ mesaj, `$color-danger`) · pasif |
 | `Checkbox` | `checkbox`: 18 kare, radius 3, 1px color-line; işaretli = color-inverse-bg + onay ikonu · `checkbox-label` text-ui-sm | boş · işaretli |
@@ -366,15 +367,15 @@ Bileşen animasyon hedefleri (bölümlerde `via` ile anılır, kodu bileşenin i
 - id: I-CMP-09
   section: Sub/Tabs
   layer: tab-item
-  recipe: M-28
-  trigger: hover
-  what: "Sekme rengi muted → metin"
-  from: { color: color-muted }
-  to: { color: color-text }
-  timing: { duration: 0.3 }
+  recipe: I-M-07
+  trigger: click
+  what: "Alt çizgi (tab-indicator) aktif sekmeye kayar, etiket rengi muted → metin"
+  from: { indicator.x: eski sekme, indicator.width: eski genişlik }
+  to: { indicator.x: yeni sekme, indicator.width: yeni genişlik }
+  timing: { duration: 0.4, ease: ease-out-soft }
   impl: css-transition
-  mobile: aynı
-  reducedMotion: anında
+  mobile: aynı (yatay kaydırmalı satırda çizgi satırla kayar)
+  reducedMotion: anında konum
   done: false
 - id: I-CMP-10
   section: Sub/VariantChip
@@ -935,8 +936,8 @@ Kontrol: görsel ile footer zemini arasında sert çizgi yok (gradyan + bulanık
 - **Kullanıldığı yer:** Ana sayfa
 - **ikas:** hero-slider-section (uyarlanır)
 - **Prop'lar:** `slides` COMPONENT_LIST (HeroSlide: image IMAGE, mobileImage IMAGE, title TEXT, text TEXT, buttonText TEXT, buttonLink LINK, metaText TEXT) · `autoplaySeconds`, `overlayOpacity` NUMBER · `heightMode` ENUM · `backgroundColor` COLOR
-- **Desktop:** 1440 × $size-hero (760), header altına uzanır. Tam kaplama görsel + %35 düz karartma (`color-scrim`). Metin bloğu sol altta, kenardan $space-page, alttan 64: text-display başlık (en fazla 2 satır, 880 genişlik), text-body açıklama (520), 24 aralıkla açık Button. Sağ altta mono meta satırı (koordinat · rakım) ve slayt sayacı `01 / 03`.
-- **Mobil:** 390 × 600; görsel `mobileImage` (4:5). Metin sol altta, başlık text-display mobil (48), buton tam genişlik değil. Meta satırı gizli; sayaç başlığın üstüne çıkar.
+- **Desktop:** 1440 × $size-hero (760), header altına uzanır. Tam kaplama görsel + %35 düz karartma (`color-scrim`). Metin bloğu sol altta, kenardan $space-page, alttan 64: text-display başlık (en fazla 2 satır, 880 genişlik), text-body açıklama (520), 24 aralıkla açık Button. Sağ altta `hero-meta` (120 genişlik, sağa hizalı): mono koordinat satırı (`metaText`, "41°N 29°E"), altında slayt sayacı `01 / 03` ve 120×2 autoplay ilerleme çizgisi (`color-line` ray, `color-accent` dolgu). 2026-10-12: altimetre cetveli denendi ve kullanıcı kararıyla kaldırıldı; yalnız ilerleme çizgili sayaç kaldı.
+- **Mobil:** 390 × 600; görsel `mobileImage` (4:5). Metin sol altta, başlık text-display mobil (48), buton tam genişlik değil. Koordinat satırı gizli; sayaç (sayı + ilerleme çizgisi) başlığın üstüne çıkar.
 - **Yalnız masaüstü katmanlar:** `hero-meta`
 
 ```
@@ -950,12 +951,14 @@ hero-slider
 │   ├─ hero-title-mask (clip) → hero-title   {title:TEXT} text-display, koyu mod metin
 │   ├─ hero-description              {text:TEXT} text-body
 │   └─ hero-button (clip)            {buttonText:TEXT} {buttonLink:LINK}; açık Button
-└─ hero-meta                         sağ alt
-    ├─ hero-meta-text                {metaText:TEXT} text-label mono
-    └─ hero-counter                  {code:slideCounter} text-label mono; Counter
+└─ hero-meta                         sağ alt, 120 genişlik; mobilde yalnız hero-counter (başlığın üstünde)
+    ├─ hero-meta-text                {metaText:TEXT} text-label mono muted
+    └─ hero-counter
+        ├─ counter-digits            {code:slideCounter} text-label mono; digit-mask → digit-reel + digit-sep; Counter
+        └─ progress-track → progress-bar   {code:autoplayProgress} 120×2, $color-line ray + $color-accent dolgu
 ```
 
-Kontrol: başlık kendi clip maskesinde, satır başına bir metin node'u · hero-bg kabından %15 yüksek · metin kontrastı karartma üstünde ≥ 4.5
+Kontrol: başlık kendi clip maskesinde, satır başına bir metin node'u · hero-bg kabından %15 yüksek · metin kontrastı karartma üstünde ≥ 4.5 · counter-digits hane başına digit-mask (clip) + digit-reel
 
 <!-- anim-targets:start -->
 ```yaml
@@ -1051,6 +1054,19 @@ Kontrol: başlık kendi clip maskesinde, satır başına bir metin node'u · her
   impl: scroll-scrub
   mobile: kapalı
   reducedMotion: kapalı
+  done: false
+- id: I-HERO-08
+  section: HeroSlider
+  layer: progress-bar
+  recipe: M-08
+  trigger: auto-loop
+  what: "Autoplay ilerleme çizgisi dolar, geçişte sıfırlanır, hover'da durur"
+  from: { width: 0% }
+  to: { width: 100% }
+  timing: { duration: autoplaySeconds, ease: ease-inout, reset: 0.6 }
+  impl: css-transition
+  mobile: tek ince çizgi
+  reducedMotion: çubuk gizli
   done: false
 ```
 <!-- anim-targets:end -->
@@ -2733,7 +2749,7 @@ Aşağıdaki tariflerin her biri için **bir** örnek üzerinde 2–3 kare çizi
 
 ## 7. Animasyon hedefleri özeti
 
-Toplam **108 hedef**. Ayrıntılar 6.1 ve 6.2'deki `anim-targets` bloklarında.
+Toplam **109 hedef**. Ayrıntılar 6.1 ve 6.2'deki `anim-targets` bloklarında.
 
 | Bölüm | Hedef | Tarifler | ID aralığı |
 |---|---|---|---|
@@ -2745,7 +2761,7 @@ Toplam **108 hedef**. Ayrıntılar 6.1 ve 6.2'deki `anim-targets` bloklarında.
 | LocaleSwitcher | 1 | M-06 | `I-LCL-01` … `I-LCL-01` |
 | ImagePreview | 1 | M-02 | `I-PREV-01` … `I-PREV-01` |
 | Footer | 4 | M-01, M-11, M-28 | `I-FTR-01` … `I-FTR-04` |
-| HeroSlider | 7 | M-01, M-02, M-03, M-07, M-11, M-27, I-M-01 | `I-HERO-01` … `I-HERO-07` |
+| HeroSlider | 8 | M-01, M-02, M-03, M-07, M-08, M-11, M-27, I-M-01 | `I-HERO-01` … `I-HERO-08` |
 | ProductGrid | 4 | M-01, M-09, M-11 | `I-GRID-01` … `I-GRID-04` |
 | ActivityGrid | 4 | M-01, M-10, I-M-04, I-M-05 | `I-ACT-01` … `I-ACT-04` |
 | StoreSpotlight | 3 | M-01, M-11, I-M-01 | `I-SPOT-01` … `I-SPOT-03` |
@@ -2778,7 +2794,7 @@ Toplam **108 hedef**. Ayrıntılar 6.1 ve 6.2'deki `anim-targets` bloklarında.
 | Sub/ArrowLink | 1 | M-10 | `I-CMP-06` … `I-CMP-06` |
 | Sub/FavoriteButton | 1 | I-M-03 | `I-CMP-07` … `I-CMP-07` |
 | Sub/Counter | 1 | I-M-01 | `I-CMP-08` … `I-CMP-08` |
-| Sub/Tabs | 1 | M-28 | `I-CMP-09` … `I-CMP-09` |
+| Sub/Tabs | 1 | I-M-07 | `I-CMP-09` … `I-CMP-09` |
 | Sub/VariantChip | 1 | M-28 | `I-CMP-10` … `I-CMP-10` |
 | Sub/AccordionItem | 1 | M-22 | `I-CMP-11` … `I-CMP-11` |
 | Sub/SectionHeading | 1 | M-01 | `I-CMP-12` … `I-CMP-12` |
@@ -2792,6 +2808,7 @@ Toplam **108 hedef**. Ayrıntılar 6.1 ve 6.2'deki `anim-targets` bloklarında.
 | M-03 | 1 | animejs + io-hook |
 | M-06 | 2 | css-transition |
 | M-07 | 1 | animejs |
+| M-08 | 1 | css-transition |
 | M-09 | 3 | css-transition |
 | M-10 | 8 | css-transition |
 | M-11 | 18 | css-transition |
@@ -2802,13 +2819,14 @@ Toplam **108 hedef**. Ayrıntılar 6.1 ve 6.2'deki `anim-targets` bloklarında.
 | M-21 | 1 | css-transition |
 | M-22 | 4 | css-transition |
 | M-27 | 1 | scroll-scrub |
-| M-28 | 21 | css-transition |
+| M-28 | 20 | css-transition |
 | I-M-01 | 6 | animejs + io-hook |
 | I-M-02 | 1 | css-transition |
 | I-M-03 | 1 | css-keyframes |
 | I-M-04 | 1 | animejs + io-hook |
 | I-M-05 | 1 | css-transition |
 | I-M-06 | 1 | css-transition |
+| I-M-07 | 1 | css-transition |
 
 ## 8. Aktarım sonrası: animasyon üretimi
 
