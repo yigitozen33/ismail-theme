@@ -1,5 +1,6 @@
 import { createMediaSrcset, getDefaultSrc } from "@ikas/bp-storefront";
 import Button from "../../sub-components/Button";
+import LazyImg from "../../sub-components/LazyImg";
 import { cx } from "../../utils/cx";
 import { TEXT, forceScheme } from "../../utils/tokens";
 import { Props } from "./types";
@@ -24,7 +25,7 @@ export function CollectionTile({
     <div className="ctile">
       <div className="ctile__media">
         {image && (
-          <img
+          <LazyImg
             className="ctile__img"
             src={getDefaultSrc(image)}
             srcSet={createMediaSrcset(image)}

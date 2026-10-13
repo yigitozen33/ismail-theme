@@ -10,6 +10,7 @@ import { cx } from "../../utils/cx";
 import { TEXT, upperTr } from "../../utils/tokens";
 import ArrowLink from "../ArrowLink";
 import Icon from "../Icon";
+import LazyImg from "../LazyImg";
 
 interface Props {
   blog: IkasBlog;
@@ -46,7 +47,7 @@ const BlogCard = observer(function BlogCard({
     <article className={cx("bcard", className)}>
       <a className="bcard__media" href={href} tabIndex={-1} aria-hidden="true" style={{ aspectRatio }}>
         {image ? (
-          <img
+          <LazyImg
             className="bcard__img"
             src={getDefaultSrc(image)}
             srcSet={createMediaSrcset(image)}

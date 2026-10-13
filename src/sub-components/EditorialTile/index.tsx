@@ -2,6 +2,7 @@ import { IkasImage, createMediaSrcset, getDefaultSrc } from "@ikas/bp-storefront
 import { cx } from "../../utils/cx";
 import { TEXT, forceScheme } from "../../utils/tokens";
 import ArrowLink from "../ArrowLink";
+import LazyImg from "../LazyImg";
 
 interface Props {
   image: IkasImage;
@@ -19,7 +20,7 @@ interface Props {
 export default function EditorialTile({ image, title, text, linkText, href, className }: Props) {
   return (
     <article className={cx("edtile", className)}>
-      <img
+      <LazyImg
         className="edtile__img"
         src={getDefaultSrc(image)}
         srcSet={createMediaSrcset(image)}

@@ -1,5 +1,6 @@
 import { createMediaSrcset, getDefaultSrc } from "@ikas/bp-storefront";
 import Icon from "../../sub-components/Icon";
+import LazyImg from "../../sub-components/LazyImg";
 import { cx } from "../../utils/cx";
 import { TEXT, forceScheme } from "../../utils/tokens";
 import { Props } from "./types";
@@ -27,7 +28,7 @@ export function ActivityCard({
     <Tag className="acard" {...linkAttrs}>
       <div className="acard__media">
         {image && (
-          <img
+          <LazyImg
             className="acard__img"
             src={getDefaultSrc(image)}
             srcSet={createMediaSrcset(image)}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { IkasComponentRenderer, createMediaSrcset, getDefaultSrc } from "@ikas/bp-storefront";
 import Button from "../../sub-components/Button";
 import Icon from "../../sub-components/Icon";
+import LazyImg from "../../sub-components/LazyImg";
 import Skeleton from "../../sub-components/Skeleton";
 import { cx } from "../../utils/cx";
 import { BREAKPOINT, TEXT } from "../../utils/tokens";
@@ -73,7 +74,7 @@ export function StoreLocator(props: Props) {
           <div ref={featureRef} className="sloc__feature" aria-live="polite">
             <div className="sloc__media">
               {store?.image ? (
-                <img
+                <LazyImg
                   key={version}
                   className="sloc__img"
                   src={getDefaultSrc(store.image)}

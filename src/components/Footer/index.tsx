@@ -13,6 +13,7 @@ import {
 import Button from "../../sub-components/Button";
 import FormField from "../../sub-components/FormField";
 import Icon from "../../sub-components/Icon";
+import LazyImg from "../../sub-components/LazyImg";
 import LocaleSwitcher, { currentLocaleLabel, hasLocaleAlternatives, hasLocaleOptions } from "../../sub-components/LocaleSwitcher";
 import { cx } from "../../utils/cx";
 import { useMounted } from "../../utils/hooks";
@@ -111,7 +112,7 @@ export function Footer(props: Props) {
     <footer className={cx("ftr", forceScheme("ink"))} style={backgroundColor ? { backgroundColor } : undefined}>
       <div className="ftr__band">
         {ctaImage && (
-          <img
+          <LazyImg
             className="ftr__band-img"
             src={getDefaultSrc(ctaImage)}
             srcSet={createMediaSrcset(ctaImage)}

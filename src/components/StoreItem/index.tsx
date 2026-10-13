@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { IkasImage, createMediaSrcset, getDefaultSrc } from "@ikas/bp-storefront";
 import ArrowLink from "../../sub-components/ArrowLink";
 import Icon from "../../sub-components/Icon";
+import LazyImg from "../../sub-components/LazyImg";
 import { cx } from "../../utils/cx";
 import { TEXT } from "../../utils/tokens";
 import { SCOPED_EVENT, emitScoped, onScoped } from "../../utils/ui";
@@ -101,7 +102,7 @@ export function StoreItem({
       <article className="sitem__card">
         <div className="sitem__media">
           {image && (
-            <img
+            <LazyImg
               className="sitem__img"
               src={getDefaultSrc(image)}
               srcSet={createMediaSrcset(image)}

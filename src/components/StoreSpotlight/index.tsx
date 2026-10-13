@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { createMediaSrcset, getDefaultSrc } from "@ikas/bp-storefront";
 import Button from "../../sub-components/Button";
 import Counter from "../../sub-components/Counter";
+import LazyImg from "../../sub-components/LazyImg";
 import { cx } from "../../utils/cx";
 import { prefersReducedMotion, useReveal } from "../../utils/hooks";
 import { TEXT } from "../../utils/tokens";
@@ -56,7 +57,7 @@ export function StoreSpotlight({
     >
       <div className="spot__media">
         {image && (
-          <img
+          <LazyImg
             className="spot__img"
             src={getDefaultSrc(image)}
             srcSet={createMediaSrcset(image)}

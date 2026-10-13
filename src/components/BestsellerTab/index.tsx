@@ -11,6 +11,7 @@ import {
 } from "@ikas/bp-storefront";
 import FavoriteButton from "../../sub-components/FavoriteButton";
 import Icon from "../../sub-components/Icon";
+import LazyImg from "../../sub-components/LazyImg";
 import { cx } from "../../utils/cx";
 import { toggleFavorite } from "../../utils/favorites";
 import { TEXT } from "../../utils/tokens";
@@ -63,7 +64,7 @@ export function BestsellerTab({
                 <span className={cx("btab__rank", TEXT.priceLg, "tabular")}>{pad(i + 1)}</span>
                 <span className="btab__media">
                   {image ? (
-                    <img
+                    <LazyImg
                       className="btab__img"
                       src={getDefaultSrc(image)}
                       srcSet={createMediaSrcset(image)}
@@ -105,7 +106,7 @@ export function BestsellerTab({
               const image = mainImage(product);
               if (!image) return null;
               return (
-                <img
+                <LazyImg
                   key={product.id}
                   className={cx("btab__preview-img", product === current && "is-active")}
                   src={getDefaultSrc(image)}
