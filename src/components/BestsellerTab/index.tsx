@@ -13,6 +13,7 @@ import FavoriteButton from "../../sub-components/FavoriteButton";
 import Icon from "../../sub-components/Icon";
 import LazyImg from "../../sub-components/LazyImg";
 import { cx } from "../../utils/cx";
+import { isKeyboardFocus } from "../../utils/hooks";
 import { toggleFavorite } from "../../utils/favorites";
 import { TEXT } from "../../utils/tokens";
 import { UI_EVENT, emitUi } from "../../utils/ui";
@@ -57,8 +58,9 @@ export function BestsellerTab({
               key={product.id}
               className={cx("btab__row", isActive && "is-active")}
               style={{ "--i": i } as any}
-              onMouseEnter={() => setActive(i)}
-              onFocusCapture={() => setActive(i)}
+              // mouse hover / keyboard focus only: a tap follows the link, the preview must not jump first
+              onPointerEnter={(e) => e.pointerType === "mouse" && setActive(i)}
+              onFocusCapture={(e) => isKeyboardFocus(e.target) && setActive(i)}
             >
               <a className="btab__link" href={getProductHref(product)}>
                 <span className={cx("btab__rank", TEXT.priceLg, "tabular")}>{pad(i + 1)}</span>

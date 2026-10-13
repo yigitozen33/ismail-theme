@@ -226,6 +226,24 @@
   }
 }
 
+/* touch screens: there is no hover for the active row to follow, so no row is marked and every row keeps its
+   thumbnail (the preview stays on the first product) */
+@media (hover: none) {
+  .btab__row.is-active {
+    border-bottom-color: var(--c-line);
+    background: var(--c-transparent);
+  }
+
+  .btab__row.is-active .btab__rank,
+  .btab__row.is-active .btab__name {
+    color: var(--c-muted);
+  }
+
+  .btab__row.is-active .btab__media {
+    display: inline-flex;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btab__row,
   .btab__rank,
