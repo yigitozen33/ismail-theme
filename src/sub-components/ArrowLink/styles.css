@@ -63,6 +63,16 @@
   }
 }
 
+/* touch: the hover state while pressed (ArrowLink sets .is-pressed) */
+.alink.is-pressed .alink__arrow-top {
+  transform: translateX(120%);
+}
+
+.alink.is-pressed .alink__arrow-bottom {
+  transform: translateX(0);
+}
+
+.alink.is-pressed .alink__line,
 .alink:focus-visible .alink__line {
   transform: scaleX(1);
 }
