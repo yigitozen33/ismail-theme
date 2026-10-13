@@ -7,7 +7,7 @@ export function prefersReducedMotion() {
 
 /**
  * io-hook: SSR renders the end state; after hydration the element gets `is-pending`
- * (start state) until it scrolls into view, then `is-inview`. Returns the class to apply.
+ * (start state) until it scrolls into view or receives focus, then `is-inview`. Returns the class to apply.
  */
 export function useReveal<T extends Element>(ref: RefObject<T>, options?: { threshold?: number; rootMargin?: string }) {
   const [state, setState] = useState<"idle" | "pending" | "inview">("idle");
@@ -21,17 +21,22 @@ export function useReveal<T extends Element>(ref: RefObject<T>, options?: { thre
       return;
     }
     setState("pending");
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setState("inview");
-          io.disconnect();
-        }
-      },
-      { threshold: options?.threshold ?? 0.15, rootMargin: options?.rootMargin ?? "0px 0px -10% 0px" },
-    );
+    const show = () => {
+      setState("inview");
+      io.disconnect();
+      el.removeEventListener("focusin", show);
+    };
+    const io = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && show(), {
+      threshold: options?.threshold ?? 0.15,
+      rootMargin: options?.rootMargin ?? "0px 0px -10% 0px",
+    });
     io.observe(el);
-    return () => io.disconnect();
+    // keyboard focus can land inside before enough of it scrolls in — never focus a hidden start state
+    el.addEventListener("focusin", show);
+    return () => {
+      io.disconnect();
+      el.removeEventListener("focusin", show);
+    };
   }, []);
   return state === "pending" ? "is-pending" : state === "inview" ? "is-inview" : "";
 }

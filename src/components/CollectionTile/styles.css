@@ -18,6 +18,11 @@
   --o: 0;
 }
 
+/* focus inside (title link or button) always shows the description + button */
+.ctile:focus-within {
+  --o: 1;
+}
+
 .ctile__media {
   position: absolute;
   inset: 0;

@@ -53,8 +53,9 @@ export function CollectionMosaic({ tiles, ...props }: Props) {
   const canHover = () =>
     window.innerWidth > BREAKPOINT.tablet && !!window.matchMedia?.("(hover: hover)").matches;
 
+  // keyboard focus opens the tile on desktop even without a hover-capable pointer
   const onOver = (e: Event) => {
-    if (!canHover()) return;
+    if (e.type === "focusin" ? window.innerWidth <= BREAKPOINT.tablet : !canHover()) return;
     const tile = (e.target as HTMLElement | null)?.closest?.(".ctile");
     if (!tile) return;
     const els = tilesEls();
