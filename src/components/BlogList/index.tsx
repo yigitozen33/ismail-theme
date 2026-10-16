@@ -1,5 +1,11 @@
-import { useRef } from "preact/hooks";
-import { getBlogListNextPage, getIkasBlogCategoryHref, hasBlogListNextPage, withRoutePrefix } from "@ikas/bp-storefront";
+import { useEffect, useRef, useState } from "preact/hooks";
+import {
+  getBlogListNextPage,
+  getBlogListPage,
+  getIkasBlogCategoryHref,
+  hasBlogListNextPage,
+  withRoutePrefix,
+} from "@ikas/bp-storefront";
 import BlogCard from "../../sub-components/BlogCard";
 import Button from "../../sub-components/Button";
 import SectionHeading from "../../sub-components/SectionHeading";
@@ -10,6 +16,8 @@ import { TEXT } from "../../utils/tokens";
 import { Props } from "./types";
 
 const ALL = "__all__";
+
+const trimSlash = (path: string) => path.replace(/\/+$/, "") || "/";
 
 /**
  * I/Section/BlogList — left SectionHeading, category Tabs (links, I-BLOG-02 · M-28 via Tabs), BlogCard grid:
@@ -32,9 +40,27 @@ export function BlogList({
   const gridRef = useRef<HTMLDivElement>(null);
   const reveal = useReveal(gridRef);
 
-  const posts = (blogs?.data ?? []).filter((b) => !b.deleted);
   const cats = (categories?.data ?? []).filter((c) => !c.deleted);
-  const activeId = blogs?.filterCategoryId ?? ALL;
+  // On a blog category page the list can arrive unfiltered: the category comes from the URL.
+  // Read after mount so the server markup hydrates first and the switch is a real re-render.
+  const [pageCategoryId, setPageCategoryId] = useState<string | null>(null);
+  useEffect(() => {
+    const path = trimSlash(window.location.pathname);
+    const match = cats.find((c) => {
+      const href = getIkasBlogCategoryHref(c);
+      return !!href && trimSlash(href) === path;
+    });
+    setPageCategoryId(match?.id ?? null);
+  }, [cats.map((c) => c.id).join()]);
+  const activeId = blogs?.filterCategoryId ?? pageCategoryId ?? ALL;
+  const posts = (blogs?.data ?? []).filter((b) => !b.deleted && (activeId === ALL || b.categoryId === activeId));
+
+  useEffect(() => {
+    if (!blogs || !pageCategoryId || blogs.filterCategoryId === pageCategoryId) return;
+    blogs.filterCategoryId = pageCategoryId;
+    getBlogListPage(blogs, 1);
+  }, [blogs, pageCategoryId]);
+
   const loading = !!blogs?.isLoading;
   const canLoadMore = !!blogs && hasBlogListNextPage(blogs);
   const pageSize = Math.max(1, blogs?.limit || 9);
@@ -53,7 +79,8 @@ export function BlogList({
 
       {tabs.length > 0 && (
         <div className="blist__tabs">
-          <Tabs items={tabs} value={activeId} ariaLabel={tabsAriaLabel} />
+          {/* keyed: hydration keeps the server's active class, so a category picked from the URL remounts the row */}
+          <Tabs key={activeId} items={tabs} value={activeId} ariaLabel={tabsAriaLabel} />
         </div>
       )}
 
