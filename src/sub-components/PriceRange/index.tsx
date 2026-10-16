@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { cx } from "../../utils/cx";
 import { TEXT } from "../../utils/tokens";
 
@@ -22,7 +22,7 @@ export interface PriceRangeProps {
   maxAriaLabel: string;
   showSlider?: boolean;
   disabled?: boolean;
-  /** Committed on blur / Enter / slider release. Values equal to the bounds are sent as null. */
+  /** Committed on blur / Enter / slider release (keyboard steps: after a short pause). Values equal to the bounds are sent as null. */
   onChange?: (value: PriceRangeValue) => void;
   /** Live while dragging the slider. */
   onInput?: (value: PriceRangeValue) => void;
@@ -31,6 +31,9 @@ export interface PriceRangeProps {
 }
 
 const clamp = (n: number, a: number, b: number) => Math.min(Math.max(n, a), b);
+
+/** Keyboard / assistive-tech slider steps settle for this long before they are committed. */
+const KEY_COMMIT_DELAY = 400;
 
 /** Accepts "5.000", "5.000,50", "750 TL" → number (tr-TR grouping). */
 function parseAmount(text: string): number | null {
@@ -66,9 +69,28 @@ export default function PriceRange({
   const [hi, setHi] = useState(hi0);
   const [loText, setLoText] = useState<string | null>(null);
   const [hiText, setHiText] = useState<string | null>(null);
+  // Thumb held by a pointer: the drag stays local and is committed once, on release.
+  const held = useRef(false);
+  // Latest thumb values (pointer/change handlers run outside render) and the last committed pair.
+  const live = useRef({ lo, hi });
+  const committed = useRef({ lo: lo0, hi: hi0 });
+  const keyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loRangeRef = useRef<HTMLInputElement>(null);
+  const hiRangeRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => setLo(lo0), [lo0]);
-  useEffect(() => setHi(hi0), [hi0]);
+  // Follow the applied filter, but never yank a thumb the user is holding (list refreshes re-render us).
+  useEffect(() => {
+    committed.current = { ...committed.current, lo: lo0 };
+    if (held.current) return;
+    live.current.lo = lo0;
+    setLo(lo0);
+  }, [lo0]);
+  useEffect(() => {
+    committed.current = { ...committed.current, hi: hi0 };
+    if (held.current) return;
+    live.current.hi = hi0;
+    setHi(hi0);
+  }, [hi0]);
 
   const span = max - min || 1;
   const toValue = (a: number, b: number): PriceRangeValue => ({
@@ -79,10 +101,46 @@ export default function PriceRange({
   const commit = (a: number, b: number) => {
     const na = clamp(Math.min(a, b), min, max);
     const nb = clamp(Math.max(a, b), min, max);
+    live.current = { lo: na, hi: nb };
     setLo(na);
     setHi(nb);
+    if (na === committed.current.lo && nb === committed.current.hi) return;
+    committed.current = { lo: na, hi: nb };
     onChange?.(toValue(na, nb));
   };
+  const commitLive = () => commit(live.current.lo, live.current.hi);
+  const commitLiveRef = useRef(commitLive);
+  commitLiveRef.current = commitLive;
+
+  // Pointer drag: commit once when the thumb is let go (anywhere on the page).
+  const onRangeDown = () => {
+    if (keyTimer.current) clearTimeout(keyTimer.current);
+    held.current = true;
+    const release = () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+      held.current = false;
+      commitLiveRef.current();
+    };
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+  };
+
+  // Keyboard / assistive tech: the native `change` event fires per step; commit after a pause.
+  // Bound natively — the runtime's preact/compat turns an `onChange` prop on a range input into `input`.
+  useEffect(() => {
+    const onNativeChange = () => {
+      if (held.current) return;
+      if (keyTimer.current) clearTimeout(keyTimer.current);
+      keyTimer.current = setTimeout(() => commitLiveRef.current(), KEY_COMMIT_DELAY);
+    };
+    const els = [loRangeRef.current, hiRangeRef.current].filter(Boolean) as HTMLInputElement[];
+    els.forEach((el) => el.addEventListener("change", onNativeChange));
+    return () => {
+      els.forEach((el) => el.removeEventListener("change", onNativeChange));
+      if (keyTimer.current) clearTimeout(keyTimer.current);
+    };
+  }, [showSlider, max > min]);
 
   const commitText = (which: "lo" | "hi") => {
     const text = which === "lo" ? loText : hiText;
@@ -150,6 +208,7 @@ export default function PriceRange({
           <span className="prange__track" aria-hidden="true" />
           <span className="prange__fill" aria-hidden="true" />
           <input
+            ref={loRangeRef}
             className={cx("prange__range", lo >= max && "prange__range--top")}
             type="range"
             min={min}
@@ -159,15 +218,17 @@ export default function PriceRange({
             disabled={disabled}
             aria-label={minAriaLabel}
             aria-valuetext={formatValue(lo)}
+            onPointerDown={onRangeDown}
             onInput={(e) => {
-              const n = Math.min(Number((e.currentTarget as HTMLInputElement).value), hi);
+              const n = Math.min(Number((e.currentTarget as HTMLInputElement).value), live.current.hi);
               (e.currentTarget as HTMLInputElement).value = String(n);
+              live.current.lo = n;
               setLo(n);
-              onInput?.(toValue(n, hi));
+              onInput?.(toValue(n, live.current.hi));
             }}
-            onChange={(e) => commit(Number((e.currentTarget as HTMLInputElement).value), hi)}
           />
           <input
+            ref={hiRangeRef}
             className="prange__range"
             type="range"
             min={min}
@@ -177,13 +238,14 @@ export default function PriceRange({
             disabled={disabled}
             aria-label={maxAriaLabel}
             aria-valuetext={formatValue(hi)}
+            onPointerDown={onRangeDown}
             onInput={(e) => {
-              const n = Math.max(Number((e.currentTarget as HTMLInputElement).value), lo);
+              const n = Math.max(Number((e.currentTarget as HTMLInputElement).value), live.current.lo);
               (e.currentTarget as HTMLInputElement).value = String(n);
+              live.current.hi = n;
               setHi(n);
-              onInput?.(toValue(lo, n));
+              onInput?.(toValue(live.current.lo, n));
             }}
-            onChange={(e) => commit(lo, Number((e.currentTarget as HTMLInputElement).value))}
           />
         </div>
       )}

@@ -216,7 +216,7 @@ const RangeValues = observer(function RangeValues({
       minAriaLabel={texts.priceMinAriaLabel}
       maxAriaLabel={texts.priceMaxAriaLabel}
       idPrefix={idPrefix}
-      disabled={list.isLoading}
+      // Not disabled while the list refetches: disabling blurs a focused box / thumb mid-edit.
       onChange={(v) => {
         onNumberRangeFilterChange(filter, v.min == null && v.max == null ? null : { from: v.min ?? min, to: v.max ?? max });
         getProductListInitialData(list);
