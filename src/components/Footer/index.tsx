@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   IkasComponentRenderer,
   createMediaSrcset,
@@ -41,7 +41,7 @@ const etbisIdOf = (href?: string) => (href ?? "").split(/[?#]/)[0].split("/").fi
  * I/Section/Footer — always Mürekkep (ink). Hero (image + scrim, CTA bottom-left);
  * a dark hang tag rides over the hero's lower edge: left stub = BrandMarquee, perforation, body with the
  * FooterService row, FooterColumn children + newsletter, support line and the ETBİS badge. Below the tag:
- * status · social · copyright + LocaleSwitcher trigger.
+ * status (open FooterStore children slide in turn, or statusText) · social · copyright + LocaleSwitcher trigger.
  * Anims: I-FTR-01 (FooterColumn) · I-FTR-02 (SocialLink) · I-FTR-03 (Button) · I-FTR-04 (here) ·
  * I-FTR-05/06 (BrandMarquee, I-M-08).
  */
@@ -75,6 +75,10 @@ export function Footer(props: Props) {
     etbisLink,
     etbisAltText = "ETBİS'e kayıtlıdır",
     statusText = "ŞU AN AÇIK · KADIKÖY MAĞAZASI 21:00'E KADAR",
+    stores,
+    statusOpenText = "ŞU AN AÇIK",
+    statusClosedText = "MAĞAZALARIMIZ ŞU AN KAPALI",
+    statusInterval = 4,
     socialLinks,
     copyrightText = "© 2026 İSMAİL. TÜM HAKLARI SAKLIDIR.",
     localeText = "TL · Türkçe",
@@ -143,6 +147,37 @@ export function Footer(props: Props) {
   const serviceList = toList(services);
   const columnList = toList(columns);
   const socialList = toList(socialLinks);
+  // Memoised: a new array makes IkasComponentRenderer re-mount the stores, which resets their open state.
+  const storeList = useMemo(() => toList(stores), [stores]);
+  const statusTrackRef = useRef<HTMLDivElement>(null);
+  const [anyOpen, setAnyOpen] = useState<boolean | null>(null);
+
+  // The FooterStore children are opaque: each marks data-open itself. One open store at a time gets
+  // data-state="on" (slides in), the previous one "out" (slides up); a single open store just stays.
+  useEffect(() => {
+    const track = statusTrackRef.current;
+    if (!track) return;
+    const show = (advance: boolean) => {
+      const open = Array.from(track.querySelectorAll<HTMLElement>('.fstore[data-open="1"]'));
+      setAnyOpen(open.length > 0);
+      const current = track.querySelector<HTMLElement>('.fstore[data-state="on"]');
+      let index = current ? open.indexOf(current) : -1;
+      if (advance || index < 0) index = open.length ? (index + 1) % open.length : -1;
+      const next = index >= 0 ? open[index] : null;
+      if (next === current) return;
+      track.querySelectorAll('.fstore[data-state="out"]').forEach((el) => el.removeAttribute("data-state"));
+      if (current) current.setAttribute("data-state", "out");
+      if (next) next.setAttribute("data-state", "on");
+    };
+    show(false);
+    const observer = new MutationObserver(() => show(false));
+    observer.observe(track, { subtree: true, childList: true, attributes: true, attributeFilter: ["data-open"] });
+    const timer = setInterval(() => show(true), Math.max(1.5, Number(statusInterval) || 4) * 1000);
+    return () => {
+      observer.disconnect();
+      clearInterval(timer);
+    };
+  }, [storeList, statusInterval]);
   // A single routing (no other country/currency or language) has nothing to pick: plain text, no button.
   const canSwitch = mounted && hasLocaleAlternatives();
   const localeLabel = (canSwitch && currentLocaleLabel()) || localeText;
@@ -301,7 +336,18 @@ export function Footer(props: Props) {
       </div>
 
       <div className="ftr__bottom">
-        {statusText && <p className={cx("ftr__status", TEXT.label)}>{statusText}</p>}
+        {storeList.length > 0 ? (
+          <div className={cx("ftr__status", TEXT.label, anyOpen === false && !statusClosedText && "is-empty")}>
+            {anyOpen === true && statusOpenText && <span className="ftr__status-lead">{statusOpenText} ·</span>}
+            {anyOpen === false && statusClosedText}
+            {/* I-FTR-07: open stores take turns, sliding up */}
+            <div ref={statusTrackRef} className={cx("ftr__status-track", anyOpen === false && "is-empty")}>
+              <IkasComponentRenderer id="footer-stores" components={storeList} parentProps={props} />
+            </div>
+          </div>
+        ) : (
+          statusText && <p className={cx("ftr__status", TEXT.label)}>{statusText}</p>
+        )}
         {socialList.length > 0 && (
           /* I-FTR-02 · M-28 via SocialLink */
           <div className="ftr__social">

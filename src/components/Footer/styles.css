@@ -300,6 +300,79 @@
   color: var(--c-muted);
 }
 
+/* status: "ŞU AN AÇIK ·" + the open FooterStore lines stacked in one cell; I-FTR-07 slides them up in turn */
+.ftr__status {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5ch;
+  min-width: 0;
+}
+
+.ftr__status.is-empty,
+.ftr__status-track.is-empty {
+  display: none;
+}
+
+.ftr__status-lead {
+  flex-shrink: 0;
+}
+
+.ftr__status-track {
+  display: inline-grid;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ftr__status-track .fstore {
+  grid-area: 1 / 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  visibility: hidden;
+}
+
+.ftr__status-track .fstore[data-state="on"] {
+  visibility: visible;
+  animation: ftr-status-in 0.5s var(--ease-out-soft) both;
+}
+
+.ftr__status-track .fstore[data-state="out"] {
+  visibility: visible;
+  animation: ftr-status-out 0.5s var(--ease-out-soft) both;
+}
+
+@keyframes ftr-status-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ftr-status-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ftr__status-track .fstore[data-state="on"] {
+    animation: none;
+  }
+
+  .ftr__status-track .fstore[data-state="out"] {
+    visibility: hidden;
+    animation: none;
+  }
+}
+
 .ftr__social {
   display: flex;
   grid-column: 2;

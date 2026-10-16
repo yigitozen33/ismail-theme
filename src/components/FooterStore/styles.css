@@ -1,0 +1,4 @@
+/* Stacking, visibility and the slide between open stores live in Footer (.ftr__status-track). */
+.fstore {
+  white-space: nowrap;
+}

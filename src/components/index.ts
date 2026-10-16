@@ -38,3 +38,4 @@ export { ServiceHighlight } from "./ServiceHighlight/index";
 export { ProductDetail } from "./ProductDetail/index";
 export { ProductReviews } from "./ProductReviews/index";
 export { FooterService } from "./FooterService/index";
+export { FooterStore } from "./FooterStore/index";

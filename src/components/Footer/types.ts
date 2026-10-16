@@ -58,7 +58,7 @@ export interface Props {
   etbisLink?: IkasNavigationLink | null;
   /** ETBİS karekodunun ekran okuyucu açıklaması. */
   etbisAltText?: string;
-  /** Footer'ın en alt satırının solunda görünen kısa bilgi (ör. mağaza çalışma durumu). Boş bırakılırsa gizlenir. */
+  /** Açık mağaza satırı listesi boşken footer'ın en alt satırının solunda sabit görünen kısa bilgi. Boş bırakılırsa gizlenir. */
   statusText?: string;
   /** Açılırsa e-posta bülteni alanının altında pazarlama izni onay kutusu görünür. Kapalıyken yalnızca e-posta ile kayıt olunur. */
   showConsentCheckbox?: boolean;
@@ -72,4 +72,12 @@ export interface Props {
   consentErrorText?: string;
   /** Hero görselinin ortasına, başlık ve düğmenin okunması için eklenen hafif karartmanın yoğunluğu (0–100). 0 karartmayı kaldırır; alttaki koyu geçiş her zaman kalır. */
   overlayOpacity?: number;
+  /** Footer alt satırında, o an açık olan mağazalar sırayla kayarak gösterilir. Liste boşsa Alt satır durum metni sabit görünür. */
+  stores?: any;
+  /** Dönen mağaza metninin önünde sabit duran yazı. Boş bırakılırsa yalnızca mağaza metni görünür. */
+  statusOpenText?: string;
+  /** Listedeki mağazaların hiçbiri o an açık değilse alt satırda görünen metin. Boş bırakılırsa satır gizlenir. */
+  statusClosedText?: string;
+  /** Birden fazla mağaza açıkken her mağaza metninin ekranda kalma süresi, saniye cinsinden. */
+  statusInterval?: number;
 }

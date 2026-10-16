@@ -4565,7 +4565,7 @@
           "displayName": "Alt satır durum metni",
           "type": "TEXT",
           "required": false,
-          "description": "Footer'ın en alt satırının solunda görünen kısa bilgi (ör. mağaza çalışma durumu). Boş bırakılırsa gizlenir.",
+          "description": "Açık mağaza satırı listesi boşken footer'ın en alt satırının solunda sabit görünen kısa bilgi. Boş bırakılırsa gizlenir.",
           "groupId": "texts"
         },
         {
@@ -4619,6 +4619,44 @@
           "required": false,
           "description": "Hero görselinin ortasına, başlık ve düğmenin okunması için eklenen hafif karartmanın yoğunluğu (0–100). 0 karartmayı kaldırır; alttaki koyu geçiş her zaman kalır.",
           "defaultValue": 100,
+          "groupId": "settings"
+        },
+        {
+          "name": "stores",
+          "displayName": "Açık mağaza satırı",
+          "type": "COMPONENT_LIST",
+          "required": false,
+          "description": "Footer alt satırında, o an açık olan mağazalar sırayla kayarak gösterilir. Liste boşsa Alt satır durum metni sabit görünür.",
+          "groupId": "components",
+          "filteredComponentIds": [
+            "kbd4ii47-cVF7CJiWoe"
+          ]
+        },
+        {
+          "name": "statusOpenText",
+          "displayName": "Açık mağaza ön metni",
+          "type": "TEXT",
+          "required": false,
+          "description": "Dönen mağaza metninin önünde sabit duran yazı. Boş bırakılırsa yalnızca mağaza metni görünür.",
+          "defaultValue": "ŞU AN AÇIK",
+          "groupId": "texts"
+        },
+        {
+          "name": "statusClosedText",
+          "displayName": "Hepsi kapalıyken metin",
+          "type": "TEXT",
+          "required": false,
+          "description": "Listedeki mağazaların hiçbiri o an açık değilse alt satırda görünen metin. Boş bırakılırsa satır gizlenir.",
+          "defaultValue": "MAĞAZALARIMIZ ŞU AN KAPALI",
+          "groupId": "texts"
+        },
+        {
+          "name": "statusInterval",
+          "displayName": "Mağaza geçiş süresi (sn)",
+          "type": "NUMBER",
+          "required": false,
+          "description": "Birden fazla mağaza açıkken her mağaza metninin ekranda kalma süresi, saniye cinsinden.",
+          "defaultValue": 4,
           "groupId": "settings"
         }
       ],
@@ -7621,6 +7659,42 @@
         {
           "id": "texts",
           "name": "Metinler"
+        }
+      ]
+    },
+    {
+      "id": "kbd4ii47-cVF7CJiWoe",
+      "name": "FooterStore",
+      "entry": "./src/components/FooterStore/index.tsx",
+      "styles": "./src/components/FooterStore/styles.css",
+      "props": [
+        {
+          "name": "name",
+          "displayName": "Görünen metin",
+          "type": "TEXT",
+          "required": false,
+          "description": "Mağaza açıkken footer alt satırında, açık yazısının yanında dönen metin (ör. KADIKÖY MAĞAZASI 21:00'E KADAR). Boş bırakılırsa mağaza gösterilmez.",
+          "defaultValue": "KADIKÖY MAĞAZASI 21:00'E KADAR",
+          "groupId": "texts"
+        },
+        {
+          "name": "hours",
+          "displayName": "Çalışma saatleri",
+          "type": "TEXT",
+          "required": false,
+          "description": "Açılış ve kapanış saati, ör. 10:00–21:00 (İstanbul saati). Gece yarısını geçen aralıklar da olur (ör. 18:00–02:00). Mağaza yalnızca bu saatler arasında gösterilir.",
+          "defaultValue": "10:00–21:00",
+          "groupId": "settings"
+        }
+      ],
+      "propGroups": [
+        {
+          "id": "texts",
+          "name": "Metinler"
+        },
+        {
+          "id": "settings",
+          "name": "Ayarlar"
         }
       ]
     }
