@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import {
   IkasCustomerReviewList,
   IkasImage,
+  IkasStorefrontConfig,
   Router,
   customerStore,
   getCustomerReviewListPage,
@@ -43,9 +44,20 @@ function pageNumbers(current: number, total: number): (number | "gap")[] {
 }
 
 /**
+ * Whether the store publishes new reviews without merchant approval. `isAutoApprove` is sent in the
+ * storefront's customerReviewSettings but is not in the typed model; undefined when it is missing.
+ */
+function isReviewAutoApproved(): boolean | undefined {
+  const settings = IkasStorefrontConfig.customerReviewSettings as { isAutoApprove?: boolean | null } | null | undefined;
+  return typeof settings?.isAutoApprove === "boolean" ? settings.isAutoApprove : undefined;
+}
+
+/**
  * I/Section/ProductReviews — 420 summary (score, stars, 5→1 bars, Yorum yaz) beside the
  * ReviewCard list (I-REV-01 · M-01 stagger) with numbered pagination. States: yorumlu, boş,
  * yorum formu (login-required per isCustomerReviewLoginRequired). Review photos open ImagePreview.
+ * After a submit the note follows the store's approval setting: successText while the review waits for
+ * approval, publishedSuccessText (and a reloaded list + summary) when it is published right away.
  */
 export function ProductReviews({
   product,
@@ -76,6 +88,7 @@ export function ProductReviews({
   submitText = "Gönder",
   submittingText = "Gönderiliyor…",
   successText = "Yorumun onaylandıktan sonra yayınlanır.",
+  publishedSuccessText = "Yorumun yayınlandı. Teşekkürler!",
   starRequiredText = "Bir puan seç.",
   formErrorText = "Yorum gönderilemedi, tekrar dene.",
   loginRequiredText = "Yorum yazmak için giriş yapmalısın.",
@@ -85,7 +98,9 @@ export function ProductReviews({
   const [list, setList] = useState<IkasCustomerReviewList | null>(null);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [sent, setSent] = useState<"pending" | "published" | null>(null);
+  // Stars of reviews published in this visit; the product's summary (count, average, bars) is from page load.
+  const [added, setAdded] = useState<number[]>([]);
   const [failed, setFailed] = useState(false);
   const [preview, setPreview] = useState<{ images: IkasImage[]; index: number } | null>(null);
   const [, setTick] = useState(0);
@@ -94,27 +109,41 @@ export function ProductReviews({
   const reveal = useReveal(bodyRef);
   const limit = Math.max(1, reviewsPerPage || 3);
 
-  const load = () => {
-    if (!product) return;
+  const load = (): Promise<IkasCustomerReviewList | null> => {
+    if (!product) return Promise.resolve(null);
     setLoading(true);
-    getProductCustomerReviews(product, limit)
-      .then((res) => setList(res))
-      .catch(() => setList(null))
+    return getProductCustomerReviews(product, limit)
+      .then((res) => {
+        setList(res);
+        return res;
+      })
+      .catch(() => {
+        setList(null);
+        return null;
+      })
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, [product?.id, limit]);
+  useEffect(() => {
+    setAdded([]);
+    load();
+  }, [product?.id, limit]);
 
   if (!product) return null;
 
   const enabled = isCustomerReviewEnabled(product);
   const needsLogin = isCustomerReviewLoginRequired(product) && !hasCustomer(customerStore);
+  const autoApproved = isReviewAutoApproved();
   const reviews = list?.data ?? [];
-  const total = product.reviewCount ?? list?.count ?? 0;
-  const average = product.averageRating ?? 0;
+  const baseTotal = product.reviewCount ?? list?.count ?? 0;
+  const total = baseTotal + added.length;
+  const average = total ? ((product.averageRating ?? 0) * baseTotal + added.reduce((a, b) => a + b, 0)) / total : 0;
   const isEmpty = !loading && total === 0 && reviews.length === 0;
   const score = isEmpty ? "0" : average.toFixed(1).replace(".", ",");
-  const stars = [5, 4, 3, 2, 1].map((s) => ({ star: s, count: product.stars?.find((x) => x.star === s)?.count ?? 0 }));
+  const stars = [5, 4, 3, 2, 1].map((s) => ({
+    star: s,
+    count: (product.stars?.find((x) => x.star === s)?.count ?? 0) + added.filter((x) => x === s).length,
+  }));
   const starsTotal = stars.reduce((a, b) => a + b.count, 0) || 1;
   const pageCount = list ? getCustomerReviewListPageCount(list) : 0;
   const form = getIkasProductCustomerReviewForm(product);
@@ -136,7 +165,7 @@ export function ProductReviews({
       closeForm();
       return;
     }
-    setSent(false);
+    setSent(null);
     setFailed(false);
     setFormOpen(true);
     requestAnimationFrame(() => mainRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
@@ -152,12 +181,21 @@ export function ProductReviews({
     e.preventDefault();
     if (form.isSubmitting) return;
     setFailed(false);
+    const star = Number(form.star.value) || 0;
+    const countBefore = list?.count ?? 0;
     const ok = await submitCustomerReviewForm(form);
     if (ok) {
       clearIkasProductCustomerReviewForm(product);
       setFormOpen(false);
-      setSent(true);
-      load();
+      const res = await load();
+      // Unknown setting: the review is published if the reloaded list grew.
+      const published = autoApproved ?? (res?.count ?? 0) > countBefore;
+      setSent(published ? "published" : "pending");
+      if (published) {
+        setAdded((a) => [...a, star]);
+        // The list can lag the write by a moment; look once more if the new review is not there yet.
+        if ((res?.count ?? 0) <= countBefore) setTimeout(load, 1500);
+      }
     } else if (!form.star.hasError && !form.title.hasError && !form.comment.hasError) {
       setFailed(true);
     }
@@ -210,10 +248,10 @@ export function ProductReviews({
         </div>
 
         <div ref={mainRef} className="rev__main">
-          {sent && successText && (
+          {sent && (sent === "published" ? publishedSuccessText : successText) && (
             <p className={cx("rev__notice", TEXT.uiSm)} role="status">
               <Icon name="circle-check" size={16} className="rev__notice-icon" />
-              {successText}
+              {sent === "published" ? publishedSuccessText : successText}
             </p>
           )}
 
@@ -279,7 +317,8 @@ export function ProductReviews({
                       label={form.isSubmitting ? submittingText : submitText}
                       state={form.isSubmitting ? "loading" : "idle"}
                     />
-                    {successText && <p className={cx("rev__form-note", TEXT.uiSm)}>{successText}</p>}
+                    {/* only when the store is known to hold reviews for approval */}
+                    {autoApproved === false && successText && <p className={cx("rev__form-note", TEXT.uiSm)}>{successText}</p>}
                   </div>
                 </>
               )}

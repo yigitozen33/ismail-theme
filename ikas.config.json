@@ -7465,7 +7465,7 @@
           "required": false,
           "defaultValue": "Yorumun onaylandıktan sonra yayınlanır.",
           "groupId": "texts-form",
-          "description": "Formda gönder düğmesinin yanında ve yorum gönderildikten sonra gösterilen onay notu."
+          "description": "Mağaza yorumları onaydan sonra yayınlıyorsa, formda gönder düğmesinin yanında ve yorum gönderildikten sonra gösterilen not."
         },
         {
           "name": "starRequiredText",
@@ -7510,6 +7510,15 @@
           "required": false,
           "groupId": "colors",
           "description": "Değerlendirme bölümünün arka plan rengi. Boş bırakılırsa temanın varsayılan rengi kullanılır."
+        },
+        {
+          "name": "publishedSuccessText",
+          "displayName": "Yayınlandı notu",
+          "type": "TEXT",
+          "required": false,
+          "description": "Mağaza yorumları onaysız yayınlıyorsa, yorum gönderildikten sonra gösterilen not. Onay gerekiyorsa bunun yerine Onay notu gösterilir.",
+          "defaultValue": "Yorumun yayınlandı. Teşekkürler!",
+          "groupId": "texts-form"
         }
       ],
       "propGroups": [

@@ -56,7 +56,7 @@ export interface Props {
   submitText?: string;
   /** Yorum gönderilirken gönder düğmesinde görünen metin. */
   submittingText?: string;
-  /** Formda gönder düğmesinin yanında ve yorum gönderildikten sonra gösterilen onay notu. */
+  /** Mağaza yorumları onaydan sonra yayınlıyorsa, formda gönder düğmesinin yanında ve yorum gönderildikten sonra gösterilen not. */
   successText?: string;
   /** Yorum formu puan seçilmeden gönderildiğinde yıldızların altında gösterilen uyarı. */
   starRequiredText?: string;
@@ -68,4 +68,6 @@ export interface Props {
   reviewsPerPage?: number;
   /** Değerlendirme bölümünün arka plan rengi. Boş bırakılırsa temanın varsayılan rengi kullanılır. */
   backgroundColor?: string;
+  /** Mağaza yorumları onaysız yayınlıyorsa, yorum gönderildikten sonra gösterilen not. Onay gerekiyorsa bunun yerine Onay notu gösterilir. */
+  publishedSuccessText?: string;
 }
