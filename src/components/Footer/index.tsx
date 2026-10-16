@@ -38,7 +38,7 @@ const toList = (v: any) => (Array.isArray(v) ? v : v ? [v] : []).flat().filter(B
 const etbisIdOf = (href?: string) => (href ?? "").split(/[?#]/)[0].split("/").filter(Boolean).pop() ?? "";
 
 /**
- * I/Section/Footer — always Mürekkep (ink). Hero (image + scrim, CTA bottom-left, contact bottom-right);
+ * I/Section/Footer — always Mürekkep (ink). Hero (image + scrim, CTA bottom-left);
  * a dark hang tag rides over the hero's lower edge: left stub = BrandMarquee, perforation, body with the
  * FooterService row, FooterColumn children + newsletter, support line and the ETBİS badge. Below the tag:
  * status · social · copyright + LocaleSwitcher trigger.
@@ -51,8 +51,6 @@ export function Footer(props: Props) {
     ctaTitle = "Sorun mu var?\nYaz, birlikte çözelim.",
     ctaButtonText = "Bize ulaş",
     ctaButtonLink,
-    contactText = "0850 000 00 00 · 09:00–18:00",
-    contactLink,
     marqueeText = "İSMAİL",
     marqueeImages,
     services,
@@ -177,12 +175,8 @@ export function Footer(props: Props) {
                 /* I-FTR-03 · M-11 via Button */
                 <Button label={ctaButtonText} href={ctaButtonLink?.href} className="ftr__hero-btn" />
               )}
-              {contactText && (
-                <ContactText text={contactText} href={contactLink?.href} className="ftr__contact ftr__contact--mobile" />
-              )}
             </div>
           </div>
-          {contactText && <ContactText text={contactText} href={contactLink?.href} className="ftr__contact ftr__contact--desktop" />}
         </div>
       </div>
 
@@ -356,16 +350,6 @@ export function Footer(props: Props) {
         </div>
       </div>
     </footer>
-  );
-}
-
-function ContactText({ text, href, className }: { text: string; href?: string; className: string }) {
-  return href ? (
-    <a className={cx(className, TEXT.label)} href={href}>
-      {text}
-    </a>
-  ) : (
-    <p className={cx(className, TEXT.label)}>{text}</p>
   );
 }
 

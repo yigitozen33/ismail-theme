@@ -30,10 +30,6 @@ export interface Props {
   columns?: any;
   /** Footer'ın en alt satırının ortasında görünen sosyal medya hesap bağlantıları. Eklenmezse alan gizlenir. */
   socialLinks?: any;
-  /** Hero'nun sağ altında görünen iletişim bilgisi (ör. telefon ve saatler). Boş bırakılırsa gizlenir. */
-  contactText?: string;
-  /** İletişim metnine tıklanınca gidilecek adres, örneğin telefon veya iletişim sayfası. Boşsa metin bağlantısız görünür. */
-  contactLink?: IkasNavigationLink | null;
   /** En alt satırın sağındaki dil ve para birimi düğmesinde, mağazada seçim yoksa görünen yedek metin. */
   localeText?: string;
   /** Dil ve para birimi panelinde ülke ve para birimi seçeneklerinin başlığı. */

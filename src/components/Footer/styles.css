@@ -82,16 +82,6 @@
   gap: 16px;
 }
 
-.ftr__contact {
-  margin: 0;
-  color: var(--c-muted);
-  text-decoration: none;
-}
-
-.ftr__contact--mobile {
-  display: none;
-}
-
 /* ── Tag: dark surface hung over the hero, stitched inner frame ── */
 .ftr__tag {
   position: relative;
@@ -350,7 +340,6 @@
 }
 
 .ftr__locale-btn:focus-visible,
-.ftr__contact:focus-visible,
 .ftr__etbis a:focus-visible {
   outline: 2px solid var(--c-accent);
   outline-offset: 2px;
@@ -434,14 +423,6 @@
 
   .ftr__hero-actions {
     width: 100%;
-  }
-
-  .ftr__contact--mobile {
-    display: block;
-  }
-
-  .ftr__contact--desktop {
-    display: none;
   }
 
   .ftr__tag {

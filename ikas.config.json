@@ -4442,23 +4442,6 @@
           "description": "Footer'ın en alt satırının ortasında görünen sosyal medya hesap bağlantıları. Eklenmezse alan gizlenir."
         },
         {
-          "name": "contactText",
-          "displayName": "İletişim metni",
-          "type": "TEXT",
-          "required": false,
-          "defaultValue": "Bize ulaş: 0850 000 00 00",
-          "groupId": "texts",
-          "description": "Hero'nun sağ altında görünen iletişim bilgisi (ör. telefon ve saatler). Boş bırakılırsa gizlenir."
-        },
-        {
-          "name": "contactLink",
-          "displayName": "İletişim bağlantısı",
-          "type": "LINK",
-          "required": false,
-          "groupId": "links",
-          "description": "İletişim metnine tıklanınca gidilecek adres, örneğin telefon veya iletişim sayfası. Boşsa metin bağlantısız görünür."
-        },
-        {
           "name": "localeText",
           "displayName": "Dil/para birimi düğmesi",
           "type": "TEXT",
