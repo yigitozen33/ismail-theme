@@ -185,6 +185,11 @@
   transition: opacity var(--dur-base) var(--ease-standard);
 }
 
+.cartp__coupon-applied--invalid .cartp__coupon-code {
+  color: var(--c-muted);
+  text-decoration: line-through;
+}
+
 .cartp__coupon-applied--busy {
   opacity: var(--opacity-inactive);
 }

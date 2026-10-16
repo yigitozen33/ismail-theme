@@ -6,6 +6,7 @@ import {
   formatCurrency,
   getCheckoutUrlFromCartStore,
   getCouponCodeForm,
+  getIkasOrderCouponAdjustment,
   getIkasOrderDisplayedAdjustments,
   getIkasOrderFormattedShippingTotal,
   getIkasOrderFormattedTotalPrice,
@@ -15,6 +16,7 @@ import {
   getOrderAdjustmentDisplayName,
   getOrderAdjustmentFormattedAmount,
   initCouponCodeForm,
+  removeCouponCode,
   removeCouponCodeForm,
   setCouponCodeFormCouponCode,
   submitCouponCodeForm,
@@ -50,7 +52,12 @@ interface CouponTexts {
   couponRemoveText: string;
 }
 
-/** coupon-form · coupon-message · coupon-applied — getCouponCodeForm → submit / remove. States: kupon hatası, uygulandı. */
+/**
+ * coupon-form · coupon-message · coupon-applied — getCouponCodeForm → submit / remove. States: kupon hatası, uygulandı.
+ * A code that exists but does not apply to this cart is still stored on `cart.couponCode`, so
+ * "applied" means a coupon adjustment is present (gift card codes land on `giftCardLines`);
+ * a fresh dangling code is cleared and reported as invalid, an older one is listed as not valid.
+ */
 const CouponBox = observer(function CouponBox({
   disabled,
   couponLabel,
@@ -64,7 +71,9 @@ const CouponBox = observer(function CouponBox({
   const form = getCouponCodeForm(customerStore);
   const [message, setMessage] = useState<"success" | "error" | null>(null);
   const [removing, setRemoving] = useState(false);
-  const appliedCode = cartStore.cart?.couponCode;
+  const cart = cartStore.cart;
+  const appliedCode = cart?.couponCode && getIkasOrderCouponAdjustment(cart) ? cart.couponCode : null;
+  const danglingCode = cart?.couponCode && !appliedCode ? cart.couponCode : null;
 
   useEffect(() => {
     initCouponCodeForm(form);
@@ -76,9 +85,13 @@ const CouponBox = observer(function CouponBox({
   const onSubmit = async (e: Event) => {
     e.preventDefault();
     if (disabled || submitting || !value.trim()) return;
+    const giftCards = cartStore.cart?.giftCardLines?.length ?? 0;
     const ok = await submitCouponCodeForm(form);
-    setMessage(ok ? "success" : "error");
-    if (ok) setCouponCodeFormCouponCode(form, "");
+    const next = cartStore.cart;
+    const applied = ok && ((!!next?.couponCode && !!getIkasOrderCouponAdjustment(next)) || (next?.giftCardLines?.length ?? 0) > giftCards);
+    if (ok && !applied && next?.couponCode) await removeCouponCode(next);
+    setMessage(applied ? "success" : "error");
+    if (applied) setCouponCodeFormCouponCode(form, "");
   };
 
   const onRemove = async () => {
@@ -122,10 +135,15 @@ const CouponBox = observer(function CouponBox({
           {isError ? couponErrorText : couponSuccessText}
         </p>
       )}
-      {appliedCode && (
-        <div className={cx("cartp__coupon-applied", removing && "cartp__coupon-applied--busy")}>
+      {danglingCode && !message && couponErrorText && (
+        <p className={cx("cartp__coupon-msg", "cartp__coupon-msg--error", TEXT.uiXs)} role="alert">
+          {couponErrorText}
+        </p>
+      )}
+      {(appliedCode || danglingCode) && (
+        <div className={cx("cartp__coupon-applied", danglingCode && "cartp__coupon-applied--invalid", removing && "cartp__coupon-applied--busy")}>
           <Icon name="ticket" size={14} />
-          <span className={cx("cartp__coupon-code", TEXT.label, "tabular")}>{appliedCode}</span>
+          <span className={cx("cartp__coupon-code", TEXT.label, "tabular")}>{appliedCode || danglingCode}</span>
           {couponRemoveText && (
             <button type="button" className={cx("cartp__coupon-remove", TEXT.uiSm)} onClick={onRemove} disabled={removing}>
               {couponRemoveText}

@@ -4,6 +4,7 @@ import {
   Router,
   cartStore,
   getCheckoutUrlFromCartStore,
+  getIkasOrderCouponAdjustment,
   getIkasOrderDisplayedAdjustments,
   getIkasOrderFormattedTotalFinalPrice,
   getIkasOrderTotalItemCount,
@@ -54,7 +55,13 @@ interface Props extends CartDrawerTexts {
   recommendProducts?: IkasProductList | null;
 }
 
-/** Coupon toggle → FormField + apply; applied code row with remove. */
+/**
+ * Coupon toggle → FormField + apply; applied code row with remove. The API keeps a code that
+ * exists but does not apply to this cart (min. amount, products, dates…) on `cart.couponCode`
+ * without a coupon adjustment, so "applied" means a coupon adjustment is present; a dangling
+ * code is cleared again and shown as an error; one left on the cart (it stopped applying after
+ * the cart changed) is listed as not valid with remove. Gift card codes land on `giftCardLines`.
+ */
 const Coupon = observer(function Coupon(t: {
   couponToggleText: string;
   couponPlaceholder: string;
@@ -69,19 +76,28 @@ const Coupon = observer(function Coupon(t: {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   if (!cart) return null;
-  const applied = cart.couponCode;
+  const applied = cart.couponCode && getIkasOrderCouponAdjustment(cart) ? cart.couponCode : null;
+  const dangling = !!cart.couponCode && !applied;
 
   const apply = async () => {
     const value = code.trim();
     if (!value || busy) return;
     setBusy(true);
     setError("");
+    const giftCards = cart.giftCardLines?.length ?? 0;
     try {
       const res = await saveCouponCode(cart, value);
-      if (res?.success && cartStore.cart?.couponCode) {
+      const next = cartStore.cart;
+      const couponOk = !!next?.couponCode && !!getIkasOrderCouponAdjustment(next);
+      const giftCardOk = (next?.giftCardLines?.length ?? 0) > giftCards;
+      if (res?.success && (couponOk || giftCardOk)) {
         setCode("");
         setOpen(false);
-      } else setError(t.couponErrorText);
+        return;
+      }
+      if (res?.success && next?.couponCode) await removeCouponCode(next);
+      setOpen(true);
+      setError(t.couponErrorText);
     } catch {
       setError(t.couponErrorText);
     } finally {
@@ -99,16 +115,23 @@ const Coupon = observer(function Coupon(t: {
     }
   };
 
-  if (applied) {
+  if (applied || dangling) {
     return (
-      <div className="cdrw__coupon-applied">
-        <span className={cx("cdrw__coupon-code", TEXT.uiSm)}>
-          <Icon name="tag" size={14} />
-          {fillText(t.couponAppliedText, { code: applied })}
-        </span>
-        <button type="button" className={cx("cdrw__text-btn", TEXT.uiSm)} onClick={remove} disabled={busy}>
-          {t.couponRemoveText}
-        </button>
+      <div className="cdrw__coupon">
+        <div className="cdrw__coupon-applied">
+          <span className={cx("cdrw__coupon-code", dangling && "cdrw__coupon-code--invalid", TEXT.uiSm)}>
+            <Icon name="tag" size={14} />
+            {applied ? fillText(t.couponAppliedText, { code: applied }) : cart.couponCode}
+          </span>
+          <button type="button" className={cx("cdrw__text-btn", TEXT.uiSm)} onClick={remove} disabled={busy}>
+            {t.couponRemoveText}
+          </button>
+        </div>
+        {dangling && t.couponErrorText && (
+          <p className={cx("cdrw__coupon-error", TEXT.uiXs)} role="alert">
+            {t.couponErrorText}
+          </p>
+        )}
       </div>
     );
   }

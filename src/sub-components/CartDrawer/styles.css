@@ -255,6 +255,16 @@
   color: var(--c-success);
 }
 
+.cdrw__coupon-code--invalid {
+  color: var(--c-muted);
+  text-decoration: line-through;
+}
+
+.cdrw__coupon-error {
+  margin: 4px 0 0;
+  color: var(--c-danger);
+}
+
 .cdrw__text-btn {
   padding: 0;
   border: 0;
