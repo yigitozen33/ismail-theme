@@ -137,6 +137,17 @@
     opacity: 0;
   }
 
+  /* favourite appears on card hover (or keyboard focus); an active heart stays visible */
+  .pcard__fav:not(.fav--on) {
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+  }
+
+  .pcard:hover .pcard__fav,
+  .pcard__fav:focus-visible {
+    opacity: 1;
+  }
+
   .pcard__cart:not(:disabled):hover,
   .pcard:hover .pcard__cart:not(:disabled) {
     background: var(--c-inverse-bg);
@@ -160,7 +171,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .pcard__img--front,
-  .pcard__cart {
+  .pcard__cart,
+  .pcard__fav {
     transition: none;
   }
 }
