@@ -663,7 +663,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-  border: var(--size-line) solid var(--c-line);
+  border: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   border-radius: var(--radius-card);
 }
 
@@ -776,9 +776,18 @@
   min-width: 0;
 }
 
+/* one soft line between the accordions (under the whole item, not between a title and its open text) */
 .pdp__accordions {
   display: flex;
   flex-direction: column;
+}
+
+.pdp__accordions .acc__head {
+  border-bottom: 0;
+}
+
+.pdp__accordions .acc + .acc {
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 /* mobile sticky buy bar */
@@ -863,7 +872,7 @@
     align-items: center;
     gap: 12px;
     padding: 12px var(--space-page) calc(12px + env(safe-area-inset-bottom, 0px));
-    border-top: var(--size-line) solid var(--c-line);
+    border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
     background: var(--c-bg);
     visibility: hidden;
     transform: translateY(100%);

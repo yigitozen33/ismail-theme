@@ -51,17 +51,19 @@
   min-width: 0;
 }
 
-/* cart-lines */
+/* cart-lines: one soft line between lines only — the head above and the recommendations below are spaced off */
 .cartp__lines {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: var(--size-line) solid var(--c-line);
 }
 
 .cartp__line {
   padding: 20px 0;
-  border-bottom: var(--size-line) solid var(--c-line);
+}
+
+.cartp__line + .cartp__line {
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 /* cart-skeleton (yükleniyor) */
@@ -244,7 +246,7 @@
 
 .cartp__sum-row--total {
   padding-top: 12px;
-  border-top: var(--size-line) solid var(--c-line);
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .cartp__sum-total-label {

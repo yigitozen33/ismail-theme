@@ -53,7 +53,7 @@
   width: 260px;
   padding: 8px;
   box-sizing: border-box;
-  border: 1px solid var(--c-line);
+  border: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   border-radius: var(--radius-card);
   background: var(--c-bg);
   clip-path: inset(0 0 100% 0 round var(--radius-card));

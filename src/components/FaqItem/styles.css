@@ -1,3 +1,9 @@
+/* one soft line under the whole item, not between the question and its open answer */
 .faqi {
   width: 100%;
+  border-bottom: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
+}
+
+.faqi .acc__head {
+  border-bottom: 0;
 }

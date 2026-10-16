@@ -78,7 +78,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 20px;
-  border: 1px solid var(--c-line);
+  border: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
   border-radius: var(--radius-card);
 }
 
@@ -125,7 +125,7 @@
   flex-direction: column;
   gap: 12px;
   padding-top: 8px;
-  border-top: 1px solid var(--c-line);
+  border-top: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .aodet__item {
@@ -186,7 +186,7 @@
 
 .aodet__total {
   padding-top: 12px;
-  border-top: 1px solid var(--c-line);
+  border-top: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .aodet__total-value {
@@ -219,7 +219,7 @@
   align-items: center;
   gap: 16px;
   padding: 16px;
-  border: 1px solid var(--c-line);
+  border: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
   border-radius: var(--radius-card);
   transition: border-color var(--dur-fast) var(--ease-standard);
 }

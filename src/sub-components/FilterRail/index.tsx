@@ -119,7 +119,6 @@ const FilterRail = observer(function FilterRail({ productList, open, onToggle, a
             texts={{ title: texts.selectedTitle, clearText: texts.clearText, removeAriaLabel: texts.removeAriaLabel }}
           />
           <FilterPanel
-            className={cx(count === 0 && "frail__groups--top")}
             productList={productList}
             texts={panelTexts}
             variant="panel"

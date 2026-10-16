@@ -219,6 +219,6 @@
     position: static;
     width: 100%;
     max-width: none;
-    border: 1px solid var(--c-line);
+    border: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
   }
 }

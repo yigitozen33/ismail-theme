@@ -23,7 +23,6 @@
   max-width: 100%;
   background: var(--c-bg);
   color: var(--c-text);
-  border-left: var(--size-line) solid var(--c-line);
   /* I-CART-01 · M-20: slides in from the right (spring-drawer ≈ out-soft 0.5s) */
   transform: translateX(100%);
   transition: transform 0.5s var(--ease-out-soft);
@@ -55,7 +54,7 @@
   flex-shrink: 0;
   height: 72px;
   padding: 0 8px 0 var(--space-panel);
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   box-sizing: border-box;
 }
 
@@ -136,7 +135,7 @@
   flex-direction: column;
   gap: 12px;
   padding-top: 8px;
-  border-top: var(--size-line) solid var(--c-line);
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .cdrw__recommend-title {
@@ -187,7 +186,7 @@
   flex-shrink: 0;
   gap: 12px;
   padding: var(--space-panel);
-  border-top: var(--size-line) solid var(--c-line);
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .cdrw__coupon {
@@ -330,7 +329,6 @@
 @media (max-width: bp(KUQjO8W6p9)) {
   .cdrw__panel {
     width: 100%;
-    border-left: 0;
   }
 
   .cdrw__head {

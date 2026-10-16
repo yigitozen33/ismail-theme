@@ -11,8 +11,7 @@
   align-items: center;
   gap: 16px;
   padding: 16px 0;
-  border-top: 1px solid var(--c-line);
-  border-bottom: 1px solid var(--c-line);
+  border-top: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .aset__toggle {
@@ -77,7 +76,7 @@
 
 .aset__block--delete {
   padding-top: 16px;
-  border-top: 1px solid var(--c-line);
+  border-top: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .aset__block-text {

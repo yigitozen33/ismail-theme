@@ -122,7 +122,7 @@
 .bpost__body hr {
   width: 100%;
   border: 0;
-  border-top: var(--size-line) solid var(--c-line);
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .bpost__body table {
@@ -133,7 +133,7 @@
 .bpost__body th,
 .bpost__body td {
   padding: 8px 0;
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   text-align: left;
 }
 
@@ -144,7 +144,7 @@
   align-items: center;
   gap: 16px;
   padding: 16px 0;
-  border-top: var(--size-line) solid var(--c-line);
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .bpost__share-label {

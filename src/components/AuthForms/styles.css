@@ -149,7 +149,7 @@
 .auth__divider-line {
   flex: 1;
   height: var(--size-line);
-  background: var(--c-line);
+  background: color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .auth__divider-text {

@@ -173,7 +173,7 @@
     align-items: stretch;
     gap: 28px;
     width: 100%;
-    border-bottom: 1px solid var(--c-line);
+    border-bottom: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
     overflow-x: auto;
   }
 

@@ -70,7 +70,7 @@
   justify-content: space-between;
   height: 56px;
   padding: 0 8px 0 16px;
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .bsheet__title {
@@ -91,7 +91,7 @@
 .bsheet__footer {
   flex-shrink: 0;
   padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
-  border-top: var(--size-line) solid var(--c-line);
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   background: var(--c-bg);
 }
 

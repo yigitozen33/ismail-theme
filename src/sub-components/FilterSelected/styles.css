@@ -59,7 +59,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px 0;
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .fsel__head {

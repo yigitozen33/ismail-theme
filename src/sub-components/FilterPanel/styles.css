@@ -5,9 +5,13 @@
   min-width: 0;
 }
 
-/* filter-group: head + values, one line under the whole group (not between head and body) */
+/* filter-group: head + values, one soft line between groups (not between head and body, none after the last) */
 .fpanel__group {
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
+}
+
+.fpanel__item:last-child .fpanel__group {
+  border-bottom: 0;
 }
 
 .fpanel__group .acc__head {

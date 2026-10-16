@@ -14,7 +14,7 @@
   max-width: 1376px;
   margin: 0 auto;
   padding-top: 48px;
-  border-top: var(--size-line) solid var(--c-line);
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 /* ---------- summary ---------- */
@@ -176,7 +176,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 24px 0;
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .rev__pages {

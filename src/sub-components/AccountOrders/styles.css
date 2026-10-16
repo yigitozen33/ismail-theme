@@ -24,7 +24,11 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
-  border-bottom: 1px solid var(--c-line);
+  border-bottom: 1px solid color-mix(in srgb, var(--c-line) 50%, transparent);
+}
+
+.aord__row:last-child {
+  border-bottom: 0;
 }
 
 .aord__head {

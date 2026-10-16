@@ -34,7 +34,7 @@
   margin: 0;
 }
 
-/* filter-bar · I-PLP-01 · M-18 — 72 tall, lines top/bottom, sticks under the header */
+/* filter-bar · I-PLP-01 · M-18 — 72 tall, one soft line under it (spacing above does the grouping), sticks under the header */
 .plp__bar {
   position: sticky;
   top: var(--size-header-stuck);
@@ -45,14 +45,9 @@
   gap: 16px;
   height: 72px;
   box-sizing: border-box;
-  border-top: var(--size-line) solid var(--c-line);
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   background: var(--c-bg);
   transition: border-color 0.3s var(--ease-standard);
-}
-
-.plp__bar.is-stuck {
-  border-top-color: var(--c-transparent);
 }
 
 /* filter-left: count | divider | pills */
@@ -79,7 +74,7 @@
   flex-shrink: 0;
   width: 1px;
   height: 16px;
-  background: var(--c-line);
+  background: color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 /* `.plp` prefix: FilterPills' own .fpills rules load after this file at equal specificity. */
@@ -240,7 +235,7 @@
   transition: transform var(--dur-base) var(--ease-standard);
 }
 
-/* sort sheet: sort-options 8 16, rows 52 with a bottom line, radio 20 */
+/* sort sheet: sort-options 8 16, rows 52 (no lines between options — the row height spaces them), radio 20 */
 .plp-sort .bsheet__panel {
   padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 }
@@ -261,15 +256,10 @@
   margin: 0;
   padding: 0;
   border: 0;
-  border-bottom: var(--size-line) solid var(--c-line);
   background: var(--c-transparent);
   color: var(--c-text);
   text-align: left;
   cursor: pointer;
-}
-
-.plp-sort__row:last-child {
-  border-bottom: 0;
 }
 
 .plp-sort__row--on .plp-sort__label {
@@ -319,12 +309,11 @@
     height: 56px;
     margin: 0 calc(-1 * var(--space-page));
     padding: 0 var(--space-page);
-    border-top: 0;
     border-bottom-color: var(--c-transparent);
   }
 
   .plp__bar.is-stuck {
-    border-bottom-color: var(--c-line);
+    border-bottom-color: color-mix(in srgb, var(--c-line) 50%, transparent);
   }
 
   /* filter-active-chips: one row, scrolls sideways */

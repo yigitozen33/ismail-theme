@@ -100,7 +100,7 @@
 
 .sg__th {
   padding: 8px 10px;
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   color: var(--c-muted);
   font-weight: 400;
   text-align: left;
@@ -166,7 +166,7 @@
 }
 
 .sg__rich th {
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   font-weight: 400;
 }
 
@@ -176,7 +176,7 @@
   flex-direction: column;
   gap: 12px;
   padding-top: var(--space-md);
-  border-top: var(--size-line) solid var(--c-line);
+  border-top: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
 }
 
 .sg__howto-title {

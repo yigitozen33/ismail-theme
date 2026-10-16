@@ -58,7 +58,7 @@
   flex-direction: column;
   gap: 20px;
   padding: 28px;
-  border: var(--size-line) solid var(--c-line);
+  border: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   border-radius: var(--radius-card);
   animation: _ovqsdHMO4b 0.4s var(--ease-standard) both;
 }
