@@ -11,7 +11,7 @@
   display: block;
   aspect-ratio: 4 / 5;
   overflow: hidden;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-media);
   background: var(--c-surface);
 }
 

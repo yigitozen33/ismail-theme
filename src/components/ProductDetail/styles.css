@@ -84,7 +84,7 @@
   padding: 0;
   overflow: hidden;
   border: 2px solid var(--c-transparent);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-media);
   background: var(--c-surface);
   color: var(--c-text);
   cursor: pointer;
@@ -168,7 +168,7 @@
   padding: 0;
   overflow: hidden;
   border: 0;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-media);
   background: var(--c-surface);
   color: var(--c-muted);
   cursor: zoom-in;
@@ -771,7 +771,7 @@
 .pdp__skel-gallery {
   flex: 1 1 auto;
   height: 700px;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-media);
   background: var(--c-surface);
 }
 
