@@ -16,6 +16,8 @@ const STEP_PX = 80;
 const STIFFNESS = 170;
 const DAMPING = 21;
 const TILT = [-3, 2, -2, 3];
+/** How far ahead of the viewport the hover images start loading (they never compete with LCP). */
+const PRELOAD_MARGIN = "400px 0px";
 
 /**
  * I/Section/Footer › footer-marquee.
@@ -24,6 +26,7 @@ const TILT = [-3, 2, -2, 3];
  * Decorative: aria-hidden; stops under reduced motion.
  * I-FTR-06 (I-M-08): fine pointer over this area only — a 4:5 image box follows the cursor on a spring and
  * shows the next image every STEP_PX of travel. Never on touch or under reduced motion.
+ * Images are not in the DOM (so not requested) until the stub is within PRELOAD_MARGIN of the viewport.
  */
 export default function BrandMarquee({ text = "İSMAİL", images = [], className }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -31,6 +34,7 @@ export default function BrandMarquee({ text = "İSMAİL", images = [], className
   const cardRef = useRef<HTMLDivElement>(null);
   const [enabled, setEnabled] = useState(false);
   const [armed, setArmed] = useState(false);
+  const [near, setNear] = useState(false);
   const [visible, setVisible] = useState(false);
   const [index, setIndex] = useState(0);
   const sim = useRef({ x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0, px: 0, py: 0, travel: 0, raf: 0, last: 0 });
@@ -47,6 +51,18 @@ export default function BrandMarquee({ text = "İSMAİL", images = [], className
     fine.addEventListener?.("change", update);
     return () => fine.removeEventListener?.("change", update);
   }, [imgs.length]);
+
+  // Hover images wait for the footer to scroll near, then load once (ready before the first hover).
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!enabled || near || !el) return;
+    if (typeof IntersectionObserver === "undefined") return setNear(true);
+    const io = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && setNear(true), {
+      rootMargin: PRELOAD_MARGIN,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [enabled, near]);
 
   useEffect(() => () => cancelAnimationFrame(sim.current.raf), []);
 
@@ -135,7 +151,7 @@ export default function BrandMarquee({ text = "İSMAİL", images = [], className
           ))}
         </div>
       </div>
-      {enabled && armed && (
+      {enabled && (near || armed) && (
         <div ref={boxRef} className="bmq__box">
           <div ref={cardRef} className={cx("bmq__card", visible && "is-visible")} style={{ rotate: `${TILT[index % TILT.length]}deg` }}>
             {imgs.map((img, i) => (
@@ -146,6 +162,7 @@ export default function BrandMarquee({ text = "İSMAİL", images = [], className
                 srcSet={createMediaSrcset(img)}
                 sizes="180px"
                 alt=""
+                loading="lazy"
                 decoding="async"
               />
             ))}

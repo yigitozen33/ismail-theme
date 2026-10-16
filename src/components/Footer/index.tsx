@@ -75,6 +75,7 @@ export function Footer(props: Props) {
     localeText = "TL · Türkçe",
     localeTitle = "ÜLKE VE PARA BİRİMİ",
     languageTitle = "DİL",
+    overlayOpacity = 100,
     backgroundColor,
   } = props;
 
@@ -140,6 +141,7 @@ export function Footer(props: Props) {
   // A single routing (no other country/currency or language) has nothing to pick: plain text, no button.
   const canSwitch = mounted && hasLocaleAlternatives();
   const localeLabel = (canSwitch && currentLocaleLabel()) || localeText;
+  const veil = Math.min(100, Math.max(0, Number(overlayOpacity ?? 100))) / 100;
   const submitting = !!form.isSubmitting;
   const etbisId = etbisIdOf(etbisLink?.href);
 
@@ -157,6 +159,8 @@ export function Footer(props: Props) {
             decoding="async"
           />
         )}
+        {/* centre veil under the title/CTA (strength: overlayOpacity) + the fade into the tag */}
+        {veil > 0 && <div className="ftr__hero-veil" style={{ opacity: veil }} aria-hidden="true" />}
         <div className="ftr__hero-scrim" aria-hidden="true" />
         <div className="ftr__hero-row">
           <div className="ftr__hero-copy">

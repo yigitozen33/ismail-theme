@@ -23,6 +23,7 @@
 }
 
 .ftr__hero-img,
+.ftr__hero-veil,
 .ftr__hero-scrim {
   position: absolute;
   inset: 0;
@@ -35,6 +36,11 @@
   object-fit: cover;
   /* the tag covers the bottom of the hero, so crop from the bottom and keep the subject's top */
   object-position: 50% 25%;
+}
+
+/* soft centre veil so the title and CTA read over a busy photo; its opacity is the overlayOpacity prop */
+.ftr__hero-veil {
+  background: radial-gradient(ellipse 75% 65% at 45% 55%, color-mix(in srgb, var(--c-scrim) 70%, transparent) 0%, var(--c-transparent) 100%);
 }
 
 .ftr__hero-scrim {
