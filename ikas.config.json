@@ -4319,7 +4319,7 @@
           "type": "IMAGE",
           "required": false,
           "groupId": "images",
-          "description": "Alt bilginin üst bandında, iletişim kartı ve bülten kutusunun arkasında görünen geniş görsel."
+          "description": "Footer'ın üstündeki geniş hero görseli; alt kısmına etiket biner."
         },
         {
           "name": "ctaTitle",
@@ -4328,7 +4328,7 @@
           "required": false,
           "defaultValue": "Sorun mu var?\nYaz, birlikte çözelim.",
           "groupId": "texts",
-          "description": "Üst banttaki iletişim kartının başlığı; satır sonu ile iki satıra bölünebilir. Boş bırakılırsa gizlenir."
+          "description": "Hero'nun sol altındaki başlık; satır sonu ile iki satıra bölünebilir. Boş bırakılırsa gizlenir."
         },
         {
           "name": "ctaButtonText",
@@ -4337,7 +4337,7 @@
           "required": false,
           "defaultValue": "Bize ulaş",
           "groupId": "texts",
-          "description": "Üst banttaki iletişim kartında yer alan düğmenin metni. Boş bırakılırsa düğme gizlenir."
+          "description": "Hero başlığının altındaki düğmenin metni. Boş bırakılırsa düğme gizlenir."
         },
         {
           "name": "ctaButtonLink",
@@ -4345,7 +4345,7 @@
           "type": "LINK",
           "required": false,
           "groupId": "links",
-          "description": "İletişim kartındaki düğmenin yönlendireceği sayfa veya adres."
+          "description": "Hero düğmesinin yönlendireceği sayfa veya adres."
         },
         {
           "name": "notifyTitle",
@@ -4354,7 +4354,7 @@
           "required": false,
           "defaultValue": "E-postayla bildirim al",
           "groupId": "texts",
-          "description": "E-posta bülteni kayıt kutusunun başlığı. Boş bırakılırsa gizlenir."
+          "description": "Etiketteki e-posta bülteni alanının başlığı. Boş bırakılırsa gizlenir."
         },
         {
           "name": "notifyText",
@@ -4381,7 +4381,7 @@
           "required": false,
           "defaultValue": "Kaydol",
           "groupId": "texts",
-          "description": "Bülten kutusunda e-posta adresini kaydeden düğmenin metni."
+          "description": "Bülten alanında e-posta adresini kaydeden oklu düğmenin metni."
         },
         {
           "name": "notifySubmittingText",
@@ -4420,24 +4420,6 @@
           "description": "Bülten kaydı beklenmeyen bir nedenle başarısız olduğunda gösterilen hata mesajı."
         },
         {
-          "name": "logo",
-          "displayName": "Logo (SVG)",
-          "type": "SVG",
-          "required": false,
-          "defaultValue": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 71 22\" fill=\"currentColor\"><path transform=\"matrix(1.6988 0 0 1.6998 0.1 5.26)\" d=\"M0 9.7012l2.82555 0 0-9.7012-2.82555 0 0 9.7012z\"/><path transform=\"matrix(1.699 0 0 1.6993 5.53 5.01)\" d=\"M3.99711 0c-2.13639 0-3.62603 1.25109-3.62603 3.0535 0 1.7653 1.38362 2.49687 2.77253 2.98457 1.25109 0.4347 1.7494 0.63084 1.7494 1.13446 0 0.38699-0.34988 0.63084-0.91181 0.63085-0.78458 0-1.78651-0.54072-2.42795-1.16627l-1.55325 1.79181c1.00192 1.00193 2.46506 1.56916 3.92819 1.56915 2.24241 0 3.75855-1.23518 3.75855-3.08 0-1.7759-1.43133-2.45976-2.92096-3.01108-1.17686-0.4294-1.63807-0.62554-1.63807-1.06554 0-0.38699 0.37638-0.65205 0.9118-0.65205 0.66265 0 1.53205 0.39229 2.09398 0.84289l1.36241-1.71759c-0.83759-0.81638-2.1894-1.3147-3.49879-1.3147z\"/><path transform=\"matrix(1.699 0 0 1.6998 19.32 5.26)\" d=\"M10.0882 0l-2.57639 0-2.46506 3.82217-2.38025-3.82217-2.6665 0 0 9.7012 2.61349 0 0-4.99903 2.16819 3.24964 0.46121 0 2.22651-3.24964 0 4.99903 2.6188 0 0-9.7012z\"/><path transform=\"matrix(1.6994 0 0 1.6998 36.48 5.26)\" d=\"M6.36144 0l-2.39084 0-3.9706 9.7012 2.78313 0 0.65735-1.73879 3.37686 0 0.65735 1.73879 2.79374 0-3.90699-9.7012z m-2.2212 5.99566l0.98602-2.79903 0.03181 0 0.95421 2.79903-1.97204 0z\"/><path transform=\"matrix(1.6988 0 0 1.6998 53.73 5.26)\" d=\"M0 9.7012l2.82554 0 0-9.7012-2.82554 0 0 9.7012z\"/><path transform=\"matrix(1.7 0 0 1.6998 59.89 5.26)\" d=\"M2.83614 7.43759l0-7.43759-2.83614 0 0 9.7012 6.06458 0 0-2.26361-3.22844 0z\"/><path transform=\"matrix(1.7012 0 0 1.6982 0 0)\" d=\"M1.49494 0l-1.49494 2.33783 2.91566 0-1.38891-2.33783-0.03181 0z\"/><ellipse cx=\"56.095\" cy=\"2.63\" rx=\"2.145\" ry=\"1.95\"/></svg>",
-          "groupId": "brand",
-          "description": "Alt bilginin sol tarafında, marka metninin üstünde görünen SVG logo. Boş bırakılırsa logo gizlenir."
-        },
-        {
-          "name": "aboutText",
-          "displayName": "Marka metni",
-          "type": "TEXT",
-          "required": false,
-          "defaultValue": "Dağda da şehirde de aynı ekipman. İsmail, rotanı kendin çizmen için tasarlar.",
-          "groupId": "texts",
-          "description": "Logonun altında markayı kısaca tanıtan metin. Boş bırakılırsa gizlenir."
-        },
-        {
           "name": "columns",
           "displayName": "Bağlantı sütunları",
           "type": "COMPONENT_LIST",
@@ -4446,7 +4428,7 @@
           "filteredComponentIds": [
             "kbd4ii47-Qtjri7UHdk"
           ],
-          "description": "Alt bilgide yan yana dizilen bağlantı sütunları; mobilde açılır kapanır başlıklara dönüşür."
+          "description": "Etikette yan yana dizilen bağlantı sütunları; mobilde açılır kapanır başlıklara dönüşür. Sütun sayısı sınırsızdır, sığmayanlar alt satıra geçer."
         },
         {
           "name": "socialLinks",
@@ -4457,7 +4439,7 @@
           "filteredComponentIds": [
             "kbd4ii47-AiFQofTmqh"
           ],
-          "description": "Marka metninin altında görünen sosyal medya hesap bağlantıları. Eklenmezse alan gizlenir."
+          "description": "Footer'ın en alt satırının ortasında görünen sosyal medya hesap bağlantıları. Eklenmezse alan gizlenir."
         },
         {
           "name": "contactText",
@@ -4466,7 +4448,7 @@
           "required": false,
           "defaultValue": "Bize ulaş: 0850 000 00 00",
           "groupId": "texts",
-          "description": "Alt bilginin en alt satırında görünen iletişim bilgisi. Boş bırakılırsa gizlenir."
+          "description": "Hero'nun sağ altında görünen iletişim bilgisi (ör. telefon ve saatler). Boş bırakılırsa gizlenir."
         },
         {
           "name": "contactLink",
@@ -4483,7 +4465,7 @@
           "required": false,
           "defaultValue": "TL · Türkçe",
           "groupId": "texts",
-          "description": "En alt satırdaki dil ve para birimi düğmesinde, mağazada seçim yoksa görünen yedek metin."
+          "description": "En alt satırın sağındaki dil ve para birimi düğmesinde, mağazada seçim yoksa görünen yedek metin."
         },
         {
           "name": "localeTitle",
@@ -4510,16 +4492,7 @@
           "required": false,
           "defaultValue": "© 2026 İsmail. Tüm hakları saklıdır.",
           "groupId": "texts",
-          "description": "Alt bilginin en alt satırında görünen telif hakkı metni. Boş bırakılırsa gizlenir."
-        },
-        {
-          "name": "coordinateText",
-          "displayName": "Koordinat metni",
-          "type": "TEXT",
-          "required": false,
-          "defaultValue": "41°N 29°E · KADIKÖY, İSTANBUL",
-          "groupId": "texts",
-          "description": "Alt bilginin en alt satırında küçük harflerle görünen konum bilgisi. Boş bırakılırsa gizlenir."
+          "description": "Footer'ın en alt satırının sağında görünen telif hakkı metni. Boş bırakılırsa gizlenir."
         },
         {
           "name": "backgroundColor",
@@ -4528,6 +4501,89 @@
           "required": false,
           "groupId": "colors",
           "description": "Alt bilgi bölümünün arka plan rengi. Boş bırakılırsa temanın koyu arka planı kullanılır."
+        },
+        {
+          "name": "marqueeText",
+          "displayName": "Kayan marka adı",
+          "type": "TEXT",
+          "required": false,
+          "description": "Etiketin sol koçanında harf harf alt alta dizilip yukarıdan aşağı kayan soluk marka adı (mobilde yatay kayar). Boş bırakılırsa alan boş kalır.",
+          "groupId": "brand"
+        },
+        {
+          "name": "marqueeImages",
+          "displayName": "İmleç görselleri",
+          "type": "IMAGE_LIST",
+          "required": false,
+          "description": "Fare kayan marka adının üzerindeyken imleci izleyen kutuda sırayla değişen görseller. Boş bırakılırsa kutu çıkmaz; dokunmatik cihazlarda gösterilmez.",
+          "groupId": "brand"
+        },
+        {
+          "name": "services",
+          "displayName": "Hizmet satırı",
+          "type": "COMPONENT_LIST",
+          "required": false,
+          "description": "Etiketin üst satırında yan yana dizilen hizmet öğeleri (kargo, iade, teslim, ödeme); mobilde ikişerli sıralanır.",
+          "groupId": "components",
+          "filteredComponentIds": [
+            "kbd4ii47-h8I8CDmUP4"
+          ]
+        },
+        {
+          "name": "supportText",
+          "displayName": "Destek metni",
+          "type": "TEXT",
+          "required": false,
+          "description": "Etiketin sol altında görünen destek satırı (ör. telefon numarası). Boş bırakılırsa gizlenir.",
+          "groupId": "texts"
+        },
+        {
+          "name": "supportLinkText",
+          "displayName": "Destek bağlantı metni",
+          "type": "TEXT",
+          "required": false,
+          "description": "Destek satırının yanındaki oklu bağlantının metni. Boş bırakılırsa bağlantı gizlenir.",
+          "groupId": "texts"
+        },
+        {
+          "name": "supportLink",
+          "displayName": "Destek bağlantısı",
+          "type": "LINK",
+          "required": false,
+          "description": "Destek satırındaki oklu bağlantının gideceği sayfa, örneğin iletişim sayfası.",
+          "groupId": "links"
+        },
+        {
+          "name": "etbisImage",
+          "displayName": "ETBİS karekodu",
+          "type": "IMAGE",
+          "required": false,
+          "description": "ETBİS kaydından aldığınız karekod görseli; etiketin sağ altında bir kez gösterilir. Boş bırakılırsa gizlenir.",
+          "groupId": "images"
+        },
+        {
+          "name": "etbisLink",
+          "displayName": "ETBİS doğrulama bağlantısı",
+          "type": "LINK",
+          "required": false,
+          "description": "ETBİS kod bloğundaki site doğrulama adresi (etbis.eticaret.gov.tr/sitedogrulama/…). Karekoda tıklanınca yeni sekmede açılır.",
+          "groupId": "links"
+        },
+        {
+          "name": "etbisAltText",
+          "displayName": "ETBİS görsel açıklaması",
+          "type": "TEXT",
+          "required": false,
+          "description": "ETBİS karekodunun ekran okuyucu açıklaması.",
+          "groupId": "texts"
+        },
+        {
+          "name": "statusText",
+          "displayName": "Alt satır durum metni",
+          "type": "TEXT",
+          "required": false,
+          "description": "Footer'ın en alt satırının solunda görünen kısa bilgi (ör. mağaza çalışma durumu). Boş bırakılırsa gizlenir.",
+          "groupId": "texts"
         }
       ],
       "propGroups": [
@@ -7482,6 +7538,40 @@
         {
           "id": "colors",
           "name": "Renkler"
+        }
+      ]
+    },
+    {
+      "id": "kbd4ii47-h8I8CDmUP4",
+      "name": "FooterService",
+      "entry": "./src/components/FooterService/index.tsx",
+      "styles": "./src/components/FooterService/styles.css",
+      "props": [
+        {
+          "name": "icon",
+          "displayName": "İkon",
+          "type": "SVG",
+          "required": false,
+          "description": "Hizmet satırında metnin solunda, yuvarlak çerçeve içinde görünen çizgi ikon (SVG kodu). Boş bırakılırsa ikon gizlenir.",
+          "groupId": "content"
+        },
+        {
+          "name": "text",
+          "displayName": "Metin",
+          "type": "TEXT",
+          "required": false,
+          "description": "İkonun yanında görünen kısa hizmet metni; satır sonu ile iki satıra bölünebilir. Boş bırakılırsa gizlenir.",
+          "groupId": "texts"
+        }
+      ],
+      "propGroups": [
+        {
+          "id": "content",
+          "name": "İçerik"
+        },
+        {
+          "id": "texts",
+          "name": "Metinler"
         }
       ]
     }

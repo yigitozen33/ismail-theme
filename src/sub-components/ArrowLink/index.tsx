@@ -10,8 +10,11 @@ interface Props {
   className?: string;
   onClick?: (e: MouseEvent) => void;
   external?: boolean;
-  /** Text size: "ui" (default) or "uiSm" for the smaller canvas links. */
-  size?: "ui" | "uiSm";
+  /** Text size: "ui" (default), "uiSm" for the smaller canvas links, "label" for mono label links (12px arrow). */
+  size?: "ui" | "uiSm" | "label";
+  /** Button variant only (no href): "submit" to send its form. */
+  type?: "button" | "submit";
+  disabled?: boolean;
 }
 
 /**
@@ -21,7 +24,7 @@ interface Props {
  */
 const PRESS_MS = 300;
 
-export default function ArrowLink({ label, href, className, onClick, external, size = "ui" }: Props) {
+export default function ArrowLink({ label, href, className, onClick, external, size = "ui", type = "button", disabled }: Props) {
   const [pressed, setPressed] = useState(false);
   const release = useRef(0);
   const touchAt = useRef(0);
@@ -67,10 +70,10 @@ export default function ArrowLink({ label, href, className, onClick, external, s
   const inner = (
     <>
       <span className="alink__row">
-        <span className={cx("alink__label", size === "uiSm" ? TEXT.uiSm : TEXT.ui)}>{label}</span>
-        <span className="alink__arrow" aria-hidden="true">
-          <Icon name="arrow-right" size={14} className="alink__arrow-top" />
-          <Icon name="arrow-right" size={14} className="alink__arrow-bottom" />
+        <span className={cx("alink__label", TEXT[size])}>{label}</span>
+        <span className={cx("alink__arrow", size === "label" && "alink__arrow--sm")} aria-hidden="true">
+          <Icon name="arrow-right" size={size === "label" ? 12 : 14} className="alink__arrow-top" />
+          <Icon name="arrow-right" size={size === "label" ? 12 : 14} className="alink__arrow-bottom" />
         </span>
       </span>
       <span className="alink__line" aria-hidden="true" />
@@ -84,7 +87,7 @@ export default function ArrowLink({ label, href, className, onClick, external, s
     );
   }
   return (
-    <button type="button" className={cx(cls, "alink--button")} onClick={onClick as any} {...pressHandlers}>
+    <button type={type} className={cx(cls, "alink--button")} onClick={onClick as any} disabled={disabled} {...pressHandlers}>
       {inner}
     </button>
   );

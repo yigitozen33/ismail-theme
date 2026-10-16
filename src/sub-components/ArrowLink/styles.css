@@ -28,6 +28,16 @@
   overflow: hidden;
 }
 
+.alink__arrow--sm {
+  width: 12px;
+  height: 12px;
+}
+
+.alink--button:disabled {
+  cursor: default;
+  opacity: var(--opacity-inactive);
+}
+
 .alink__arrow-top,
 .alink__arrow-bottom {
   position: absolute;

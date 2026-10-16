@@ -1,0 +1,156 @@
+/* I/Section/Footer › footer-marquee — I-FTR-05 loop + I-FTR-06 cursor image (I-M-08). */
+.bmq {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  container-type: size;
+}
+
+.bmq__track {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+}
+
+/* Two identical runs; shifting by one run (-50%) loops seamlessly. Top → bottom, ~3.5s per word. */
+.bmq__reel {
+  display: flex;
+  flex-direction: column;
+  animation: bmq-down calc(var(--bmq-words, 2) * 3.5s) linear infinite;
+}
+
+.bmq__run,
+.bmq__word {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Display face sized so ONE whole word (--bmq-n letters + its dot) fills ~82% of the stub height. */
+.bmq__char {
+  display: block;
+  font-size: min(calc(82cqb / (var(--bmq-n, 6) + 0.6)), 40cqi);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--c-text);
+  opacity: 0.32;
+}
+
+/* Word separator: accent dot, so the loop reads İSMAİL • İSMAİL • … */
+.bmq__sep {
+  display: block;
+  width: 0.14em;
+  height: 0.14em;
+  margin: 0.24em 0;
+  font-size: min(calc(82cqb / (var(--bmq-n, 6) + 0.6)), 40cqi);
+  border-radius: var(--radius-pill);
+  background: var(--c-accent);
+}
+
+@keyframes bmq-down {
+  from {
+    transform: translateY(-50%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bmq-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* I-FTR-06: positioned by the spring in JS (translate3d on .bmq__box); entrance/exit on .bmq__card. */
+.bmq__box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 180px;
+  height: 225px;
+  margin: -112px 0 0 -90px;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.bmq__card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--c-bg) 80%, transparent);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 150ms ease-out, transform 150ms ease-out, rotate 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.bmq__card.is-visible {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 200ms cubic-bezier(0.23, 1, 0.32, 1), transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+    rotate 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.bmq__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+
+.bmq__img.is-active {
+  opacity: 1;
+}
+
+/* Mobile: one row of letters across the top of the tag, looping left → right. */
+@media (max-width: bp(KUQjO8W6p9)) {
+  .bmq__track {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+
+  .bmq__reel {
+    flex-direction: row;
+    align-items: center;
+    width: max-content;
+    height: 100%;
+    animation-name: bmq-right;
+  }
+
+  .bmq__run,
+  .bmq__word {
+    flex-direction: row;
+  }
+
+  .bmq__word {
+    gap: 0.04em;
+  }
+
+  /* One whole word (+ dot) spans ~82% of the strip width. */
+  .bmq__char,
+  .bmq__sep {
+    font-size: min(calc(82cqi / (var(--bmq-n, 6) * 0.78 + 0.6)), 72cqb);
+  }
+
+  .bmq__sep {
+    margin: 0 0.24em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bmq__reel {
+    animation: none;
+  }
+}

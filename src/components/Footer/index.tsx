@@ -7,11 +7,11 @@ import {
   getNewsletterSubscriptionForm,
   initNewsletterSubscriptionForm,
   setNewsletterSubscriptionFormEmail,
-  normalizeSvg,
   submitNewsletterSubscriptionForm,
 } from "@ikas/bp-storefront";
+import ArrowLink from "../../sub-components/ArrowLink";
+import BrandMarquee from "../../sub-components/BrandMarquee";
 import Button from "../../sub-components/Button";
-import FormField from "../../sub-components/FormField";
 import Icon from "../../sub-components/Icon";
 import LazyImg from "../../sub-components/LazyImg";
 import LocaleSwitcher, { currentLocaleLabel, hasLocaleAlternatives, hasLocaleOptions } from "../../sub-components/LocaleSwitcher";
@@ -25,10 +25,16 @@ type NotifyStatus = "idle" | "success" | "invalid" | "failure";
 
 const toList = (v: any) => (Array.isArray(v) ? v : v ? [v] : []).flat().filter(Boolean);
 
+/** ETBİS block id: the last path segment of the verification address (…/sitedogrulama/<id>). */
+const etbisIdOf = (href?: string) => (href ?? "").split(/[?#]/)[0].split("/").filter(Boolean).pop() ?? "";
+
 /**
- * I/Section/Footer — always Mürekkep (ink). CTA band (image + scrim + fade/blur, frosted contact card
- * and a paper newsletter card), brand + social, FooterColumn children, bottom row with the
- * LocaleSwitcher trigger. Anims: I-FTR-01 (FooterColumn) · I-FTR-02 (SocialLink) · I-FTR-03 (Button) · I-FTR-04 (here).
+ * I/Section/Footer — always Mürekkep (ink). Hero (image + scrim, CTA bottom-left, contact bottom-right);
+ * a dark hang tag rides over the hero's lower edge: left stub = BrandMarquee, perforation, body with the
+ * FooterService row, FooterColumn children + newsletter, support line and the ETBİS badge. Below the tag:
+ * status · social · copyright + LocaleSwitcher trigger.
+ * Anims: I-FTR-01 (FooterColumn) · I-FTR-02 (SocialLink) · I-FTR-03 (Button) · I-FTR-04 (here) ·
+ * I-FTR-05/06 (BrandMarquee, I-M-08).
  */
 export function Footer(props: Props) {
   const {
@@ -36,25 +42,32 @@ export function Footer(props: Props) {
     ctaTitle = "Sorun mu var?\nYaz, birlikte çözelim.",
     ctaButtonText = "Bize ulaş",
     ctaButtonLink,
+    contactText = "0850 000 00 00 · 09:00–18:00",
+    contactLink,
+    marqueeText = "İSMAİL",
+    marqueeImages,
+    services,
+    columns,
     notifyTitle = "E-postayla bildirim al",
     notifyText = "Yeni sezon, mağaza etkinlikleri ve indirimler önce sana gelsin.",
     notifyPlaceholder = "E-posta adresin",
-    notifyButtonText = "Kaydol",
-    notifySubmittingText = "Gönderiliyor…",
+    notifyButtonText = "KAYDOL",
+    notifySubmittingText = "GÖNDERİLİYOR…",
     notifySuccessText = "Teşekkürler, listeye eklendin.",
     notifyErrorText = "Geçerli bir e-posta adresi gir.",
     notifyFailureText = "Bir sorun oluştu, lütfen tekrar dene.",
-    logo,
-    aboutText = "Dağda da şehirde de aynı ekipman. İsmail, rotanı kendin çizmen için tasarlar.",
-    columns,
+    supportText = "SORUN MU VAR? 0850 000 00 00",
+    supportLinkText = "BİZE ULAŞ",
+    supportLink,
+    etbisImage,
+    etbisLink,
+    etbisAltText = "ETBİS'e kayıtlıdır",
+    statusText = "ŞU AN AÇIK · KADIKÖY MAĞAZASI 21:00'E KADAR",
     socialLinks,
-    contactText = "Bize ulaş: 0850 000 00 00",
-    contactLink,
+    copyrightText = "© 2026 İSMAİL. TÜM HAKLARI SAKLIDIR.",
     localeText = "TL · Türkçe",
     localeTitle = "ÜLKE VE PARA BİRİMİ",
     languageTitle = "DİL",
-    copyrightText = "© 2026 İsmail. Tüm hakları saklıdır.",
-    coordinateText = "41°N 29°E · KADIKÖY, İSTANBUL",
     backgroundColor,
   } = props;
 
@@ -100,20 +113,20 @@ export function Footer(props: Props) {
 
   const message =
     status === "success" ? notifySuccessText : status === "invalid" ? notifyErrorText : status === "failure" ? notifyFailureText : "";
+  const serviceList = toList(services);
   const columnList = toList(columns);
   const socialList = toList(socialLinks);
-  // locale-button: always in the bottom row (canvas). Opens the switcher once the store's options are known;
-  // the label follows the live routing only when the shopper can actually switch.
   const canSwitch = mounted && hasLocaleOptions();
   const localeLabel = (mounted && hasLocaleAlternatives() && currentLocaleLabel()) || localeText;
   const submitting = !!form.isSubmitting;
+  const etbisId = etbisIdOf(etbisLink?.href);
 
   return (
     <footer className={cx("ftr", forceScheme("ink"))} style={backgroundColor ? { backgroundColor } : undefined}>
-      <div className="ftr__band">
+      <div className="ftr__hero">
         {ctaImage && (
           <LazyImg
-            className="ftr__band-img"
+            className="ftr__hero-img"
             src={getDefaultSrc(ctaImage)}
             srcSet={createMediaSrcset(ctaImage)}
             sizes="100vw"
@@ -122,130 +135,175 @@ export function Footer(props: Props) {
             decoding="async"
           />
         )}
-        <div className="ftr__band-tint" aria-hidden="true" />
-        <div className="ftr__band-blur" aria-hidden="true" />
-        <div className="ftr__band-fade" aria-hidden="true" />
-
-        <div className="ftr__cta">
-          <div className="ftr__cta-card">
-            {ctaTitle && <h2 className={cx("ftr__cta-title", TEXT.h2)}>{ctaTitle}</h2>}
-            {ctaButtonText && (
-              /* I-FTR-03 · M-11 via Button */
-              <Button label={ctaButtonText} href={ctaButtonLink?.href} className="ftr__cta-btn" />
-            )}
-          </div>
-
-          <div className={cx("ftr__notify", forceScheme("paper"))}>
-            <div className="ftr__notify-text">
-              {notifyTitle && <h3 className={cx("ftr__notify-title", TEXT.h4)}>{notifyTitle}</h3>}
-              {notifyText && <p className={cx("ftr__notify-hint", TEXT.uiSm)}>{notifyText}</p>}
-            </div>
-            <form className="ftr__notify-form" onSubmit={onNotifySubmit} noValidate>
-              <FormField
-                type="email"
-                name="email"
-                autoComplete="email"
-                inputMode="email"
-                className="ftr__notify-field"
-                value={form.email?.value ?? ""}
-                placeholder={notifyPlaceholder}
-                ariaLabel={notifyPlaceholder}
-                invalid={!!form.email?.hasError}
-                disabled={submitting}
-                onInput={(v) => {
-                  setNewsletterSubscriptionFormEmail(form, v);
-                  if (status !== "idle") setStatus("idle");
-                }}
-              />
-              <Button
-                type="submit"
-                label={submitting ? notifySubmittingText : notifyButtonText}
-                state={submitting ? "loading" : "idle"}
-                className="ftr__notify-btn"
-              />
-            </form>
-            {/* I-FTR-04 · M-01: result fades up (y 8 → 0, 0.3s) */}
-            <p
-              className={cx(
-                "ftr__notify-msg",
-                TEXT.uiSm,
-                message && "is-visible",
-                status === "success" ? "ftr__notify-msg--ok" : "ftr__notify-msg--err",
+        <div className="ftr__hero-scrim" aria-hidden="true" />
+        <div className="ftr__hero-row">
+          <div className="ftr__hero-copy">
+            {ctaTitle && <h2 className={cx("ftr__hero-title", TEXT.h2)}>{ctaTitle}</h2>}
+            <div className="ftr__hero-actions">
+              {ctaButtonText && (
+                /* I-FTR-03 · M-11 via Button */
+                <Button label={ctaButtonText} href={ctaButtonLink?.href} className="ftr__hero-btn" />
               )}
-              role="status"
-              aria-live="polite"
-            >
-              {message}
-            </p>
+              {contactText && (
+                <ContactText text={contactText} href={contactLink?.href} className="ftr__contact ftr__contact--mobile" />
+              )}
+            </div>
+          </div>
+          {contactText && <ContactText text={contactText} href={contactLink?.href} className="ftr__contact ftr__contact--desktop" />}
+        </div>
+      </div>
+
+      <div className="ftr__tag">
+        <div className="ftr__stitch">
+          <div className="ftr__stub">
+            {/* I-FTR-05 · I-FTR-06 · I-M-08 */}
+            <BrandMarquee text={marqueeText} images={marqueeImages?.images} />
+          </div>
+          <div className="ftr__perf" aria-hidden="true" />
+
+          <div className="ftr__body">
+            {serviceList.length > 0 && (
+              <div className="ftr__services">
+                <IkasComponentRenderer id="footer-services" components={serviceList} parentProps={props} />
+              </div>
+            )}
+
+            <div className="ftr__main">
+              {columnList.length > 0 && (
+                /* I-FTR-01 · M-28 via FooterColumn */
+                <nav className="ftr__columns">
+                  <IkasComponentRenderer id="footer-columns" components={columnList} parentProps={props} />
+                </nav>
+              )}
+
+              <div className="ftr__notify">
+                {notifyTitle && <h3 className={cx("ftr__notify-title", TEXT.h4)}>{notifyTitle}</h3>}
+                {notifyText && <p className={cx("ftr__notify-hint", TEXT.uiSm)}>{notifyText}</p>}
+                <form className={cx("ftr__notify-form", form.email?.hasError && "is-invalid")} onSubmit={onNotifySubmit} noValidate>
+                  <input
+                    className={cx("ftr__notify-input", TEXT.ui)}
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    value={form.email?.value ?? ""}
+                    placeholder={notifyPlaceholder}
+                    aria-label={notifyPlaceholder}
+                    aria-invalid={form.email?.hasError ? "true" : undefined}
+                    disabled={submitting}
+                    onInput={(e) => {
+                      setNewsletterSubscriptionFormEmail(form, (e.currentTarget as HTMLInputElement).value);
+                      if (status !== "idle") setStatus("idle");
+                    }}
+                  />
+                  {/* I-CMP-06 · M-10 via ArrowLink */}
+                  <ArrowLink
+                    type="submit"
+                    size="label"
+                    label={submitting ? notifySubmittingText : notifyButtonText}
+                    disabled={submitting}
+                    className="ftr__notify-submit"
+                  />
+                </form>
+                {/* I-FTR-04 · M-01: result fades up (y 8 → 0, 0.3s) */}
+                <p
+                  className={cx(
+                    "ftr__notify-msg",
+                    TEXT.uiSm,
+                    message && "is-visible",
+                    status === "success" ? "ftr__notify-msg--ok" : "ftr__notify-msg--err",
+                  )}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {message}
+                </p>
+              </div>
+            </div>
+
+            <div className="ftr__foot">
+              {(supportText || supportLinkText) && (
+                <div className="ftr__support">
+                  {supportText && <p className={cx("ftr__support-text", TEXT.label)}>{supportText}</p>}
+                  {supportLinkText && (
+                    /* I-CMP-06 · M-10 via ArrowLink */
+                    <ArrowLink size="label" label={supportLinkText} href={supportLink?.href} />
+                  )}
+                </div>
+              )}
+              {etbisImage && (
+                /* ETBİS code block shape: #ETBIS > #<id> > a > img — only the img values are ours. */
+                <div id="ETBIS" className="ftr__etbis">
+                  <div id={etbisId || undefined}>
+                    {etbisLink?.href ? (
+                      <a href={etbisLink.href} target="_blank">
+                        <img src={getDefaultSrc(etbisImage)} alt={etbisAltText} className="ftr__etbis-img" loading="lazy" />
+                      </a>
+                    ) : (
+                      <img src={getDefaultSrc(etbisImage)} alt={etbisAltText} className="ftr__etbis-img" loading="lazy" />
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="ftr__lower">
-        <div className="ftr__top">
-          <div className="ftr__brand">
-            {logo && <span className="ftr__logo" aria-hidden="true" dangerouslySetInnerHTML={{ __html: normalizeSvg(logo, { idPrefix: "ftr-logo" }) }} />}
-            {aboutText && <p className={cx("ftr__about", TEXT.uiSm)}>{aboutText}</p>}
-            {socialList.length > 0 && (
-              /* I-FTR-02 · M-28 via SocialLink */
-              <div className="ftr__social">
-                <IkasComponentRenderer id="footer-social" components={socialList} parentProps={props} />
-              </div>
-            )}
+      <div className="ftr__bottom">
+        {statusText && <p className={cx("ftr__status", TEXT.label)}>{statusText}</p>}
+        {socialList.length > 0 && (
+          /* I-FTR-02 · M-28 via SocialLink */
+          <div className="ftr__social">
+            <IkasComponentRenderer id="footer-social" components={socialList} parentProps={props} />
           </div>
-          {columnList.length > 0 && (
-            /* I-FTR-01 · M-28 via FooterColumn */
-            <nav className="ftr__columns">
-              <IkasComponentRenderer id="footer-columns" components={columnList} parentProps={props} />
-            </nav>
-          )}
-        </div>
-
-        <div className="ftr__bottom">
-          {coordinateText && <p className={cx("ftr__coord", TEXT.label)}>{coordinateText}</p>}
-          {copyrightText && <p className={cx("ftr__copy", TEXT.uiSm)}>{copyrightText}</p>}
-          <div className="ftr__meta">
-            {contactText &&
-              (contactLink?.href ? (
-                <a className={cx("ftr__contact", TEXT.uiSm)} href={contactLink.href}>
-                  {contactText}
-                </a>
-              ) : (
-                <p className={cx("ftr__contact", TEXT.uiSm)}>{contactText}</p>
-              ))}
-            {localeLabel && (
-              <div className="ftr__locale">
-                <button
-                  ref={localeBtnRef}
-                  type="button"
-                  className={cx("ftr__locale-btn", localeOpen && "is-open")}
-                  aria-haspopup="dialog"
-                  aria-expanded={localeOpen}
-                  aria-controls="footer-locale-panel"
-                  disabled={!canSwitch}
-                  onClick={() => {
-                    setLocaleMode("anchored");
-                    setLocaleOpen((o) => !o);
-                  }}
-                >
-                  <Icon name="globe" size={14} />
-                  <span className={TEXT.uiSm}>{localeLabel}</span>
-                  <Icon name="chevron-up" size={14} className="ftr__locale-caret" />
-                </button>
-                {canSwitch && <LocaleSwitcher
+        )}
+        <div className="ftr__bottom-end">
+          {copyrightText && <p className={cx("ftr__copy", TEXT.label)}>{copyrightText}</p>}
+          {localeLabel && (
+            <div className="ftr__locale">
+              <button
+                ref={localeBtnRef}
+                type="button"
+                className={cx("ftr__locale-btn", localeOpen && "is-open")}
+                aria-haspopup="dialog"
+                aria-expanded={localeOpen}
+                aria-controls="footer-locale-panel"
+                disabled={!canSwitch}
+                onClick={() => {
+                  setLocaleMode("anchored");
+                  setLocaleOpen((o) => !o);
+                }}
+              >
+                <Icon name="globe" size={14} />
+                <span className={TEXT.uiSm}>{localeLabel}</span>
+                <Icon name="chevron-up" size={14} className="ftr__locale-caret" />
+              </button>
+              {canSwitch && (
+                <LocaleSwitcher
                   id="footer-locale-panel"
                   open={localeOpen}
                   mode={localeMode}
                   onClose={closeLocale}
                   localeTitle={localeTitle}
                   languageTitle={languageTitle}
-                />}
-              </div>
-            )}
-          </div>
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
     </footer>
+  );
+}
+
+function ContactText({ text, href, className }: { text: string; href?: string; className: string }) {
+  return href ? (
+    <a className={cx(className, TEXT.label)} href={href}>
+      {text}
+    </a>
+  ) : (
+    <p className={cx(className, TEXT.label)}>{text}</p>
   );
 }
 

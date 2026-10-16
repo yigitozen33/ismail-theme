@@ -243,33 +243,45 @@ Kaynak: `port-manifest.json` (schema 1). Bu dosya ondan üretilir; elle düzenle
 
 | Prop | Tip | Varsayılan | Grup | Katman |
 |---|---|---|---|---|
-| `ctaImage` | IMAGE | — (merchant verisi) | Görseller | `footer-cta-image` |
-| `ctaTitle` | TEXT | — | Metinler | `footer-cta-card` |
+| `ctaImage` | IMAGE | — (merchant verisi) | Görseller | `footer-hero` |
+| `ctaTitle` | TEXT | — | Metinler | `footer-cta-title` |
 | `ctaButtonText` | TEXT | — | Metinler | `footer-cta-button` |
-| `notifyTitle` | TEXT | — | Metinler | `footer-cta-notify` |
-| `notifyText` | TEXT | — | Metinler | `footer-cta-notify` |
-| `notifyPlaceholder` | TEXT | — | Metinler | `cta-notify-form` |
-| `notifyButtonText` | TEXT | — | Metinler | `cta-notify-button` |
-| `notifySubmittingText` | TEXT | — | Metinler | `cta-notify-button` |
-| `notifySuccessText` | TEXT | — | Metinler | `cta-notify-message` |
-| `notifyErrorText` | TEXT | — | Metinler | `cta-notify-message` |
 | `ctaButtonLink` | LINK | — | Bağlantılar | `footer-cta-button` |
-| `logo` | SVG | — | Marka | `footer-brand` |
-| `aboutText` | TEXT | — | Metinler | `footer-brand` |
+| `contactText` | TEXT | — | Metinler | `footer-contact` |
+| `contactLink` | LINK | — | Bağlantılar | `footer-contact` |
+| `marqueeText` | TEXT | — | Marka | `footer-marquee` |
+| `marqueeImages` | IMAGE_LIST | — (merchant verisi) | Marka | `footer-marquee` (I-FTR-06) |
+| `services` | COMPONENT_LIST | — | Bileşenler | `footer-services` |
 | `columns` | COMPONENT_LIST | — | Bileşenler | `footer-columns` |
-| `socialLinks` | COMPONENT_LIST | — | Bileşenler | `footer-brand` |
-| `contactText` | TEXT | — | Metinler | `footer-bottom` |
-| `localeText` | TEXT | — | Metinler | `footer-bottom` |
-| `copyrightText` | TEXT | — | Metinler | `footer-bottom` |
-| `coordinateText` | TEXT | — | Metinler | `footer-bottom` |
+| `notifyTitle` | TEXT | — | Metinler | `footer-notify` |
+| `notifyText` | TEXT | — | Metinler | `footer-notify` |
+| `notifyPlaceholder` | TEXT | — | Metinler | `notify-form` |
+| `notifyButtonText` | TEXT | — | Metinler | `notify-submit` |
+| `notifySubmittingText` | TEXT | — | Metinler | `notify-submit` |
+| `notifySuccessText` | TEXT | — | Metinler | `notify-message` |
+| `notifyErrorText` | TEXT | — | Metinler | `notify-message` |
+| `notifyFailureText` | TEXT | — | Metinler | `notify-message` |
+| `supportText` | TEXT | — | Metinler | `footer-support` |
+| `supportLinkText` | TEXT | — | Metinler | `footer-support` |
+| `supportLink` | LINK | — | Bağlantılar | `footer-support` |
+| `etbisImage` | IMAGE | — (merchant verisi) | Görseller | `footer-etbis` |
+| `etbisLink` | LINK | — | Bağlantılar | `footer-etbis` |
+| `etbisAltText` | TEXT | — | Metinler | `footer-etbis` |
+| `statusText` | TEXT | — | Metinler | `footer-status` |
+| `socialLinks` | COMPONENT_LIST | — | Bileşenler | `footer-social` |
+| `copyrightText` | TEXT | — | Metinler | `footer-copyright` |
+| `localeText` | TEXT | — | Metinler | `locale-button` |
 | `backgroundColor` | COLOR | — | Renkler | — |
 | `title` | TEXT | — | Metinler | `footer-column` |
 | `links` | LIST_OF_LINK | — | Bağlantılar | `footer-column` |
+| `icon` | SVG | — | İçerik | `footer-service` |
+| `text` | TEXT | — | Metinler | `footer-service` |
 
-- **Çocuklar:** `columns` COMPONENT_LIST → FooterColumn, `socialLinks` COMPONENT_LIST → SocialLink
+- **Çocuklar:** `services` COMPONENT_LIST → FooterService, `columns` COMPONENT_LIST → FooterColumn, `socialLinks` COMPONENT_LIST → SocialLink
 - **Veri bağlı metinler:** —
 - **Kod metinleri:** —
-- **Animasyonlar:** I-FTR-01, I-FTR-02, I-FTR-03, I-FTR-04
+- **Animasyonlar:** I-FTR-01, I-FTR-02, I-FTR-03, I-FTR-04, I-FTR-05 (marquee döngüsü), I-FTR-06 (imleç görseli) — bkz. `I/Motion/I-M-08 Footer`
+- **ETBİS:** kod bloğu yapısı `#ETBIS > #<id> > a[target=_blank] > img` olarak basılır; `<id>` doğrulama adresinin son parçası. Sayfada tek kez.
 - **Overlay'ler:** `LocaleSwitcher` (açık)
 - **Yalnız masaüstü katmanlar:** `.footer-column-title`, `.footer-link` — mobilde render edilmez ya da `@media (max-width: bp(<mobile id>))` altında `display: none`
 
