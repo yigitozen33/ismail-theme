@@ -333,8 +333,14 @@
   cursor: pointer;
 }
 
-.ftr__locale-btn:disabled {
-  cursor: default;
+/* single routing: same look as the button, without the caret or any affordance */
+.ftr__locale-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 0;
+  color: var(--c-text);
 }
 
 .ftr__locale-btn:focus-visible,

@@ -13,14 +13,9 @@ import { useEscape, useScrollLock } from "../../utils/hooks";
 import { TEXT, forceScheme } from "../../utils/tokens";
 import Icon from "../Icon";
 
-/** True when the store offers another country/currency or language (brief: hidden without data). */
+/** True when the store offers another country/currency or language — only then is there anything to switch to. */
 export function hasLocaleAlternatives() {
   return (baseStore.localeOptions?.length ?? 0) > 1 || (baseStore.languageOptions?.length ?? 0) > 1;
-}
-
-/** True when the switcher has anything to list (at least the current country/currency). */
-export function hasLocaleOptions() {
-  return (baseStore.localeOptions?.length ?? 0) > 0 || (baseStore.languageOptions?.length ?? 0) > 1;
 }
 
 /** "TRY · ₺ · Türkçe"-style label of the current routing, or null before options load. */

@@ -16,7 +16,7 @@ import Button from "../../sub-components/Button";
 import Checkbox from "../../sub-components/Checkbox";
 import Icon from "../../sub-components/Icon";
 import LazyImg from "../../sub-components/LazyImg";
-import LocaleSwitcher, { currentLocaleLabel, hasLocaleAlternatives, hasLocaleOptions } from "../../sub-components/LocaleSwitcher";
+import LocaleSwitcher, { currentLocaleLabel, hasLocaleAlternatives } from "../../sub-components/LocaleSwitcher";
 import { cx } from "../../utils/cx";
 import { useMounted } from "../../utils/hooks";
 import { TEXT, forceScheme } from "../../utils/tokens";
@@ -137,8 +137,9 @@ export function Footer(props: Props) {
   const serviceList = toList(services);
   const columnList = toList(columns);
   const socialList = toList(socialLinks);
-  const canSwitch = mounted && hasLocaleOptions();
-  const localeLabel = (mounted && hasLocaleAlternatives() && currentLocaleLabel()) || localeText;
+  // A single routing (no other country/currency or language) has nothing to pick: plain text, no button.
+  const canSwitch = mounted && hasLocaleAlternatives();
+  const localeLabel = (canSwitch && currentLocaleLabel()) || localeText;
   const submitting = !!form.isSubmitting;
   const etbisId = etbisIdOf(etbisLink?.href);
 
@@ -306,32 +307,38 @@ export function Footer(props: Props) {
           {copyrightText && <p className={cx("ftr__copy", TEXT.label)}>{copyrightText}</p>}
           {localeLabel && (
             <div className="ftr__locale">
-              <button
-                ref={localeBtnRef}
-                type="button"
-                className={cx("ftr__locale-btn", localeOpen && "is-open")}
-                aria-haspopup="dialog"
-                aria-expanded={localeOpen}
-                aria-controls="footer-locale-panel"
-                disabled={!canSwitch}
-                onClick={() => {
-                  setLocaleMode("anchored");
-                  setLocaleOpen((o) => !o);
-                }}
-              >
-                <Icon name="globe" size={14} />
-                <span className={TEXT.uiSm}>{localeLabel}</span>
-                <Icon name="chevron-up" size={14} className="ftr__locale-caret" />
-              </button>
-              {canSwitch && (
-                <LocaleSwitcher
-                  id="footer-locale-panel"
-                  open={localeOpen}
-                  mode={localeMode}
-                  onClose={closeLocale}
-                  localeTitle={localeTitle}
-                  languageTitle={languageTitle}
-                />
+              {canSwitch ? (
+                <>
+                  <button
+                    ref={localeBtnRef}
+                    type="button"
+                    className={cx("ftr__locale-btn", localeOpen && "is-open")}
+                    aria-haspopup="dialog"
+                    aria-expanded={localeOpen}
+                    aria-controls="footer-locale-panel"
+                    onClick={() => {
+                      setLocaleMode("anchored");
+                      setLocaleOpen((o) => !o);
+                    }}
+                  >
+                    <Icon name="globe" size={14} />
+                    <span className={TEXT.uiSm}>{localeLabel}</span>
+                    <Icon name="chevron-up" size={14} className="ftr__locale-caret" />
+                  </button>
+                  <LocaleSwitcher
+                    id="footer-locale-panel"
+                    open={localeOpen}
+                    mode={localeMode}
+                    onClose={closeLocale}
+                    localeTitle={localeTitle}
+                    languageTitle={languageTitle}
+                  />
+                </>
+              ) : (
+                <p className="ftr__locale-text">
+                  <Icon name="globe" size={14} />
+                  <span className={TEXT.uiSm}>{localeLabel}</span>
+                </p>
               )}
             </div>
           )}
