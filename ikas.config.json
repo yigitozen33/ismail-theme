@@ -4584,6 +4584,59 @@
           "required": false,
           "description": "Footer'ın en alt satırının solunda görünen kısa bilgi (ör. mağaza çalışma durumu). Boş bırakılırsa gizlenir.",
           "groupId": "texts"
+        },
+        {
+          "name": "showConsentCheckbox",
+          "displayName": "Bülten onay kutusunu göster",
+          "type": "BOOLEAN",
+          "required": false,
+          "description": "Açılırsa e-posta bülteni alanının altında pazarlama izni onay kutusu görünür. Kapalıyken yalnızca e-posta ile kayıt olunur.",
+          "defaultValue": false,
+          "groupId": "settings"
+        },
+        {
+          "name": "consentRequired",
+          "displayName": "Onay kutusu zorunlu",
+          "type": "BOOLEAN",
+          "required": false,
+          "description": "Açıkken onay kutusu işaretlenmeden bülten kaydı gönderilmez. Kapalıysa kutu isteğe bağlıdır. Onay kutusu gizliyse etkisi yoktur.",
+          "defaultValue": true,
+          "groupId": "settings"
+        },
+        {
+          "name": "consentText",
+          "displayName": "Bülten onay metni",
+          "type": "TEXT",
+          "required": false,
+          "description": "Bülten onay kutusunun yanındaki metin. Bağlantı eklenirse metin tıklanabilir olur.",
+          "defaultValue": "Kampanya ve fırsatlardan e-posta ile haberdar olmak istiyorum.",
+          "groupId": "texts"
+        },
+        {
+          "name": "consentLink",
+          "displayName": "Bülten onay bağlantısı",
+          "type": "LINK",
+          "required": false,
+          "description": "Bülten onay metnine tıklanınca yeni sekmede açılacak sayfa, örneğin aydınlatma metni. Boşsa metin bağlantısız görünür.",
+          "groupId": "links"
+        },
+        {
+          "name": "consentErrorText",
+          "displayName": "Bülten onay uyarısı",
+          "type": "TEXT",
+          "required": false,
+          "description": "Zorunlu onay kutusu işaretlenmeden kayıt denendiğinde formun altında gösterilen uyarı.",
+          "defaultValue": "Devam etmek için onay kutusunu işaretle.",
+          "groupId": "texts"
+        },
+        {
+          "name": "overlayOpacity",
+          "displayName": "Görsel karartma yoğunluğu (%)",
+          "type": "NUMBER",
+          "required": false,
+          "description": "Hero görselinin ortasına, başlık ve düğmenin okunması için eklenen hafif karartmanın yoğunluğu (0–100). 0 karartmayı kaldırır; alttaki koyu geçiş her zaman kalır.",
+          "defaultValue": 100,
+          "groupId": "settings"
         }
       ],
       "propGroups": [
@@ -4610,6 +4663,10 @@
         {
           "id": "colors",
           "name": "Renkler"
+        },
+        {
+          "id": "settings",
+          "name": "Ayarlar"
         }
       ]
     },

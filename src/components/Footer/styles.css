@@ -221,6 +221,17 @@
   color: var(--c-muted);
 }
 
+/* optional marketing consent under the field (showConsentCheckbox) */
+.ftr__notify-consent {
+  margin-top: 2px;
+}
+
+.ftr__notify-consent a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* I-FTR-04 · M-01: { y: 8, opacity: 0 } → visible, 0.3s ease-standard */
 .ftr__notify-msg {
   min-height: 1.5em;

@@ -7,11 +7,13 @@ import {
   getNewsletterSubscriptionForm,
   initNewsletterSubscriptionForm,
   setNewsletterSubscriptionFormEmail,
+  setNewsletterSubscriptionFormIsMarketingAccepted,
   submitNewsletterSubscriptionForm,
 } from "@ikas/bp-storefront";
 import ArrowLink from "../../sub-components/ArrowLink";
 import BrandMarquee from "../../sub-components/BrandMarquee";
 import Button from "../../sub-components/Button";
+import Checkbox from "../../sub-components/Checkbox";
 import Icon from "../../sub-components/Icon";
 import LazyImg from "../../sub-components/LazyImg";
 import LocaleSwitcher, { currentLocaleLabel, hasLocaleAlternatives, hasLocaleOptions } from "../../sub-components/LocaleSwitcher";
@@ -21,7 +23,7 @@ import { TEXT, forceScheme } from "../../utils/tokens";
 import { UI_EVENT, onUi } from "../../utils/ui";
 import { Props } from "./types";
 
-type NotifyStatus = "idle" | "success" | "invalid" | "failure";
+type NotifyStatus = "idle" | "success" | "invalid" | "consent" | "failure";
 
 const toList = (v: any) => (Array.isArray(v) ? v : v ? [v] : []).flat().filter(Boolean);
 
@@ -56,6 +58,11 @@ export function Footer(props: Props) {
     notifySuccessText = "Teşekkürler, listeye eklendin.",
     notifyErrorText = "Geçerli bir e-posta adresi gir.",
     notifyFailureText = "Bir sorun oluştu, lütfen tekrar dene.",
+    showConsentCheckbox = false,
+    consentRequired = true,
+    consentText = "Kampanya ve fırsatlardan e-posta ile haberdar olmak istiyorum.",
+    consentLink,
+    consentErrorText = "Devam etmek için onay kutusunu işaretle.",
     supportText = "SORUN MU VAR? 0850 000 00 00",
     supportLinkText = "BİZE ULAŞ",
     supportLink,
@@ -77,6 +84,7 @@ export function Footer(props: Props) {
   const [localeOpen, setLocaleOpen] = useState(false);
   const [localeMode, setLocaleMode] = useState<"anchored" | "sheet">("anchored");
   const localeBtnRef = useRef<HTMLButtonElement>(null);
+  const consentOn = showConsentCheckbox && !!consentText;
 
   useEffect(() => {
     initNewsletterSubscriptionForm(form);
@@ -102,6 +110,11 @@ export function Footer(props: Props) {
     e.preventDefault();
     if (form.isSubmitting) return;
     setStatus("idle");
+    // The storefront form never validates isMarketingAccepted, so a required consent is checked here.
+    if (consentOn && consentRequired && !form.isMarketingAccepted?.value) {
+      setStatus("consent");
+      return;
+    }
     const ok = await submitNewsletterSubscriptionForm(form);
     if (ok) {
       setStatus("success");
@@ -112,7 +125,15 @@ export function Footer(props: Props) {
   };
 
   const message =
-    status === "success" ? notifySuccessText : status === "invalid" ? notifyErrorText : status === "failure" ? notifyFailureText : "";
+    status === "success"
+      ? notifySuccessText
+      : status === "invalid"
+        ? notifyErrorText
+        : status === "consent"
+          ? consentErrorText
+          : status === "failure"
+            ? notifyFailureText
+            : "";
   const serviceList = toList(services);
   const columnList = toList(columns);
   const socialList = toList(socialLinks);
@@ -205,6 +226,29 @@ export function Footer(props: Props) {
                     className="ftr__notify-submit"
                   />
                 </form>
+                {consentOn && (
+                  <Checkbox
+                    className="ftr__notify-consent"
+                    checked={!!form.isMarketingAccepted?.value}
+                    onChange={(checked) => {
+                      setNewsletterSubscriptionFormIsMarketingAccepted(form, checked);
+                      if (status === "consent") setStatus("idle");
+                    }}
+                    label={
+                      consentLink?.href ? (
+                        <a href={consentLink.href} target="_blank" rel="noopener noreferrer">
+                          {consentText}
+                        </a>
+                      ) : (
+                        consentText
+                      )
+                    }
+                    invalid={status === "consent"}
+                    required={consentRequired}
+                    disabled={submitting}
+                    name="marketing"
+                  />
+                )}
                 {/* I-FTR-04 · M-01: result fades up (y 8 → 0, 0.3s) */}
                 <p
                   className={cx(

@@ -64,4 +64,16 @@ export interface Props {
   etbisAltText?: string;
   /** Footer'ın en alt satırının solunda görünen kısa bilgi (ör. mağaza çalışma durumu). Boş bırakılırsa gizlenir. */
   statusText?: string;
+  /** Açılırsa e-posta bülteni alanının altında pazarlama izni onay kutusu görünür. Kapalıyken yalnızca e-posta ile kayıt olunur. */
+  showConsentCheckbox?: boolean;
+  /** Açıkken onay kutusu işaretlenmeden bülten kaydı gönderilmez. Kapalıysa kutu isteğe bağlıdır. Onay kutusu gizliyse etkisi yoktur. */
+  consentRequired?: boolean;
+  /** Bülten onay kutusunun yanındaki metin. Bağlantı eklenirse metin tıklanabilir olur. */
+  consentText?: string;
+  /** Bülten onay metnine tıklanınca yeni sekmede açılacak sayfa, örneğin aydınlatma metni. Boşsa metin bağlantısız görünür. */
+  consentLink?: IkasNavigationLink | null;
+  /** Zorunlu onay kutusu işaretlenmeden kayıt denendiğinde formun altında gösterilen uyarı. */
+  consentErrorText?: string;
+  /** Hero görselinin ortasına, başlık ve düğmenin okunması için eklenen hafif karartmanın yoğunluğu (0–100). 0 karartmayı kaldırır; alttaki koyu geçiş her zaman kalır. */
+  overlayOpacity?: number;
 }
