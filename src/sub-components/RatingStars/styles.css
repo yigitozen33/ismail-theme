@@ -64,6 +64,12 @@
   gap: 0;
 }
 
+/* the button is the only hit target: the fill mask under the pointer is added/removed as the
+   preview changes, and a press whose target disappears between mousedown and mouseup fires no click */
+.rstars__pick > * {
+  pointer-events: none;
+}
+
 .rstars__pick:focus-visible {
   outline: 2px solid var(--c-accent);
   outline-offset: 0;

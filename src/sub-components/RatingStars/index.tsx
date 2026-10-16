@@ -113,7 +113,7 @@ export default function RatingStars({
               tabIndex={value === n || (!value && n === 1) ? 0 : -1}
               disabled={disabled}
               onMouseEnter={() => setHover(n)}
-              onFocus={() => setHover(0)}
+              onFocus={(e) => (e.currentTarget as HTMLElement).matches(":focus-visible") && setHover(0)}
               onClick={() => onChange?.(n)}
             >
               <Star fill={n <= shown ? 1 : 0} size={size} />
