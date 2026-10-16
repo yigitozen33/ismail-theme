@@ -14,16 +14,24 @@
   transition: background-color var(--dur-fast) var(--ease-standard);
 }
 
+/* md fills the 48px action slot it sits in (QuickBuy / PDP next to the add button and the
+   quantity selector); the slot draws the frame, so the button has no circle of its own and its
+   hover fill follows the slot's corners. */
 .fav--md {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--c-line);
+  width: 100%;
+  min-width: 40px;
+  height: 100%;
+  min-height: 40px;
+  border-radius: inherit;
+  background: var(--c-transparent);
 }
 
 .fav__outline,
 .fav__filled {
   position: absolute;
-  transition: opacity var(--dur-fast) var(--ease-standard);
+  transition:
+    opacity var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
 }
 
 .fav__filled {
@@ -50,6 +58,11 @@
   }
 }
 
+.fav:active .fav__outline,
+.fav:active .fav__filled {
+  transform: scale(0.88);
+}
+
 .fav:focus-visible {
   outline: 2px solid var(--c-accent);
   outline-offset: 2px;
@@ -73,5 +86,10 @@
 @media (prefers-reduced-motion: reduce) {
   .fav--pop .fav__filled {
     animation: none;
+  }
+
+  .fav:active .fav__outline,
+  .fav:active .fav__filled {
+    transform: none;
   }
 }
