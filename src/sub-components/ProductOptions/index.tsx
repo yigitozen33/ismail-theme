@@ -25,7 +25,6 @@ import {
   isProductOptionSelectValueSelected,
   isTextAreaOption,
   isTextOption,
-  productOptionFileUpload,
   selectValue,
   setCheckboxValue,
   setTextValue,
@@ -33,6 +32,7 @@ import {
 } from "@ikas/bp-storefront";
 import { observer } from "@ikas/component-utils";
 import { cx } from "../../utils/cx";
+import { uploadOptionFiles } from "../../utils/optionFileUpload";
 import { fill } from "../../utils/productBuy";
 import { TEXT, upperTr } from "../../utils/tokens";
 import Checkbox from "../Checkbox";
@@ -117,9 +117,9 @@ const FileField = observer(function FileField({
     setFailed(false);
     setUploading(true);
     try {
-      const urls = await productOptionFileUpload(option, files);
+      const urls = await uploadOptionFiles(option, files);
       if (urls.length) setValues(option, [...option.values, ...urls]);
-      else setFailed(true);
+      if (urls.length < files.length) setFailed(true);
     } catch {
       setFailed(true);
     } finally {
