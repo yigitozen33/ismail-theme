@@ -10,6 +10,7 @@ import {
   getProductHref,
   getProductOptionSet,
   getSelectedProductVariant,
+  getSelectedProductVariantHref,
   hasValidProductOptionSetValues,
   initBundleProducts,
   isFavoriteIkasProduct,
@@ -247,9 +248,9 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
     }
   };
 
-  /** The selected variant travels in the href; the sheet closes so it does not cover the PDP. */
+  /** The picked variant travels in the href (?beden=m…); the sheet closes so it does not cover the PDP. */
   const goToDetail = () => {
-    const to = getProductHref(product);
+    const to = getSelectedProductVariantHref(product) || getProductHref(product);
     close();
     Router.navigate(to);
   };
