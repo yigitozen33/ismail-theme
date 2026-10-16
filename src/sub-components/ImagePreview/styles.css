@@ -186,19 +186,31 @@
 }
 
 .iprev__thumb {
+  position: relative;
   flex: 0 0 auto;
   width: 76px;
   height: 76px;
   padding: 0;
   overflow: hidden;
-  border: 2px solid var(--c-transparent);
+  border: 0;
   border-radius: var(--radius-media);
   background: var(--c-surface);
   cursor: pointer;
+}
+
+/* selection ring drawn over the photo, so the photo fills the whole tile (no light frame) */
+.iprev__thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 2px solid var(--c-transparent);
+  border-radius: inherit;
+  pointer-events: none;
   transition: border-color 0.3s var(--ease-standard);
 }
 
-.iprev__thumb--on {
+.iprev__thumb--on::after {
   border-color: var(--c-text);
 }
 
@@ -282,7 +294,8 @@
     animation: none;
   }
 
-  .iprev__img {
+  .iprev__img,
+  .iprev__thumb::after {
     transition: none;
   }
 

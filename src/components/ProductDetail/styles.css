@@ -85,22 +85,35 @@
   width: 72px;
   height: 90px;
   box-sizing: border-box;
+  position: relative;
   padding: 0;
   overflow: hidden;
-  border: 2px solid var(--c-transparent);
+  border: 0;
   border-radius: var(--radius-media);
   background: var(--c-surface);
   color: var(--c-text);
   cursor: pointer;
+}
+
+/* selection ring drawn over the photo, so the photo fills the whole tile (a real border left a
+   light --c-surface frame around every unselected thumb) */
+.pdp__thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 2px solid var(--c-transparent);
+  border-radius: inherit;
+  pointer-events: none;
   transition: border-color 0.3s var(--ease-standard);
 }
 
-.pdp__thumb--on {
+.pdp__thumb--on::after {
   border-color: var(--c-text);
 }
 
 @media (hover: hover) {
-  .pdp__thumb:not(.pdp__thumb--on):hover {
+  .pdp__thumb:not(.pdp__thumb--on):hover::after {
     border-color: var(--c-line);
   }
 }
@@ -993,7 +1006,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pdp__thumb,
+  .pdp__thumb::after,
   .pdp__dot::after {
     transition: none;
   }
