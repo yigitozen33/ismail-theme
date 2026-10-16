@@ -4,10 +4,14 @@ import {
   PayWithIkas,
   Router,
   createMediaSrcset,
+  getBundleProductsOfVariant,
   getDefaultSrc,
   getDisplayedProductVariantTypes,
   getProductHref,
+  getProductOptionSet,
   getSelectedProductVariant,
+  hasValidProductOptionSetValues,
+  initBundleProducts,
   isFavoriteIkasProduct,
   isIkasVariantTypeColorSelection,
 } from "@ikas/bp-storefront";
@@ -16,6 +20,7 @@ import { cx } from "../../utils/cx";
 import { toggleFavorite } from "../../utils/favorites";
 import { prefersReducedMotion, useEscape, useScrollLock } from "../../utils/hooks";
 import {
+  adjustBundleProductQuantity,
   canPayWithIkas,
   fill,
   getPriceInfo,
@@ -91,11 +96,34 @@ function initialChosen(product: IkasProduct) {
 }
 
 /**
+ * Loads what product-list data leaves out: the option set (kişiselleştirme) and the bundle
+ * parts of the selected variant. Without them `addItemToCart` rejects the product
+ * (INVALID_PRODUCT_OPTION_VALUES) or sends an empty bundle. Resolves false when the option set
+ * could not be loaded. Idempotent — loaded data is kept on the product.
+ */
+async function prepareProduct(product: IkasProduct) {
+  try {
+    if (product.productOptionSetId && !product.productOptionSet) await getProductOptionSet(product);
+    const variant = getSelectedProductVariant(product);
+    if (variant?.bundleSettings?.products.some((bp) => !bp.product)) {
+      await getBundleProductsOfVariant(product, variant);
+      await initBundleProducts(product);
+      variant.bundleSettings?.products.forEach(adjustBundleProductQuantity);
+    }
+    return !product.productOptionSetId || !!product.productOptionSet;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * I/Overlay/QuickBuy — opened by UI_EVENT.openQuickBuy ({ product }), e.g. from ProductCard.
  * 960 window (880 laptop · 640 + 280 image tablet · bottom sheet mobile), I-QB-01 · M-20.
  * Gallery with counter + arrows (desktop only), VariantSwatch / VariantChip (I-QB-03),
  * quantity, add to cart (I-QB-04) → closes and emits UI_EVENT.openCart. States: açık,
- * seçim eksik (chooseOptionText), ekleniyor. Products with option sets or bundles go to the PDP.
+ * seçim eksik (chooseOptionText), ekleniyor. Bundles and products whose option set is all
+ * optional add from here; only a required personalisation (or an option set that failed to load)
+ * turns the button into the PDP link (detailLinkText).
  */
 const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithIkas = true, lowStockThreshold = 5 }: Props) {
   const t = { ...QUICK_BUY_DEFAULT_TEXTS } as QuickBuyTexts;
@@ -106,6 +134,10 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
   const [missing, setMissing] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
+  /** prepareProduct: loading → ready | failed (option set missing → PDP). */
+  const [prep, setPrep] = useState<"loading" | "ready" | "failed">("loading");
+  const [waiting, setWaiting] = useState(false);
+  const prepRun = useRef<Promise<boolean> | null>(null);
   const cart = useAddToCart();
   const closeRef = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
@@ -118,10 +150,22 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
     returnFocus.current?.focus?.();
   };
 
+  const prepare = (p: IkasProduct) => {
+    const run = prepareProduct(p);
+    prepRun.current = run;
+    run.then((ok) => {
+      if (prepRun.current === run) setPrep(ok ? "ready" : "failed");
+    });
+    return run;
+  };
+
   useEffect(() => {
     const offOpen = onUi<{ product?: IkasProduct }>(UI_EVENT.openQuickBuy, (detail) => {
       const p = detail?.product;
       if (!p) return;
+      setPrep("loading");
+      setWaiting(false);
+      prepare(p);
       if (hideTimer.current) clearTimeout(hideTimer.current);
       returnFocus.current = document.activeElement as HTMLElement | null;
       setProduct(p);
@@ -157,30 +201,57 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
   const limits = getProductCartLimits(product, variant);
   const href = getProductHref(product);
   const isFavorite = isFavoriteIkasProduct(product);
-  const needsDetail = !!product.productOptionSetId || !!variant?.bundleSettings;
+  const optionSet = product.productOptionSet;
+  // Required personalisation can only be filled on the PDP; an all-optional set adds as is.
+  const needsDetail = prep === "failed" || (!!optionSet && !hasValidProductOptionSetValues(optionSet));
+  const busy = cart.busy || waiting;
   const stock = variant && !variant.sellIfOutOfStock && variant.stock > 0 && variant.stock <= lowStockThreshold ? variant.stock : 0;
 
-  const buttonState: ButtonState = soldOut ? "soldout" : cart.busy ? "loading" : cart.added ? "added" : "idle";
-  const buttonLabel = soldOut ? t.soldOutText : cart.busy ? t.addingText : cart.added ? t.addedText : t.addText;
+  const toDetail = needsDetail && !!t.detailLinkText;
+  const buttonState: ButtonState = soldOut ? "soldout" : busy ? "loading" : cart.added ? "added" : "idle";
+  const buttonLabel = soldOut
+    ? t.soldOutText
+    : busy
+      ? t.addingText
+      : cart.added
+        ? t.addedText
+        : toDetail
+          ? t.detailLinkText
+          : t.addText;
 
   const onAdd = async () => {
-    if (soldOut || cart.busy || !variant) return;
+    if (soldOut || busy || !variant) return;
     const unchosen = getDisplayedProductVariantTypes(product).find((vt) => !chosen.has(vt.variantType.id));
     if (unchosen) {
       setMissing(unchosen.variantType.id);
       return;
     }
-    if (needsDetail) {
-      Router.navigate(href);
+    // Option set / bundle parts may still be loading (or were never loaded for this variant).
+    setWaiting(true);
+    if (prepRun.current) await prepRun.current;
+    const ready = await prepare(product);
+    setWaiting(false);
+    const set = product.productOptionSet;
+    if (!ready || (set && !hasValidProductOptionSetValues(set))) {
+      goToDetail();
       return;
     }
-    const result = await cart.add(product, variant, quantity);
+    const current = getSelectedProductVariant(product);
+    if (!current) return;
+    const result = await cart.add(product, current, quantity);
     if (result === "ok") {
       close();
       emitUi(UI_EVENT.openCart);
     } else if (result === "options") {
-      Router.navigate(href);
+      goToDetail();
     }
+  };
+
+  /** The selected variant travels in the href; the sheet closes so it does not cover the PDP. */
+  const goToDetail = () => {
+    const to = getProductHref(product);
+    close();
+    Router.navigate(to);
   };
 
   const onFavorite = () => toggleFavorite(product);
@@ -293,6 +364,7 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
               setChosen((s) => new Set(s).add(vt.variantType.id));
               setMissing(null);
               setImageIndex(0);
+              prepare(product);
             }}
           />
 
@@ -323,7 +395,7 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
             </p>
           )}
 
-          {showPayWithIkas && !soldOut && !needsDetail && canPayWithIkas() && (
+          {showPayWithIkas && !soldOut && prep === "ready" && !needsDetail && !variant?.bundleSettings && canPayWithIkas() && (
             <div className="qb__pay">
               <PayWithIkas product={product} quantity={quantity} />
             </div>
@@ -339,7 +411,7 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
               <span />
             )}
             {/* I-QB-05 · M-10 via ArrowLink */}
-            {t.detailLinkText && <ArrowLink label={t.detailLinkText} href={href} />}
+            {t.detailLinkText && !toDetail && <ArrowLink label={t.detailLinkText} href={href} />}
           </div>
         </div>
 
