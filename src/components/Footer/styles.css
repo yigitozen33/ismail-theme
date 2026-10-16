@@ -262,10 +262,11 @@
   margin-top: auto;
 }
 
+/* baseline, not center: ArrowLink carries its hover underline below the label, which lifts a centred label */
 .ftr__support {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   gap: 8px 16px;
 }
 
