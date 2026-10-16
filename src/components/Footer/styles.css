@@ -325,6 +325,9 @@
 
 .ftr__status-track .fstore {
   grid-area: 1 / 1;
+  /* the cell is as wide as the longest store; a shorter one hugs the "·" instead of centring in it */
+  justify-self: start;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   visibility: hidden;
