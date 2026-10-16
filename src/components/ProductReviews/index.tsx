@@ -101,6 +101,8 @@ export function ProductReviews({
   const [sent, setSent] = useState<"pending" | "published" | null>(null);
   // Stars of reviews published in this visit; the product's summary (count, average, bars) is from page load.
   const [added, setAdded] = useState<number[]>([]);
+  // Review count from the first load, before any review of this visit (product.reviewCount can be empty).
+  const [baseCount, setBaseCount] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
   const [preview, setPreview] = useState<{ images: IkasImage[]; index: number } | null>(null);
   const [, setTick] = useState(0);
@@ -126,7 +128,8 @@ export function ProductReviews({
 
   useEffect(() => {
     setAdded([]);
-    load();
+    setBaseCount(null);
+    load().then((res) => setBaseCount(res?.count ?? null));
   }, [product?.id, limit]);
 
   if (!product) return null;
@@ -135,7 +138,7 @@ export function ProductReviews({
   const needsLogin = isCustomerReviewLoginRequired(product) && !hasCustomer(customerStore);
   const autoApproved = isReviewAutoApproved();
   const reviews = list?.data ?? [];
-  const baseTotal = product.reviewCount ?? list?.count ?? 0;
+  const baseTotal = product.reviewCount ?? baseCount ?? list?.count ?? 0;
   const total = baseTotal + added.length;
   const average = total ? ((product.averageRating ?? 0) * baseTotal + added.reduce((a, b) => a + b, 0)) / total : 0;
   const isEmpty = !loading && total === 0 && reviews.length === 0;
