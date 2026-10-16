@@ -661,7 +661,7 @@ export function ProductDetail(props: Props) {
                   >
                     {img.isVideo ? (
                       <span className="pdp__thumb-video">
-                        <VideoPoster src={getDefaultSrc(img)} className="pdp__thumb-video-frame" />
+                        <VideoPoster src={getDefaultSrc(img)} className="pdp__thumb-video-frame" live />
                         <span className="pdp__thumb-video-play">
                           <Icon name="play" size={12} />
                         </span>

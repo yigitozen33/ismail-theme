@@ -227,10 +227,10 @@
   pointer-events: none;
 }
 
-/* play glyph in a 24px disc, as on the canvas rail */
+/* video thumbs loop silently; the play glyph (24px disc) marks them only when they stay still */
 .iprev__thumb-video-play {
   position: relative;
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   width: 24px;
@@ -284,6 +284,10 @@
 
   .iprev__img {
     transition: none;
+  }
+
+  .iprev__thumb-video-play {
+    display: inline-flex;
   }
 }
 

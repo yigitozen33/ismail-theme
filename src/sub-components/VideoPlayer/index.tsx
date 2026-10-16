@@ -23,7 +23,11 @@ interface Props {
   active?: boolean;
   /** Fires once the first play starts (true) — hosts hide overlays that share the corners. */
   onStartedChange?: (started: boolean) => void;
-  /** Muted autoplay while active and at least half on screen (off with reduced motion or after a user pause). */
+  /**
+   * Muted autoplay while active and at least half on screen (off with reduced motion or after a user
+   * pause). The centred play button stays away until playback is held (user pause, reduced motion or
+   * a blocked play()), and a tap on the video toggles pause right away.
+   */
   autoPlay?: boolean;
 }
 
@@ -59,6 +63,8 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
   const [idle, setIdle] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  // autoplay hosts show the big play button only once playback is held
+  const [held, setHeld] = useState(!autoPlay);
 
   // Hide the controls after IDLE_MS while playing, unless a keyboard user is inside them.
   const scheduleIdle = () => {
@@ -93,6 +99,10 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
     }
   }, [active]);
 
+  useEffect(() => {
+    if (autoPlay && (typeof IntersectionObserver === "undefined" || prefersReducedMotion())) setHeld(true);
+  }, [autoPlay]);
+
   // Muted autoplay: plays while the active media is at least half visible, pauses when it leaves.
   useEffect(() => {
     const root = rootRef.current;
@@ -102,7 +112,7 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
         const video = videoRef.current;
         if (!video) return;
         if (entry.isIntersecting) {
-          if (video.paused && !userPaused.current) video.play().catch(() => undefined);
+          if (video.paused && !userPaused.current) video.play().catch(() => setHeld(true));
         } else if (!video.paused) {
           video.pause();
         }
@@ -140,7 +150,10 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
     if (!video) return;
     userPaused.current = !video.paused;
     if (video.paused) play();
-    else video.pause();
+    else {
+      video.pause();
+      setHeld(true);
+    }
   };
 
   const onVideoClick = () => {
@@ -243,7 +256,7 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
         if ((e as PointerEvent).pointerType === "mouse") reveal();
       }}
       onPointerDownCapture={(e) => {
-        revealOnly.current = hidden && (e as PointerEvent).pointerType !== "mouse";
+        revealOnly.current = hidden && !autoPlay && (e as PointerEvent).pointerType !== "mouse";
         reveal();
       }}
       onFocusCapture={reveal}
@@ -278,7 +291,7 @@ const VideoPlayer = observer(function VideoPlayer({ src, texts, videoClassName, 
         <track kind="captions" />
       </video>
 
-      {!playing && (
+      {!playing && held && (
         <button type="button" className="vplay__play" aria-label={texts.playAriaLabel} onClick={play}>
           <span className="vplay__play-icon">
             <Icon name="play" size={24} />

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { IkasImage, createMediaSrcset, getDefaultSrc, getThumbnailSrc } from "@ikas/bp-storefront";
 import { cx } from "../../utils/cx";
-import { useEscape, useScrollLock } from "../../utils/hooks";
+import { prefersReducedMotion, useEscape, useScrollLock } from "../../utils/hooks";
 import { TEXT } from "../../utils/tokens";
 import Icon from "../Icon";
 import VideoPlayer, { type VideoPlayerTexts } from "../VideoPlayer";
+import VideoPoster from "../VideoPoster";
 
 export interface ImagePreviewTexts {
   closeAriaLabel: string;
@@ -152,9 +153,18 @@ export default function ImagePreview({
               {/* I-PREV-01 · M-02 */}
               <div className="iprev__media">
                 {img.isVideo && videoTexts ? (
-                  <VideoPlayer src={getDefaultSrc(img)} texts={videoTexts} videoClassName="iprev__img" active={i === current} />
+                  <VideoPlayer src={getDefaultSrc(img)} texts={videoTexts} videoClassName="iprev__img" active={i === current} autoPlay />
                 ) : img.isVideo ? (
-                  <video className="iprev__img" src={getDefaultSrc(img)} controls playsInline preload="metadata">
+                  <video
+                    className="iprev__img"
+                    src={getDefaultSrc(img)}
+                    controls
+                    muted
+                    loop
+                    playsInline
+                    autoPlay={i === current && !prefersReducedMotion()}
+                    preload="metadata"
+                  >
                     <track kind="captions" />
                   </video>
                 ) : (
@@ -208,8 +218,7 @@ export default function ImagePreview({
               >
                 {img.isVideo ? (
                   <span className="iprev__thumb-video">
-                    {/* first frame as the poster; #t nudges Safari to paint it */}
-                    <video className="iprev__thumb-video-frame" src={`${getDefaultSrc(img)}#t=0.1`} muted playsInline preload="auto" aria-hidden="true" tabIndex={-1} />
+                    <VideoPoster src={getDefaultSrc(img)} className="iprev__thumb-video-frame" live />
                     <span className="iprev__thumb-video-play">
                       <Icon name="play" size={12} />
                     </span>

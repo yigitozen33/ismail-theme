@@ -135,10 +135,10 @@
   pointer-events: none;
 }
 
-/* play glyph in a 24px disc, as on the canvas rail */
+/* video thumbs loop silently; the play glyph (24px disc) marks them only when they stay still */
 .pdp__thumb-video-play {
   position: relative;
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   width: 24px;
@@ -996,6 +996,10 @@
   .pdp__thumb,
   .pdp__dot::after {
     transition: none;
+  }
+
+  .pdp__thumb-video-play {
+    display: inline-flex;
   }
 
   .pdp__gallery--switched .pdp__media--on {
