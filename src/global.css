@@ -62,7 +62,7 @@
   --size-logo: 22px;
   --size-hero: 760px;
   --radius-card: 6px;
-  --radius-media: 0px;
+  --radius-media: var(--radius-card);
   --radius-pill: 999px;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
