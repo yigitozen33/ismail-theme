@@ -19,11 +19,18 @@ import LazyImg from "../../sub-components/LazyImg";
 import LocaleSwitcher, { currentLocaleLabel, hasLocaleAlternatives } from "../../sub-components/LocaleSwitcher";
 import { cx } from "../../utils/cx";
 import { useMounted } from "../../utils/hooks";
-import { TEXT, forceScheme } from "../../utils/tokens";
+import { BREAKPOINT, TEXT, forceScheme } from "../../utils/tokens";
 import { UI_EVENT, onUi } from "../../utils/ui";
 import { Props } from "./types";
 
 type NotifyStatus = "idle" | "success" | "invalid" | "consent" | "failure";
+
+/**
+ * The hero photo is object-fit: cover in a box that is taller than wide on phones (min-height 520px) and
+ * 640px+ tall on tablets, so a 16:10 photo is drawn wider than the viewport there: 520 × 1.6 ≈ 832px and
+ * 640 × 1.6 = 1024px. A plain 100vw would pick a file ~2× too small and the photo would look soft.
+ */
+const HERO_SIZES = `(max-width: ${BREAKPOINT.mobile}px) 832px, (max-width: 1023px) 1024px, 100vw`;
 
 const toList = (v: any) => (Array.isArray(v) ? v : v ? [v] : []).flat().filter(Boolean);
 
@@ -153,7 +160,7 @@ export function Footer(props: Props) {
             className="ftr__hero-img"
             src={getDefaultSrc(ctaImage)}
             srcSet={createMediaSrcset(ctaImage)}
-            sizes="100vw"
+            sizes={HERO_SIZES}
             alt={ctaImage.altText ?? ""}
             loading="lazy"
             decoding="async"
