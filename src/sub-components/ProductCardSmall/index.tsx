@@ -2,13 +2,13 @@ import {
   IkasProduct,
   createMediaSrcset,
   getDefaultSrc,
-  getProductHref,
   getProductVariantFormattedFinalPrice,
   getProductVariantMainImage,
   getSelectedProductVariant,
 } from "@ikas/bp-storefront";
 import { observer } from "@ikas/component-utils";
 import { cx } from "../../utils/cx";
+import { productCardHref } from "../../utils/productVariants";
 import { TEXT } from "../../utils/tokens";
 
 interface Props {
@@ -34,7 +34,8 @@ const ProductCardSmall = observer(function ProductCardSmall({
   const variant = getSelectedProductVariant(product);
   const media = variant ? getProductVariantMainImage(variant)?.image ?? null : null;
   const price = variant ? getProductVariantFormattedFinalPrice(variant) : "";
-  const href = getProductHref(product);
+  // selected variant in the query: a split listing (one row per colour) opens its own colour
+  const href = productCardHref(product);
 
   return (
     <a className={cx("pcsm", `pcsm--${size}`, className)} href={href} onClick={onClick as any}>

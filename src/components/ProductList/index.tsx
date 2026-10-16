@@ -35,6 +35,7 @@ import ProductCard from "../../sub-components/ProductCard";
 import SortMenu from "../../sub-components/SortMenu";
 import { cx } from "../../utils/cx";
 import { prefersReducedMotion } from "../../utils/hooks";
+import { productListKey } from "../../utils/productVariants";
 import { BREAKPOINT, TEXT } from "../../utils/tokens";
 import { UI_EVENT, onUi } from "../../utils/ui";
 import { Props } from "./types";
@@ -113,6 +114,7 @@ export function ProductList(props: Props) {
     addToCartAriaLabel = "Sepete ekle",
     favoriteAriaLabel = "Favorilere ekle",
     soldOutText = "Tükendi",
+    customizeAriaLabel = "Kişiselleştir",
     filterTitle = "Filtrele",
     filterRailText = "FİLTRE",
     selectedFiltersTitle = "Seçili filtreler",
@@ -335,11 +337,12 @@ export function ProductList(props: Props) {
 
   const cards = items.map((product, i) => (
     <ProductCard
-      key={product.id}
+      key={productListKey(product)}
       product={product}
       addToCartAriaLabel={addToCartAriaLabel}
       favoriteAriaLabel={favoriteAriaLabel}
       soldOutText={soldOutText}
+      customizeAriaLabel={customizeAriaLabel}
       priority={i < gridCols}
       sizes="(max-width: 767px) 50vw, (max-width: 991px) 33vw, 25vw"
       onFavoriteRemove={isFav ? () => setFav((f) => ({ ...f, items: f.items.filter((p) => p.id !== product.id) })) : undefined}

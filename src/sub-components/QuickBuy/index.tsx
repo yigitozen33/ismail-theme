@@ -7,10 +7,7 @@ import {
   getBundleProductsOfVariant,
   getDefaultSrc,
   getDisplayedProductVariantTypes,
-  getProductHref,
-  getProductOptionSet,
   getSelectedProductVariant,
-  getSelectedProductVariantHref,
   hasValidProductOptionSetValues,
   initBundleProducts,
   isFavoriteIkasProduct,
@@ -30,6 +27,7 @@ import {
   isSoldOut,
   useAddToCart,
 } from "../../utils/productBuy";
+import { loadProductOptionSet, productCardHref } from "../../utils/productVariants";
 import { TEXT } from "../../utils/tokens";
 import { UI_EVENT, emitUi, onUi } from "../../utils/ui";
 import ArrowLink from "../ArrowLink";
@@ -58,6 +56,8 @@ export interface QuickBuyTexts {
   quantityAriaLabel: string;
   decreaseAriaLabel: string;
   increaseAriaLabel: string;
+  /** Muted note above the actions when a required personalisation sends the shopper to the PDP. */
+  personalizeNoteText: string;
 }
 
 /** Canvas copy (I/Overlay/QuickBuy) — the coordinator can mirror these as Header TEXT defaults. */
@@ -77,6 +77,7 @@ export const QUICK_BUY_DEFAULT_TEXTS: QuickBuyTexts = {
   quantityAriaLabel: "Adet",
   decreaseAriaLabel: "Azalt",
   increaseAriaLabel: "Artır",
+  personalizeNoteText: "Bu ürün kişiselleştirme içeriyor; seçimlerini ürün sayfasında tamamlarsın.",
 };
 
 interface Props {
@@ -104,7 +105,7 @@ function initialChosen(product: IkasProduct) {
  */
 async function prepareProduct(product: IkasProduct) {
   try {
-    if (product.productOptionSetId && !product.productOptionSet) await getProductOptionSet(product);
+    if (product.productOptionSetId && !product.productOptionSet) await loadProductOptionSet(product);
     const variant = getSelectedProductVariant(product);
     if (variant?.bundleSettings?.products.some((bp) => !bp.product)) {
       await getBundleProductsOfVariant(product, variant);
@@ -200,7 +201,8 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
   const price = getPriceInfo(variant);
   const soldOut = isSoldOut(product, variant);
   const limits = getProductCartLimits(product, variant);
-  const href = getProductHref(product);
+  // the colour picked on the card (or here) travels to the PDP
+  const href = productCardHref(product);
   const isFavorite = isFavoriteIkasProduct(product);
   const optionSet = product.productOptionSet;
   // Required personalisation can only be filled on the PDP; an all-optional set adds as is.
@@ -250,7 +252,7 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
 
   /** The picked variant travels in the href (?beden=m…); the sheet closes so it does not cover the PDP. */
   const goToDetail = () => {
-    const to = getSelectedProductVariantHref(product) || getProductHref(product);
+    const to = productCardHref(product);
     close();
     Router.navigate(to);
   };
@@ -371,6 +373,14 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
 
           <span className="qb__spacer" aria-hidden="true" />
 
+          {/* required personalisation: say why the button leads to the PDP instead of the cart */}
+          {toDetail && !soldOut && t.personalizeNoteText && (
+            <p className={cx("qb__note", TEXT.uiSm)}>
+              <Icon name="info" size={16} />
+              {t.personalizeNoteText}
+            </p>
+          )}
+
           {/* I-QB-04 · M-11 via Button */}
           <div className="qb__actions">
             {!soldOut && (
@@ -385,7 +395,16 @@ const QuickBuy = observer(function QuickBuy({ texts: textOverrides, showPayWithI
                 increaseAriaLabel={t.increaseAriaLabel}
               />
             )}
-            <Button label={buttonLabel} state={buttonState} fullWidth className="qb__add" onClick={onAdd} />
+            {/* PDP fallback is drawn as the outline button with a trailing arrow so it never reads as "Sepete ekle" */}
+            <Button
+              label={buttonLabel}
+              state={buttonState}
+              variant={toDetail && !soldOut ? "outline" : "solid"}
+              iconEnd={toDetail && !soldOut && !busy ? <Icon name="arrow-right" size={16} /> : undefined}
+              fullWidth
+              className="qb__add"
+              onClick={onAdd}
+            />
             <span className="qb__fav">
               <FavoriteButton active={isFavorite} ariaLabel={t.favoriteAriaLabel} size="md" onToggle={onFavorite} />
             </span>

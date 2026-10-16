@@ -29,6 +29,11 @@ const LINE: Record<string, Shape[]> = {
   star: [["polygon", { points: "12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" }]],
   trash: ["M3 6h18", "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"],
   pencil: ["M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"],
+  // ProductCard ring for products with required personalisation (opens the PDP instead of QuickBuy)
+  "pen-line": [
+    "M12 20h9",
+    "M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z",
+  ],
   eye: ["M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z", ["circle", { cx: 12, cy: 12, r: 3 }]],
   "eye-off": [
     "M9.88 9.88a3 3 0 1 0 4.24 4.24",

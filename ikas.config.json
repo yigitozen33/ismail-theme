@@ -139,6 +139,15 @@
           "defaultValue": true,
           "groupId": "settings",
           "description": "Kapatılırsa ürünlerin altındaki düğme gizlenir."
+        },
+        {
+          "name": "customizeAriaLabel",
+          "displayName": "Kişiselleştir (erişilebilirlik)",
+          "type": "TEXT",
+          "required": false,
+          "description": "Zorunlu kişiselleştirmesi olan ürünlerin kartında sepet düğmesinin yerine gelen, ürün sayfasına götüren düğmenin ekran okuyucu etiketi.",
+          "defaultValue": "Kişiselleştir",
+          "groupId": "texts"
         }
       ],
       "propGroups": [
@@ -2392,6 +2401,15 @@
           "defaultValue": 4,
           "groupId": "editorial",
           "description": "Editoryal kutunun listede kaçıncı üründen sonra yer alacağını belirler; o kadar ürün yoksa gösterilmez."
+        },
+        {
+          "name": "customizeAriaLabel",
+          "displayName": "Kişiselleştir (erişilebilirlik)",
+          "type": "TEXT",
+          "required": false,
+          "description": "Zorunlu kişiselleştirmesi olan ürünlerin kartında sepet düğmesinin yerine gelen, ürün sayfasına götüren düğmenin ekran okuyucu etiketi.",
+          "defaultValue": "Kişiselleştir",
+          "groupId": "texts"
         }
       ],
       "propGroups": [
@@ -6281,6 +6299,15 @@
           "defaultValue": "Ne arıyorsun?",
           "groupId": "search",
           "description": "Arama kutusunda mobil ekranlarda görünen kısa ipucu; boşsa masaüstü ipucu kullanılır."
+        },
+        {
+          "name": "qbPersonalizeNoteText",
+          "displayName": "Kişiselleştirme notu",
+          "type": "TEXT",
+          "required": false,
+          "description": "Hızlı satın al panelinde, zorunlu kişiselleştirmesi olan ürünlerde düğmenin üstünde görünen ve neden ürün sayfasına gidildiğini anlatan kısa not.",
+          "defaultValue": "Bu ürün kişiselleştirme içeriyor; seçimlerini ürün sayfasında tamamlarsın.",
+          "groupId": "quickbuy"
         }
       ],
       "propGroups": [

@@ -3,7 +3,6 @@ import {
   IkasProduct,
   createMediaSrcset,
   getDefaultSrc,
-  getProductHref,
   getProductVariantFormattedFinalPrice,
   getProductVariantMainImage,
   getSelectedProductVariant,
@@ -15,6 +14,7 @@ import LazyImg from "../../sub-components/LazyImg";
 import { cx } from "../../utils/cx";
 import { isKeyboardFocus } from "../../utils/hooks";
 import { toggleFavorite } from "../../utils/favorites";
+import { productCardHref, productListKey } from "../../utils/productVariants";
 import { TEXT } from "../../utils/tokens";
 import { UI_EVENT, emitUi } from "../../utils/ui";
 import { Props } from "./types";
@@ -55,14 +55,14 @@ export function BestsellerTab({
           const isActive = product === current;
           return (
             <li
-              key={product.id}
+              key={productListKey(product)}
               className={cx("btab__row", isActive && "is-active")}
               style={{ "--i": i } as any}
               // mouse hover / keyboard focus only: a tap follows the link, the preview must not jump first
               onPointerEnter={(e) => e.pointerType === "mouse" && setActive(i)}
               onFocusCapture={(e) => isKeyboardFocus(e.target) && setActive(i)}
             >
-              <a className="btab__link" href={getProductHref(product)}>
+              <a className="btab__link" href={productCardHref(product)}>
                 <span className={cx("btab__rank", TEXT.priceLg, "tabular")}>{pad(i + 1)}</span>
                 <span className="btab__media">
                   {image ? (
@@ -103,13 +103,13 @@ export function BestsellerTab({
       {/* bestsellers-preview — follows the active row */}
       {current && (
         <div className="btab__preview">
-          <a className="btab__preview-link" href={getProductHref(current)} aria-label={current.name} tabIndex={-1}>
+          <a className="btab__preview-link" href={productCardHref(current)} aria-label={current.name} tabIndex={-1}>
             {items.map((product) => {
               const image = mainImage(product);
               if (!image) return null;
               return (
                 <LazyImg
-                  key={product.id}
+                  key={productListKey(product)}
                   className={cx("btab__preview-img", product === current && "is-active")}
                   src={getDefaultSrc(image)}
                   srcSet={createMediaSrcset(image)}

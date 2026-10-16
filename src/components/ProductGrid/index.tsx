@@ -4,6 +4,7 @@ import ProductCard from "../../sub-components/ProductCard";
 import SectionHeading from "../../sub-components/SectionHeading";
 import { cx } from "../../utils/cx";
 import { useReveal } from "../../utils/hooks";
+import { productListKey } from "../../utils/productVariants";
 import { Props } from "./types";
 
 /** I/Section/ProductGrid — heading, 4×2 card grid (3×2 tablet, 2 cols mobile), "see all" button. */
@@ -14,6 +15,7 @@ export function ProductGrid({
   addToCartAriaLabel = "Sepete ekle",
   favoriteAriaLabel = "Favorilere ekle",
   soldOutText = "Tükendi",
+  customizeAriaLabel = "Kişiselleştir",
   products,
   buttonLink,
   maxItems = 8,
@@ -39,7 +41,7 @@ export function ProductGrid({
         >
           {items.map((product, i) => (
             <div
-              key={product.id}
+              key={productListKey(product)}
               className={cx("pgrid__item", i >= mobileMaxItems && "pgrid__item--desktop", i >= 6 && "pgrid__item--wide")}
               style={{ "--i": i } as any}
             >
@@ -48,6 +50,7 @@ export function ProductGrid({
                 addToCartAriaLabel={addToCartAriaLabel}
                 favoriteAriaLabel={favoriteAriaLabel}
                 soldOutText={soldOutText}
+                customizeAriaLabel={customizeAriaLabel}
                 priority={i < 4}
               />
             </div>

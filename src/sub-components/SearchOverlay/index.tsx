@@ -3,6 +3,7 @@ import { IkasNavigationLink, IkasProduct, Router, apiSearchProducts, withRoutePr
 import { cx } from "../../utils/cx";
 import { useEscape, useScrollLock } from "../../utils/hooks";
 import { fillText, useFocusTrap, usePresence } from "../../utils/overlay";
+import { productListKey } from "../../utils/productVariants";
 import { BREAKPOINT, TEXT } from "../../utils/tokens";
 import ArrowLink from "../ArrowLink";
 import Icon from "../Icon";
@@ -178,7 +179,7 @@ export default function SearchOverlay({
               <p className={cx("srch__count", TEXT.label, "tabular")}>{fillText(searchResultCountText, { count })}</p>
               <ul key={searched} className="srch__grid">
                 {results.slice(0, PER_PAGE).map((p, i) => (
-                  <li key={p.id} className="srch__item" style={{ "--i": i } as any}>
+                  <li key={productListKey(p)} className="srch__item" style={{ "--i": i } as any}>
                     <ProductCardSmall product={p} onClick={onClose} />
                   </li>
                 ))}

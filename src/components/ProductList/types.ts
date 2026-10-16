@@ -117,4 +117,6 @@ export interface Props {
   editorialLink?: IkasNavigationLink | null;
   /** Editoryal kutunun listede kaçıncı üründen sonra yer alacağını belirler; o kadar ürün yoksa gösterilmez. */
   editorialPosition?: number;
+  /** Zorunlu kişiselleştirmesi olan ürünlerin kartında sepet düğmesinin yerine gelen, ürün sayfasına götüren düğmenin ekran okuyucu etiketi. */
+  customizeAriaLabel?: string;
 }

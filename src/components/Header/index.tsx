@@ -533,6 +533,7 @@ export function Header(props: Props) {
           quantityAriaLabel: props.qbQuantityAriaLabel,
           decreaseAriaLabel: props.qbDecreaseAriaLabel,
           increaseAriaLabel: props.qbIncreaseAriaLabel,
+          personalizeNoteText: props.qbPersonalizeNoteText,
         }}
       />
 

@@ -17,6 +17,8 @@ interface Props {
   type?: "button" | "submit";
   ariaLabel?: string;
   icon?: ComponentChildren;
+  /** Trailing glyph after the label (e.g. an arrow on a link-like button). */
+  iconEnd?: ComponentChildren;
   className?: string;
   onClick?: (e: MouseEvent) => void;
 }
@@ -33,6 +35,7 @@ export default function Button({
   type = "button",
   ariaLabel,
   icon,
+  iconEnd,
   className,
   onClick,
 }: Props) {
@@ -53,11 +56,13 @@ export default function Button({
         {state === "added" && <Icon name="check" size={16} className="btn__check" />}
         {state !== "loading" && state !== "added" && icon}
         <span className={cx("btn__label", TEXT.ui)}>{label}</span>
+        {state !== "loading" && state !== "added" && iconEnd}
       </span>
       {/* the rolled-in copy draws its label from CSS (data-label) so the button's text reads once */}
       <span className="btn__face btn__face--bottom" aria-hidden="true">
         {icon}
         <span className={cx("btn__label", TEXT.ui)} data-label={label} />
+        {iconEnd}
       </span>
     </>
   );

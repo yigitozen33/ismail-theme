@@ -168,4 +168,6 @@ export interface Props {
   countdownDaysText?: string;
   /** Arama kutusunda mobil ekranlarda görünen kısa ipucu; boşsa masaüstü ipucu kullanılır. */
   searchPlaceholderMobile?: string;
+  /** Hızlı satın al panelinde, zorunlu kişiselleştirmesi olan ürünlerde düğmenin üstünde görünen ve neden ürün sayfasına gidildiğini anlatan kısa not. */
+  qbPersonalizeNoteText?: string;
 }

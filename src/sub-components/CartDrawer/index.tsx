@@ -19,6 +19,7 @@ import { observer } from "@ikas/component-utils";
 import { cx } from "../../utils/cx";
 import { useEscape, useScrollLock } from "../../utils/hooks";
 import { fillText, useFocusTrap, usePresence } from "../../utils/overlay";
+import { productListKey } from "../../utils/productVariants";
 import { TEXT } from "../../utils/tokens";
 import ArrowLink from "../ArrowLink";
 import Button from "../Button";
@@ -258,7 +259,7 @@ const CartDrawer = observer(function CartDrawer({ open, onClose, recommendProduc
                   {t.drawerRecommendTitle && <p className={cx("cdrw__recommend-title", TEXT.label)}>{t.drawerRecommendTitle}</p>}
                   <div className="cdrw__recommend-row">
                     {recommended.map((p) => (
-                      <ProductCardSmall key={p.id} product={p} size="sm" onClick={onClose} />
+                      <ProductCardSmall key={productListKey(p)} product={p} size="sm" onClick={onClose} />
                     ))}
                   </div>
                 </div>

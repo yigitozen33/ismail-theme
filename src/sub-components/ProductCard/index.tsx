@@ -1,11 +1,11 @@
-import { useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import {
+  IkasDisplayedVariantValue,
   IkasProduct,
   addSelectedtedVariantToCart,
   createMediaSrcset,
   getDefaultSrc,
   getDisplayedProductVariantTypes,
-  getProductHref,
   getProductVariantDiscountPercentage,
   getProductVariantFormattedFinalPrice,
   getProductVariantFormattedSellPrice,
@@ -16,10 +16,12 @@ import {
   isAddToCartEnabled,
   isColorVariantValue,
   isFavoriteIkasProduct,
+  selectVariantValue,
 } from "@ikas/bp-storefront";
 import { observer } from "@ikas/component-utils";
 import { cx } from "../../utils/cx";
 import { toggleFavorite } from "../../utils/favorites";
+import { isSplitByVariantType, loadProductOptionSet, needsPersonalization, productCardHref } from "../../utils/productVariants";
 import { TEXT } from "../../utils/tokens";
 import { UI_EVENT, emitUi } from "../../utils/ui";
 import Badge from "../Badge";
@@ -31,6 +33,8 @@ export interface ProductCardTexts {
   addToCartAriaLabel: string;
   favoriteAriaLabel: string;
   soldOutText: string;
+  /** Cart ring of a product with required personalisation (links to the PDP instead of QuickBuy). */
+  customizeAriaLabel?: string;
   newText?: string;
 }
 
@@ -47,12 +51,16 @@ interface Props extends ProductCardTexts {
 /**
  * I/Sub/ProductCard — 4:5 media with front/back image (I-CMP-01, M-09), badges, favourite,
  * title/price/colour dots and a cart ring (I-CMP-02) that adds directly or opens QuickBuy.
+ * Colour dots pick the card's colour (image, price, stock, links and QuickBuy follow it); a
+ * product listed once per colour (split listing) has no dots. Required personalisation turns
+ * the ring into a PDP link with its own glyph.
  */
 const ProductCard = observer(function ProductCard({
   product,
   addToCartAriaLabel,
   favoriteAriaLabel,
   soldOutText,
+  customizeAriaLabel,
   newText,
   sizes = "(max-width: 767px) 50vw, (max-width: 1199px) 33vw, 25vw",
   priority = false,
@@ -62,8 +70,13 @@ const ProductCard = observer(function ProductCard({
   onFavoriteRemove,
 }: Props) {
   const [adding, setAdding] = useState(false);
+  /** Hovered colour dot (mouse only) — previews its image without changing the selection. */
+  const [preview, setPreview] = useState<IkasDisplayedVariantValue | null>(null);
+  const [, setOptionsLoaded] = useState(false);
+  const rootRef = useRef<HTMLElement>(null);
   const variant = getSelectedProductVariant(product);
-  const images = variant?.images ? [...variant.images].sort((a, b) => a.order - b.order) : [];
+  const mediaVariant = preview?.variant ?? variant;
+  const images = mediaVariant?.images ? [...mediaVariant.images].sort((a, b) => a.order - b.order) : [];
   const front = images[0]?.image ?? null;
   const back = images[1]?.image ?? null;
   const inStock = variant ? (hasProductVariantStock(variant) as unknown as boolean) : false;
@@ -71,14 +84,49 @@ const ProductCard = observer(function ProductCard({
   const discount = hasDiscount && variant ? (getProductVariantDiscountPercentage(variant) as unknown as number) : 0;
   const price = variant ? (getProductVariantFormattedFinalPrice(variant) as unknown as string) : "";
   const comparePrice = hasDiscount && variant ? (getProductVariantFormattedSellPrice(variant) as unknown as string) : "";
-  const href = getProductHref(product);
+  const href = productCardHref(product);
   const isFavorite = isFavoriteIkasProduct(product);
   const tagName = product.tags?.[0]?.name;
+  const customize = inStock && needsPersonalization(product);
 
   const colorType = getDisplayedProductVariantTypes(product).find((vt) =>
     vt.displayedVariantValues.some((dvv) => isColorVariantValue(dvv.variantValue)),
   );
-  const swatches = colorType?.displayedVariantValues ?? [];
+  // split listing by colour: every colour already has its own card
+  const splitByColor = !!colorType && isSplitByVariantType(product, colorType.variantType.id);
+  const swatches = splitByColor ? [] : colorType?.displayedVariantValues ?? [];
+
+  // Option set (kişiselleştirme) is not in list data: fetch it once the card nears the viewport.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!product.productOptionSetId || product.productOptionSet || !el) return;
+    let cancelled = false;
+    const load = () => loadProductOptionSet(product).then(() => !cancelled && setOptionsLoaded(true));
+    if (typeof IntersectionObserver === "undefined") {
+      load();
+      return () => {
+        cancelled = true;
+      };
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        load();
+      },
+      { rootMargin: "200px 0px" },
+    );
+    io.observe(el);
+    return () => {
+      cancelled = true;
+      io.disconnect();
+    };
+  }, [product]);
+
+  const onSwatch = (dvv: IkasDisplayedVariantValue) => {
+    setPreview(null);
+    if (!dvv.isSelected) selectVariantValue(product, dvv.variantValue, true);
+  };
 
   const onFavorite = async () => {
     if ((await toggleFavorite(product)) === "removed") onFavoriteRemove?.();
@@ -110,7 +158,7 @@ const ProductCard = observer(function ProductCard({
   else if (tagName) badge = { text: tagName, tone: "default" };
 
   return (
-    <article className={cx("pcard", !inStock && "pcard--soldout", back && "pcard--has-back", className)}>
+    <article ref={rootRef} className={cx("pcard", !inStock && "pcard--soldout", back && "pcard--has-back", className)}>
       <a className="pcard__media" href={href} aria-label={product.name}>
         {front && (
           <>
@@ -153,13 +201,19 @@ const ProductCard = observer(function ProductCard({
             {comparePrice && <s className={cx("pcard__compare", TEXT.price, "tabular")}>{comparePrice}</s>}
           </div>
           {showSwatches && swatches.length > 1 && (
-            <div className="pcard__swatches" aria-hidden="true">
+            <div className="pcard__swatches" onPointerLeave={() => setPreview(null)}>
               {swatches.slice(0, maxSwatches).map((dvv) => (
-                <span
+                <button
                   key={dvv.variantValue.id}
-                  className="pcard__swatch"
-                  style={{ background: dvv.variantValue.colorCode ?? undefined }}
-                />
+                  type="button"
+                  className={cx("pcard__swatch", dvv.isSelected && "pcard__swatch--on")}
+                  aria-label={dvv.variantValue.name}
+                  aria-pressed={dvv.isSelected}
+                  onClick={() => onSwatch(dvv)}
+                  onPointerEnter={(e) => e.pointerType === "mouse" && setPreview(dvv.isSelected ? null : dvv)}
+                >
+                  <span className="pcard__swatch-dot" style={{ background: dvv.variantValue.colorCode ?? undefined }} />
+                </button>
               ))}
               {swatches.length > maxSwatches && (
                 <span className={cx("pcard__swatch-more", TEXT.badge, "tabular")}>+{swatches.length - maxSwatches}</span>
@@ -167,16 +221,24 @@ const ProductCard = observer(function ProductCard({
             </div>
           )}
         </div>
-        <button
-          type="button"
-          className="pcard__cart"
-          aria-label={addToCartAriaLabel}
-          onClick={onCart as any}
-          disabled={!inStock}
-          aria-busy={adding}
-        >
-          {adding ? <Spinner size={14} /> : <Icon name="bag" size={16} />}
-        </button>
+        {customize ? (
+          // required personalisation can only be filled on the PDP: a plain link (the ikas Router
+          // takes the click), with the selected colour in the query
+          <a className="pcard__cart pcard__cart--customize" href={href} aria-label={customizeAriaLabel || addToCartAriaLabel}>
+            <Icon name="pen-line" size={16} />
+          </a>
+        ) : (
+          <button
+            type="button"
+            className="pcard__cart"
+            aria-label={addToCartAriaLabel}
+            onClick={onCart as any}
+            disabled={!inStock}
+            aria-busy={adding}
+          >
+            {adding ? <Spinner size={14} /> : <Icon name="bag" size={16} />}
+          </button>
+        )}
       </div>
     </article>
   );

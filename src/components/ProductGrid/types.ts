@@ -30,4 +30,6 @@ export interface Props {
   showSubtitle?: boolean;
   /** Kapatılırsa ürünlerin altındaki düğme gizlenir. */
   showButton?: boolean;
+  /** Zorunlu kişiselleştirmesi olan ürünlerin kartında sepet düğmesinin yerine gelen, ürün sayfasına götüren düğmenin ekran okuyucu etiketi. */
+  customizeAriaLabel?: string;
 }

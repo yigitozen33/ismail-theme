@@ -43,10 +43,14 @@
   pointer-events: none;
 }
 
-.pcard__fav {
+/* The FavoriteButton rules (.fav = position relative) ship in a shared chunk stylesheet that is
+   injected apart from this card; at equal specificity the later sheet won and, on the PDP, dropped
+   the heart under the image. .pcard .pcard__fav outranks .fav whatever the sheet order. */
+.pcard .pcard__fav {
   position: absolute;
   top: 12px;
   right: 12px;
+  z-index: 1;
 }
 
 .pcard__info {
@@ -89,22 +93,62 @@
   text-decoration-thickness: 1px;
 }
 
+/* dots stay 12px; each sits centred in a 20px button (24px on touch) — the row's negative
+   margin keeps the first dot on the text's left edge */
 .pcard__swatches {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding-top: 2px;
+  margin: -2px 0 -4px -4px;
 }
 
 .pcard__swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--c-transparent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pcard__swatch-dot {
   width: 12px;
   height: 12px;
+  box-sizing: border-box;
   border: 1px solid var(--c-line);
   border-radius: 50%;
+  transition: box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+/* seçili renk: 1.5px ring outside a hairline gap */
+.pcard__swatch--on .pcard__swatch-dot {
+  box-shadow: 0 0 0 1.5px var(--c-bg), 0 0 0 2.5px var(--c-text);
+}
+
+.pcard__swatch:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -2px;
 }
 
 .pcard__swatch-more {
+  padding-left: 4px;
   color: var(--c-muted);
+}
+
+@media (pointer: coarse) {
+  .pcard__swatches {
+    margin: -4px 0 -6px -6px;
+  }
+
+  .pcard__swatch {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 .pcard__cart {
@@ -119,6 +163,7 @@
   border-radius: var(--radius-pill);
   background: transparent;
   color: var(--c-text);
+  text-decoration: none;
   cursor: pointer;
   transition: background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard),
     color var(--dur-fast) var(--ease-standard);
@@ -139,14 +184,18 @@
   }
 
   /* favourite appears on card hover (or keyboard focus); an active heart stays visible */
-  .pcard__fav:not(.fav--on) {
+  .pcard .pcard__fav:not(.fav--on) {
     opacity: 0;
     transition: opacity var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
   }
 
   .pcard:hover .pcard__fav,
-  .pcard__fav:focus-visible {
+  .pcard .pcard__fav:focus-visible {
     opacity: 1;
+  }
+
+  .pcard__swatch:hover:not(.pcard__swatch--on) .pcard__swatch-dot {
+    box-shadow: 0 0 0 1.5px var(--c-bg), 0 0 0 2.5px var(--c-line);
   }
 
   .pcard__cart:not(:disabled):hover,
@@ -164,7 +213,7 @@
     left: 10px;
   }
 
-  .pcard__fav {
+  .pcard .pcard__fav {
     top: 10px;
     right: 10px;
   }
@@ -173,7 +222,8 @@
 @media (prefers-reduced-motion: reduce) {
   .pcard__img--front,
   .pcard__cart,
-  .pcard__fav {
+  .pcard .pcard__fav,
+  .pcard__swatch-dot {
     transition: none;
   }
 }

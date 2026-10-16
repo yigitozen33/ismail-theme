@@ -31,6 +31,7 @@ import ProductCardSmall from "../../sub-components/ProductCardSmall";
 import Skeleton from "../../sub-components/Skeleton";
 import { cx } from "../../utils/cx";
 import { useReveal } from "../../utils/hooks";
+import { productListKey } from "../../utils/productVariants";
 import { TEXT } from "../../utils/tokens";
 import { Props } from "./types";
 
@@ -414,7 +415,7 @@ export function CartPage({
             {recommendTitle && <h2 className={cx("cartp__recs-title", TEXT.h4)}>{recommendTitle}</h2>}
             <div ref={recsRef} className={cx("cartp__recs-list", recsReveal)}>
               {recs.map((product, i) => (
-                <div key={product.id} className="cartp__rec" style={{ "--i": i } as any}>
+                <div key={productListKey(product)} className="cartp__rec" style={{ "--i": i } as any}>
                   <ProductCardSmall product={product} />
                 </div>
               ))}
