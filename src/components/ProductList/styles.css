@@ -82,7 +82,8 @@
   background: var(--c-line);
 }
 
-.plp__bar-pills {
+/* `.plp` prefix: FilterPills' own .fpills rules load after this file at equal specificity. */
+.plp .plp__bar-pills {
   flex-wrap: nowrap;
 }
 
@@ -149,8 +150,8 @@
   outline-offset: 2px;
 }
 
-/* touch-only: pills row under the toolbar */
-.plp__pills {
+/* touch-only: pills row under the toolbar (desktop shows the toolbar pills instead) */
+.plp .plp__pills {
   display: none;
 }
 
@@ -303,7 +304,7 @@
 @media (max-width: bp(zTpkWoce2k)) {
   .plp__count,
   .plp__divider,
-  .plp__bar-pills,
+  .plp .plp__bar-pills,
   .plp__sort {
     display: none;
   }
@@ -327,7 +328,7 @@
   }
 
   /* filter-active-chips: one row, scrolls sideways */
-  .plp__pills {
+  .plp .plp__pills {
     display: flex;
     flex-wrap: nowrap;
     padding: 4px 0;
