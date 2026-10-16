@@ -127,6 +127,7 @@
   height: 100%;
   object-fit: cover;
   transition: transform var(--dur-base) var(--ease-out-soft);
+  scale: var(--media-crop);
 }
 
 .iprev__zoom--on .iprev__img {
@@ -219,6 +220,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  scale: var(--media-crop);
 }
 
 .iprev__thumb-video {

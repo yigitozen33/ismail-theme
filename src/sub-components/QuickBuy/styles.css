@@ -61,6 +61,7 @@
   height: 100%;
   object-fit: cover;
   animation: _EMX39fgOGw 0.4s var(--ease-standard) both;
+  scale: var(--media-crop);
 }
 
 .qb__placeholder {

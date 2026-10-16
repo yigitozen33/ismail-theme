@@ -128,6 +128,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  scale: var(--media-crop);
 }
 
 .pdp__thumb-video {
@@ -210,6 +211,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  scale: var(--media-crop);
 }
 
 /* pill shared by the mobile media counter (the video player draws its own) */

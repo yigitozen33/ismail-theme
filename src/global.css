@@ -63,6 +63,8 @@
   --size-hero: 760px;
   --radius-card: 6px;
   --radius-media: var(--radius-card);
+  /* product photos carry baked-in white rounded corners; zoom them inside their clipped box to hide those */
+  --media-crop: 1.075;
   --radius-pill: 999px;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
