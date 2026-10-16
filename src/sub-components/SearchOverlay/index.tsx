@@ -96,6 +96,13 @@ export default function SearchOverlay({
         const res = await apiSearchProducts({ input: { query: q, perPage: PER_PAGE } });
         if (id !== reqId.current) return;
         const data = (res?.data?.data ?? []) as IkasProduct[];
+        // Raw search hits carry no selected variant, so ProductCardSmall found no image or price.
+        // Select the first active variant, as bs_searchProductsById does for the same API.
+        data.forEach((p) => {
+          if (p.selectedVariantValues?.length) return;
+          const v = p.variants?.find((x) => x.isActive) ?? p.variants?.[0];
+          if (v) p.selectedVariantValues = v.variantValues;
+        });
         setResults(data);
         setCount(res?.data?.totalCount ?? res?.data?.count ?? data.length);
       } catch {
