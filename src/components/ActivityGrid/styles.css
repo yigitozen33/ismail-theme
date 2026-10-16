@@ -36,11 +36,6 @@
   display: contents;
 }
 
-/* mobile snap points (see the mobile block) */
-.act__snap {
-  display: none;
-}
-
 /* SSR end state (and before the entrance runs): the first card is open */
 .act__row:not(.has-open):not(.is-pending):not(.is-inview) .act__renderer > div:first-of-type {
   --acard-open-default: 1;
@@ -83,7 +78,7 @@
   }
 }
 
-/* Tablet: horizontal strip (mobile behaviour), expansion off */
+/* Tablet and mobile: every card open and the same width; native scroll-snap moves one card per swipe */
 @media (max-width: bp(zTpkWoce2k)) {
   .act {
     padding-left: 0;
@@ -125,38 +120,8 @@
     gap: 16px;
   }
 
-  /* closed / open card widths (ActivityCard sizes from them, ActivityGrid snaps with them) */
   .act__row {
-    --act-card: 88px;
-    --act-card-open: 240px;
-    --act-gap: 8px;
-    position: relative;
-    gap: var(--act-gap);
-    padding-right: 0;
-    scroll-padding-inline: 0;
-  }
-
-  /* lets the last card reach the centre of the strip: half the strip − half an open card − the gap before it */
-  .act__row::after {
-    flex: 0 0 calc(50% + var(--space-page) / 2 - var(--act-card-open) / 2 - var(--act-gap));
-  }
-
-  /* one fixed snap point per card: the scroll position that centres it once open (the cards themselves
-     resize, so they cannot be snap points); snap-stop keeps a flick from skipping cards */
-  .act__snaps {
-    display: contents;
-  }
-
-  .act__snap {
-    position: absolute;
-    top: 0;
-    left: max(0px, calc(var(--space-page) + var(--i) * (var(--act-card) + var(--act-gap)) + var(--act-card-open) / 2 - 50%));
-    display: block;
-    width: 1px;
-    height: 1px;
-    pointer-events: none;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
+    gap: 8px;
   }
 }
 

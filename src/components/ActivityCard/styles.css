@@ -112,29 +112,24 @@
   }
 }
 
-/* Tablet: horizontal strip, expansion off — every card shows its full content. */
+/* Tablet and mobile: horizontal strip, expansion off — every card shows its full content at one width.
+   snap-stop keeps a flick from skipping cards (one card per swipe). */
 @media (max-width: bp(zTpkWoce2k)) {
-  .acard {
+  .acard,
+  .acard[data-open] {
     --o: 1;
     flex: 0 0 280px;
     height: 440px;
     scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
-
 }
 
-/* Mobile: snapping strip, the centred card is open (240), the others 88 (widths from ActivityGrid's row). */
 @media (max-width: bp(KUQjO8W6p9)) {
-  .acard {
-    --o: var(--acard-open-default, 0);
-    --acard-title-closed: 0.75;
-    flex: 0 0 calc(var(--act-card, 88px) + (var(--act-card-open, 240px) - var(--act-card, 88px)) * var(--o));
-    height: 400px;
-    scroll-snap-align: none;
-  }
-
+  .acard,
   .acard[data-open] {
-    --o: 1;
+    flex-basis: 240px;
+    height: 400px;
   }
 
   .acard__content {

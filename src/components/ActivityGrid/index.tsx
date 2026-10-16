@@ -11,8 +11,8 @@ import { Props } from "./types";
  * I/Section/ActivityGrid — heading + ArrowLink, then a strip of expanding ActivityCard children.
  * The section owns which card is open and writes `data-open` / `--i` onto the child `.acard`s.
  * Desktop: hover/focus opens a card, the last one stays open; the first opens after the entrance.
- * On a touch screen the first tap opens a card, the second follows its link.
- * Tablet: plain horizontal strip. Mobile: snapping strip (JS), the centred card is open.
+ * Below desktop every card is open and the same size, in a CSS scroll-snap strip (one card per swipe).
+ * A click or tap on any card follows its link at every width.
  */
 export function ActivityGrid({ activities, ...props }: Props) {
   const {
@@ -31,10 +31,6 @@ export function ActivityGrid({ activities, ...props }: Props) {
   const reveal = useReveal(rowRef, { threshold: 0.4, rootMargin: "0px" });
   const [open, setOpen] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
-  const lockUntil = useRef(0);
-  const openRef = useRef(open);
-  openRef.current = open;
-  const touch = useRef(false);
 
   const cards = () => Array.from(rowRef.current?.querySelectorAll<HTMLElement>(".acard") ?? []);
   const indexOf = (target: EventTarget | null) => {
@@ -72,113 +68,11 @@ export function ActivityGrid({ activities, ...props }: Props) {
     return () => clearTimeout(t);
   }, [reveal]);
 
-  // Mobile: only the open card is wide, so card i opens at padding + i × step (closed + gap) whichever card was
-  // open before — its centred scroll position is fixed. `.act__snap` markers sit on exactly these positions
-  // (the cards themselves resize, so they cannot be snap points).
-  const mobileStep = (row: HTMLElement) => {
-    const cs = getComputedStyle(row);
-    return (parseFloat(cs.getPropertyValue("--act-card")) || 88) + (parseFloat(cs.columnGap) || 0);
-  };
-  const mobileTarget = (row: HTMLElement, i: number) => {
-    const cs = getComputedStyle(row);
-    const wide = parseFloat(cs.getPropertyValue("--act-card-open")) || 240;
-    const left = parseFloat(cs.paddingLeft) + i * mobileStep(row);
-    return Math.min(Math.max(left + wide / 2 - row.clientWidth / 2, 0), row.scrollWidth - row.clientWidth);
-  };
-
-  const centreCard = (row: HTMLElement, i: number, lockMs: number) => {
-    lockUntil.current = Date.now() + lockMs;
-    setOpen(i);
-    row.scrollTo({ left: mobileTarget(row, i), behavior: prefersReducedMotion() ? "auto" : "smooth" });
-  };
-
-  // Mobile swipe: when the finger lifts after moving the strip, go as many cards as the finger travelled (at least
-  // one) instead of letting momentum fling past several — the first card's neighbour sits only a few px away.
-  // Other scrolling (no touch) opens the card the strip comes to rest on.
-  useEffect(() => {
-    const row = rowRef.current;
-    if (!row) return;
-    let t = 0;
-    let gesture: { from: number; x: number; left: number } | null = null;
-    const schedule = () => {
-      clearTimeout(t);
-      t = window.setTimeout(settle, Math.max(120, lockUntil.current - Date.now() + 50));
-    };
-    const settle = () => {
-      const n = cards().length;
-      if (!n || gesture || window.innerWidth > BREAKPOINT.mobile) return;
-      if (Date.now() < lockUntil.current) return schedule();
-      const cur = Math.min(openRef.current ?? 0, n - 1);
-      let best = cur;
-      let dist = Infinity;
-      for (let i = 0; i < n; i++) {
-        const d = Math.abs(mobileTarget(row, i) - row.scrollLeft);
-        // positions shared at the strip's start: the card nearest the one already open
-        if (d < dist - 0.5 || (Math.abs(d - dist) <= 0.5 && Math.abs(i - cur) < Math.abs(best - cur))) {
-          dist = d;
-          best = i;
-        }
-      }
-      if (best !== openRef.current || dist > 1) centreCard(row, best, 550);
-    };
-    // iOS keeps the fling's momentum running over a programmatic scroll; overflow: hidden stops it on the spot
-    let thaw = 0;
-    const unfreeze = () => {
-      clearTimeout(thaw);
-      row.style.overflowX = "";
-    };
-    const onTouchStart = (e: TouchEvent) => {
-      clearTimeout(t);
-      unfreeze();
-      gesture = { from: openRef.current ?? 0, x: e.touches[0]?.clientX ?? 0, left: row.scrollLeft };
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      const g = gesture;
-      gesture = null;
-      const n = cards().length;
-      // a vertical page scroll or a tap leaves the strip where it was
-      if (g && n && window.innerWidth <= BREAKPOINT.mobile && Math.abs(row.scrollLeft - g.left) > 2) {
-        const dx = (e.changedTouches[0]?.clientX ?? g.x) - g.x;
-        const k = Math.max(1, Math.round(Math.abs(dx) / mobileStep(row)));
-        const dir = row.scrollLeft > g.left ? 1 : -1;
-        row.style.overflowX = "hidden";
-        centreCard(row, Math.min(Math.max(g.from + dir * k, 0), n - 1), 700);
-        thaw = window.setTimeout(unfreeze, 600);
-        return;
-      }
-      schedule();
-    };
-    row.addEventListener("scroll", schedule, { passive: true });
-    row.addEventListener("touchstart", onTouchStart, { passive: true });
-    row.addEventListener("touchend", onTouchEnd, { passive: true });
-    row.addEventListener("touchcancel", onTouchEnd, { passive: true });
-    return () => {
-      row.removeEventListener("scroll", schedule);
-      row.removeEventListener("touchstart", onTouchStart);
-      row.removeEventListener("touchend", onTouchEnd);
-      row.removeEventListener("touchcancel", onTouchEnd);
-      clearTimeout(t);
-      unfreeze();
-    };
-  }, []);
-
-  // Desktop: a mouse hover or keyboard focus opens a card (a touch tap is handled on click).
+  // Desktop: a mouse hover or keyboard focus opens a card. Clicks are never intercepted — every card (open or not)
+  // is a plain <a> and follows its link.
   const onPointerOpen = (i: number) => {
     if (window.innerWidth <= BREAKPOINT.tablet) return;
     if (i >= 0 && i !== open) setOpen(i);
-  };
-
-  // Mobile, and touch screens on desktop: a tap on a closed card opens it instead of following its link.
-  const onClickCapture = (e: MouseEvent) => {
-    const w = window.innerWidth;
-    if (w > BREAKPOINT.mobile && (w <= BREAKPOINT.tablet || !touch.current)) return;
-    const i = indexOf(e.target);
-    if (i < 0 || i === open) return;
-    // the storefront Router follows every <a> click from a window listener and ignores defaultPrevented
-    e.preventDefault();
-    e.stopPropagation();
-    if (w > BREAKPOINT.mobile) setOpen(i);
-    else if (rowRef.current) centreCard(rowRef.current, i, 700);
   };
 
   return (
@@ -193,17 +87,10 @@ export function ActivityGrid({ activities, ...props }: Props) {
         <div
           ref={rowRef}
           className={cx("act__row", reveal, ready && "is-ready", open !== null && "has-open")}
-          onPointerDown={(e) => (touch.current = e.pointerType !== "mouse")}
           onPointerOver={(e) => e.pointerType === "mouse" && onPointerOpen(indexOf(e.target))}
           onFocusIn={(e) => isKeyboardFocus(e.target) && onPointerOpen(indexOf(e.target))}
-          onClickCapture={onClickCapture}
         >
           <IkasComponentRenderer id="activity-cards" className="act__renderer" components={list} parentProps={props} />
-          <span className="act__snaps" aria-hidden="true">
-            {list.map((_, i) => (
-              <span key={i} className="act__snap" style={{ "--i": i } as any} />
-            ))}
-          </span>
         </div>
       )}
     </section>
