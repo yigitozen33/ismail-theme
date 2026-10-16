@@ -96,9 +96,11 @@ export function RichText({
   }, [html, hasToc]);
 
   const go = (e: MouseEvent, id: string) => {
+    // the ikas Router follows every <a> click from a window listener and ignores defaultPrevented
+    e.preventDefault();
+    e.stopPropagation();
     const el = typeof document !== "undefined" ? document.getElementById(id) : null;
     if (!el) return;
-    e.preventDefault();
     el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
     history.replaceState?.(null, "", `#${id}`);
     setActive(id);
