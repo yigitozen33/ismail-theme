@@ -46,7 +46,9 @@
   max-width: 640px;
 }
 
-/* the box stretches to the row (= main media height); the rail scrolls inside it */
+/* the box stretches to the row (= main media height); the rail is only as tall as its thumbs
+   (capped at the box) and scrolls inside it only when they overflow. No overscroll containment:
+   wheel over the rail, below it or at its ends scrolls the page. */
 .pdp__rail-box {
   position: relative;
   align-self: stretch;
@@ -55,12 +57,14 @@
 
 .pdp__rail {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
-  overscroll-behavior: contain;
   scrollbar-width: none;
 }
 
