@@ -13,6 +13,8 @@ export type StoreStatusKind = "open" | "closed" | "note";
 export interface StoreSelectDetail {
   el: Element;
   user: boolean;
+  /** Tap/click: on the stacked layout the locator scrolls its feature card into view. */
+  scroll?: boolean;
   image?: IkasImage | null;
   name?: string;
   district?: string;
@@ -37,7 +39,9 @@ function isOpenNow(hours?: string): boolean | null {
  * StoreLocator (row: name + district, address, computed status, arrow — I-LOC-01). Both markups are
  * rendered; the parent's CSS shows one. The row shows `shortAddress` (falls back to `address`); the
  * locator's feature card shows the full `address`. In a locator the row announces itself with SCOPED_EVENT.storeSelect
- * and the status ("storeStatus") is computed from `hours` on the client (statusNote overrides).
+ * (mouse hover, keyboard focus, tap/click) and the status ("storeStatus") is computed from `hours` on the client
+ * (statusNote overrides). The locator keeps the active row's index on the scope (data-active-index), so a
+ * re-mounted row can tell whether it is the active one.
  */
 export function StoreItem({
   image,
@@ -76,11 +80,12 @@ export function StoreItem({
     setStatus(st);
     setSelectLabel(scope.dataset.selectLabel || "");
     const off = onScoped<StoreSelectDetail>(scope, SCOPED_EVENT.storeSelect, (d) => setSelected(!!d && d.el === el));
-    // The first store is the initial selection; a selected store re-announces itself when its props change.
-    // Deferred so the section's listener (attached in its own effect) is in place.
+    // The active store (the first one until another is chosen) announces itself on mount and when its
+    // props change. Deferred so the section's listener (attached in its own effect) is in place.
     const t = setTimeout(() => {
-      const isInitial = scope.querySelector(".sitem") === el && !scope.dataset.selected;
-      if (isInitial || el.classList.contains("sitem--on")) {
+      const index = Array.from(scope.querySelectorAll(".sitem")).indexOf(el);
+      const active = scope.dataset.activeIndex;
+      if (active === undefined ? index === 0 : String(index) === active) {
         const d = detail(false, st);
         if (d) emitScoped(el, SCOPED_EVENT.storeSelect, d);
       }
@@ -91,9 +96,14 @@ export function StoreItem({
     };
   }, [image, name, district, address, hours, statusNote, mapHref]);
 
-  const select = () => {
+  const select = (scroll = false) => {
     const d = detail(true);
-    if (d) emitScoped(d.el, SCOPED_EVENT.storeSelect, d);
+    if (d) emitScoped(d.el, SCOPED_EVENT.storeSelect, { ...d, scroll });
+  };
+
+  // Hovering (mouse only — touch taps go through onClick) or keyboard-focusing a row makes it the active store.
+  const preview = () => {
+    if (!selected) select();
   };
 
   return (
@@ -135,7 +145,9 @@ export function StoreItem({
         className="sitem__row"
         aria-pressed={selected}
         aria-label={selectLabel ? [selectLabel, [name, district].filter(Boolean).join(" · ")].filter(Boolean).join(": ") : undefined}
-        onClick={select}
+        onClick={() => select(true)}
+        onPointerEnter={(e) => e.pointerType === "mouse" && preview()}
+        onFocus={(e) => (e.currentTarget as HTMLElement).matches(":focus-visible") && preview()}
       >
         <span className="sitem__row-text">
           <span className="sitem__row-name">

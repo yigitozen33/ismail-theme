@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   IkasComponentRenderer,
   IkasFormItem,
@@ -129,9 +129,11 @@ export function ContactForm(props: Props) {
 
   const submitting = !!form.isSubmitting;
   const resultText = status === "success" ? successText : status === "invalid" ? errorText : status === "failure" ? failureText : "";
-  const topicList = toList(topics);
-  const channelList = toList(channels);
-  const socialList = toList(socialLinks);
+  // Memoised: IkasComponentRenderer re-mounts its children whenever the array identity changes,
+  // which would reset the children on every keystroke.
+  const topicList = useMemo(() => toList(topics), [topics]);
+  const channelList = useMemo(() => toList(channels), [channels]);
+  const socialList = useMemo(() => toList(socialLinks), [socialLinks]);
 
   return (
     <section className="cform" style={backgroundColor ? { backgroundColor } : undefined}>

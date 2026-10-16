@@ -67,6 +67,7 @@
   transition: background-color 0.3s var(--ease-standard), border-color 0.3s var(--ease-standard);
 }
 
+/* no separate :hover style — hovering a row selects it, so the active row is the only highlight */
 .sitem--on .sitem__row {
   border-color: var(--c-surface);
   background: var(--c-surface);
@@ -132,16 +133,6 @@
   border-color: var(--c-inverse-bg);
   background: var(--c-inverse-bg);
   color: var(--c-inverse-text);
-}
-
-@media (hover: hover) {
-  .sitem__row:hover {
-    border-color: var(--c-text);
-  }
-
-  .sitem--on .sitem__row:hover {
-    border-color: var(--c-surface);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

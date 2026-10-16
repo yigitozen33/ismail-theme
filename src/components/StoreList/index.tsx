@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useMemo, useRef } from "preact/hooks";
 import { IkasComponentRenderer } from "@ikas/bp-storefront";
 import SectionHeading from "../../sub-components/SectionHeading";
 import { cx } from "../../utils/cx";
@@ -17,7 +17,8 @@ export function StoreList(props: Props) {
   } = props;
   const gridRef = useRef<HTMLDivElement>(null);
   const reveal = useReveal(gridRef);
-  const list = toList(stores);
+  // Memoised: IkasComponentRenderer re-mounts its children whenever the array identity changes.
+  const list = useMemo(() => toList(stores), [stores]);
 
   // Stagger index for the opaque children (I-STOR-01 · M-01, 0.08s).
   useEffect(() => {

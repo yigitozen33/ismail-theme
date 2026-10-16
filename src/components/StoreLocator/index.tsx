@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "preact/hooks";
-import { IkasComponentRenderer, createMediaSrcset, getDefaultSrc } from "@ikas/bp-storefront";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { IkasComponentRenderer, IkasImage, createMediaSrcset, getDefaultSrc } from "@ikas/bp-storefront";
 import Button from "../../sub-components/Button";
 import Icon from "../../sub-components/Icon";
 import LazyImg from "../../sub-components/LazyImg";
@@ -15,7 +15,8 @@ const toList = (v: any) => (Array.isArray(v) ? v : v ? [v] : []).flat().filter(B
 /**
  * I/Section/StoreLocator — heading row + featured store (image + info card) beside the StoreItem rows.
  * Children are opaque, so the selected StoreItem sends its data with SCOPED_EVENT.storeSelect; the first
- * row is selected initially. I-LOC-01 (rows, StoreItem CSS) · I-LOC-02 (feature image fades on change).
+ * row is selected initially, hovering / focusing / tapping a row selects it. I-LOC-01 (rows, StoreItem CSS) ·
+ * I-LOC-02 (the new feature image fades in over the previous one).
  */
 export function StoreLocator(props: Props) {
   const {
@@ -33,21 +34,30 @@ export function StoreLocator(props: Props) {
   const rowsRef = useRef<HTMLDivElement>(null);
   const featureRef = useRef<HTMLDivElement>(null);
   const [store, setStore] = useState<StoreSelectDetail | null>(null);
-  const [version, setVersion] = useState(0);
-  const storeRef = useRef<StoreSelectDetail | null>(null);
-  const list = toList(stores);
+  // version keys the feature image/card so they fade in on change; prev stays underneath while the new one fades.
+  const [view, setView] = useState<{ version: number; prev: { version: number; image: IkasImage } | null }>({ version: 0, prev: null });
+  const storeRef = useRef<{ index: number; image?: IkasImage | null } | null>(null);
+  // Memoised: IkasComponentRenderer re-mounts its children whenever the array identity changes, and every
+  // selection re-renders this section — a fresh array here re-mounted the rows in a loop.
+  const list = useMemo(() => toList(stores), [stores]);
 
   useEffect(() => {
     const scope = rowsRef.current;
     if (!scope) return;
     return onScoped<StoreSelectDetail>(scope, SCOPED_EVENT.storeSelect, (d) => {
       if (!d) return;
-      if (d.user) scope.dataset.selected = "1";
+      const index = Array.from(scope.querySelectorAll(".sitem")).indexOf(d.el);
+      scope.dataset.activeIndex = String(index);
       const prev = storeRef.current;
-      if (!prev || prev.el !== d.el || prev.image?.id !== d.image?.id) setVersion((v) => v + 1);
-      storeRef.current = d;
+      if (!prev || prev.index !== index || prev.image?.id !== d.image?.id) {
+        setView((v) => ({
+          version: v.version + 1,
+          prev: prev?.image && d.image ? { version: v.version, image: prev.image } : null,
+        }));
+      }
+      storeRef.current = { index, image: d.image };
       setStore(d);
-      if (d.user && window.innerWidth <= BREAKPOINT.tablet) {
+      if (d.scroll && window.innerWidth <= BREAKPOINT.tablet) {
         featureRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     });
@@ -73,9 +83,21 @@ export function StoreLocator(props: Props) {
           {/* I-LOC-02 · M-02: selected store image fades in (0.5s) */}
           <div ref={featureRef} className="sloc__feature" aria-live="polite">
             <div className="sloc__media">
+              {store?.image && view.prev && (
+                <LazyImg
+                  key={view.prev.version}
+                  className="sloc__img sloc__img--prev"
+                  src={getDefaultSrc(view.prev.image)}
+                  srcSet={createMediaSrcset(view.prev.image)}
+                  sizes="(max-width: 991px) 100vw, 64vw"
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
               {store?.image ? (
                 <LazyImg
-                  key={version}
+                  key={view.version}
                   className="sloc__img"
                   src={getDefaultSrc(store.image)}
                   srcSet={createMediaSrcset(store.image)}
@@ -89,7 +111,7 @@ export function StoreLocator(props: Props) {
               )}
             </div>
             {store && (
-              <div key={`card-${version}`} className="sloc__card">
+              <div key={`card-${view.version}`} className="sloc__card">
                 <div className="sloc__card-head">
                   {name && <h3 className={cx("sloc__card-name", TEXT.h4)}>{name}</h3>}
                   {status?.text && (
