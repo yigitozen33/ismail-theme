@@ -40,6 +40,16 @@ export function subLinkColumns(link?: IkasNavigationLink | null) {
   return [{ title: "", href: "", links: subs }];
 }
 
+/** Mobile accordion groups: same columns as the desktop megamenu, the link's own page first. */
+function accordionGroups(link: IkasNavigationLink) {
+  const groups = subLinkColumns(link);
+  if (link.href) {
+    if (groups[0] && !groups[0].title) groups[0].links.unshift(link);
+    else groups.unshift({ title: "", href: "", links: [link] });
+  }
+  return groups;
+}
+
 const linkTarget = (l: IkasNavigationLink) => (l.openInNewTab ? { target: "_blank", rel: "noopener noreferrer" } : {});
 
 /* ------------------------------------------------------------------ */
@@ -282,28 +292,40 @@ export const MenuPanel = observer(function MenuPanel({
                     </a>
                   )}
                   {expandable && (
-                    <div id={bodyId} className={cx("mpanel__acc", isOpen && "is-open")}>
+                    // closed bodies are inert: their links (renderer children included) leave the tab order
+                    <div id={bodyId} className={cx("mpanel__acc", isOpen && "is-open")} {...({ inert: isOpen ? undefined : true } as any)}>
                       <div className="mpanel__acc-inner">
-                        {showColumns ? (
-                          <IkasComponentRenderer id="mpanel-columns" className="mpanel__renderer" components={columns as any[]} parentProps={parentProps} />
-                        ) : (
-                          <ul className="mpanel__subs">
-                            {link.href && (
-                              <li>
-                                <a className={cx("mpanel__sub", TEXT.ui)} href={link.href} onClick={onClose} tabIndex={isOpen ? 0 : -1}>
-                                  {link.label}
-                                </a>
-                              </li>
-                            )}
-                            {subs.map((s, j) => (
-                              <li key={j}>
-                                <a className={cx("mpanel__sub", TEXT.ui)} href={s.href} onClick={onClose} tabIndex={isOpen ? 0 : -1} {...linkTarget(s)}>
-                                  {s.label}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                        {/* one rhythm for both sources: groups 28 apart, title + links 14 apart */}
+                        <div className="mpanel__groups">
+                          {showColumns ? (
+                            // the renderer root is display: contents — its column containers are the flex items here
+                            <IkasComponentRenderer id="mpanel-columns" className="mpanel__renderer" components={columns as any[]} parentProps={parentProps} />
+                          ) : (
+                            accordionGroups(link).map((g, j) => (
+                              <div key={j} className="mpanel__group">
+                                {g.title &&
+                                  (g.href ? (
+                                    <a className={cx("mpanel__group-title", TEXT.label)} href={g.href} onClick={onClose}>
+                                      {g.title}
+                                    </a>
+                                  ) : (
+                                    <p className={cx("mpanel__group-title", TEXT.label)}>{g.title}</p>
+                                  ))}
+                                {g.links.length > 0 && (
+                                  <ul className="mpanel__subs">
+                                    {g.links.map((s, k) => (
+                                      <li key={k}>
+                                        <a className={cx("mpanel__sub", TEXT.ui)} href={s.href} onClick={onClose} {...linkTarget(s)}>
+                                          {s.label}
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}

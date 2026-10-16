@@ -17,7 +17,8 @@
   height: 36px;
   padding: 0 var(--space-page);
   background: var(--hdr-bg, var(--c-bg));
-  border-bottom: var(--size-line) solid var(--c-line);
+  /* soft rules the Footer way (line at 50%) */
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -161,7 +162,7 @@
   height: var(--size-header);
   background: var(--hdr-bg, var(--c-bg));
   color: var(--c-text);
-  border-bottom: var(--size-line) solid var(--c-line);
+  border-bottom: var(--size-line) solid color-mix(in srgb, var(--c-line) 50%, transparent);
   box-sizing: border-box;
   transition:
     background-color 0.3s var(--ease-standard),
@@ -333,13 +334,29 @@
   color: var(--c-accent-text);
 }
 
+/*
+ * Keyboard focus, on brand: text links underline, controls get a thin currentColor ring with a soft
+ * offset. Focus handed back after a mouse / touch close is ring-free (utils/overlay focusQuietly).
+ */
 .hdr__nav-link:focus-visible,
+.hdr__ann-link:focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: var(--size-line);
+  text-underline-offset: 6px;
+}
+
 .hdr__action:focus-visible,
 .hdr__logo:focus-visible,
-.hdr__pager-btn:focus-visible,
-.hdr__ann-link:focus-visible {
-  outline: 2px solid var(--c-accent);
-  outline-offset: 2px;
+.hdr__pager-btn:focus-visible {
+  outline: var(--size-line) solid currentColor;
+  outline-offset: 4px;
+  border-radius: var(--radius-card);
+}
+
+.hdr__pager-btn:focus-visible {
+  outline-offset: 1px;
 }
 
 /* megamenu scrim (I-MENU-01): behind the bar, over the page */

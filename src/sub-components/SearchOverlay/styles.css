@@ -27,7 +27,7 @@
   overscroll-behavior: contain;
   background: var(--c-bg);
   color: var(--c-text);
-  border-bottom: var(--size-line) solid var(--c-line);
+  /* no bottom rule: the panel edge against the scrim closes it, the header bar line opens it */
   pointer-events: auto;
   /* I-SRCH-01 · M-21: panel drops in from the top (spring-search ≈ out-soft) */
   opacity: 0;
@@ -95,10 +95,6 @@
 
 .srch__input::-webkit-search-cancel-button {
   display: none;
-}
-
-.srch__field:focus-within {
-  border-bottom-color: var(--c-accent);
 }
 
 .srch__spinner {
@@ -218,7 +214,7 @@
 }
 
 .srch__chip:focus-visible {
-  outline: 2px solid var(--c-accent);
+  outline: var(--size-line) solid currentColor;
   outline-offset: 2px;
 }
 
@@ -241,7 +237,6 @@
   .srch__panel {
     bottom: 0;
     max-height: none;
-    border-bottom: 0;
   }
 
   .srch__inner {

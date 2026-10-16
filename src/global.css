@@ -123,3 +123,8 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* Focus handed back by script after a mouse / touch interaction (utils/overlay focusQuietly): no ring. */
+[data-focus-quiet]:focus-visible {
+  outline: none !important;
+}

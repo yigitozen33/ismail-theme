@@ -29,12 +29,40 @@ export function usePresence(open: boolean, exitMs = 450) {
   return { mounted, shown };
 }
 
+/*
+ * Input modality for script-moved focus. Only Tab counts as keyboard navigation: Escape, typing
+ * in a field or Enter after a click leave it on "pointer". Starts on keyboard so focus is never
+ * hidden before the first pointer interaction.
+ */
+let keyboardNav = true;
+if (typeof document !== "undefined") {
+  document.addEventListener("pointerdown", () => (keyboardNav = false), true);
+  document.addEventListener("keydown", (e) => e.key === "Tab" && (keyboardNav = true), true);
+}
+
+/**
+ * Focuses `el` without scrolling. After a pointer interaction the element is marked
+ * `data-focus-quiet` until it blurs (global.css drops the ring): Chrome otherwise paints
+ * :focus-visible when focus returns to a trigger after an Escape keypress. Keyboard users keep it.
+ */
+export function focusQuietly(el?: HTMLElement | null) {
+  if (!el?.focus) return;
+  if (keyboardNav) {
+    el.focus({ preventScroll: true });
+    return;
+  }
+  el.setAttribute("data-focus-quiet", "");
+  el.focus({ preventScroll: true, focusVisible: false } as FocusOptions);
+  if (document.activeElement === el) el.addEventListener("blur", () => el.removeAttribute("data-focus-quiet"), { once: true });
+  else el.removeAttribute("data-focus-quiet");
+}
+
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
  * While `active`: moves focus into `ref` (to `initial` when given), keeps Tab inside it and
- * restores focus to the previously focused element when it deactivates.
+ * restores focus to the previously focused element when it deactivates (both via focusQuietly).
  */
 export function useFocusTrap(ref: RefObject<HTMLElement>, active: boolean, initial?: RefObject<HTMLElement>) {
   const prev = useRef<Element | null>(null);
@@ -44,7 +72,7 @@ export function useFocusTrap(ref: RefObject<HTMLElement>, active: boolean, initi
     const root = ref.current;
     const t = setTimeout(() => {
       const target = initial?.current ?? root?.querySelector<HTMLElement>(FOCUSABLE) ?? root;
-      target?.focus({ preventScroll: true });
+      focusQuietly(target);
     }, 60);
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Tab" || !root) return;
@@ -64,7 +92,7 @@ export function useFocusTrap(ref: RefObject<HTMLElement>, active: boolean, initi
     return () => {
       clearTimeout(t);
       document.removeEventListener("keydown", onKey);
-      (prev.current as HTMLElement | null)?.focus?.({ preventScroll: true });
+      focusQuietly(prev.current as HTMLElement | null);
     };
   }, [active]);
 }

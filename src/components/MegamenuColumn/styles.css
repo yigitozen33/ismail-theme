@@ -34,7 +34,10 @@
   }
 }
 
+/* keyboard focus: underline, no accent box */
 .mcol__link:focus-visible {
-  outline: 2px solid var(--c-accent);
-  outline-offset: 2px;
+  outline: none;
+  text-decoration: underline;
+  text-decoration-thickness: var(--size-line);
+  text-underline-offset: 4px;
 }

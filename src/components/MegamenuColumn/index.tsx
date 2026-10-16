@@ -5,7 +5,8 @@ import { Props } from "./types";
 /**
  * Header › megamenuColumns child — mono title + link list (I/Overlay/MenuOverlay `menu-column`).
  * I-MENU-02 stagger is driven by the Header (`--i` on the renderer containers).
- * Inside the mobile menu accordion the title is hidden (desktop-only layer) and links turn muted.
+ * Inside the mobile menu accordion the title stays as a small muted sub-heading and links turn muted
+ * (MenuOverlay `.mpanel__groups`).
  */
 export function MegamenuColumn({ title = "GİYİM", links }: Props) {
   const items = (links?.links ?? []).filter((l) => l?.label);

@@ -24,7 +24,8 @@
   }
 }
 
+/* keyboard focus: thin currentColor ring on the 40 box (no accent) */
 .ibtn:focus-visible {
-  outline: 2px solid var(--c-accent);
-  outline-offset: 2px;
+  outline: var(--size-line) solid currentColor;
+  outline-offset: 0;
 }
